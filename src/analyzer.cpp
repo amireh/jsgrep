@@ -13,7 +13,7 @@ namespace jsgrok {
   analyzer::~analyzer() {
   }
 
-  analyzer::analysis_t analyzer::apply(jsgrok::v8_session *session, string_t const& source_code) {
+  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& source_code) {
     const int ANALYZER_COUNT = 2;
     analysis_t results;
 
@@ -29,15 +29,34 @@ namespace jsgrok {
 
     // Create a new context.
     Local<Context> context = Context::New(isolate);
-
-    // Enter the context for compiling and running the hello world script.
     Context::Scope context_scope(context);
 
-    Handle<Object> exports = session->require("deps/acorn.js");
+    context_ = &context;
+    session_ = session;
+
+    Local<Object> global = context->Global();
+
+    // PREPARE CONTEXT:
+    prepare_context(session, context);
+
+    // Enter the context for compiling and running the hello world script.
+
+    // Handle<Object> exports = session->require("deps/acorn.js");
+    session->require(context, "deps/acorn.js");
+    session->require(context, "deps/walk.js");
+
+    auto acorn_ref = session->get(context, global, "acorn");
+
+    if (acorn_ref.IsEmpty()) {
+      printf("Unable to find 'acorn' global!\n");
+      return results;
+    }
+
+    auto exports = acorn_ref->ToObject();
 
     std::vector<Handle<Object>> analyzer_modules = {
-      session->require("src/analyzers/call.js"),
-      session->require("src/analyzers/objectProperty.js"),
+      // session->require(context, "src/analyzers/call.js"),
+      session->require(context, "src/analyzers/objectProperty.js"),
     };
 
     if (any_of(analyzer_modules.begin(), analyzer_modules.end(), [&](Handle<Object> x) {
@@ -47,12 +66,10 @@ namespace jsgrok {
       return results;
     }
 
-    Handle<Object> call_analyzer_exports = session->require("src/analyzers/call.js");
-
     assert(exports.IsObject());
 
     // MaybeLocal<Value> parse_fn_prop = exports->Get(context, create_key("parse"));
-    auto parse_value = session->get(exports, "parse");
+    auto parse_value = session->get(context, exports, "parse");
 
     if (parse_value.IsEmpty()) {
       return results;
@@ -61,7 +78,7 @@ namespace jsgrok {
     std::vector<Local<Function>> analyzers;
 
     for (auto x : analyzer_modules) {
-      auto default_fn = session->get(x, "default");
+      auto default_fn = session->get(context, x, "default");
 
       if (!default_fn.IsEmpty()) {
         analyzers.push_back(Local<Function>::Cast(default_fn));
@@ -91,7 +108,7 @@ namespace jsgrok {
     const int call_argc = 1;
 
     for (auto call : analyzers) {
-      auto result = call->Call(context, call_analyzer_exports, call_argc, call_argv);
+      auto result = call->Call(context, call, call_argc, call_argv);
 
       if (!result.IsEmpty()) {
         results.push_back(result.ToLocalChecked());
@@ -124,5 +141,45 @@ namespace jsgrok {
     }
 
     return out;
+  }
+
+  void analyzer::prepare_context(v8_session *session, Local<Context> &context) {
+    Isolate *isolate = session->get_isolate();
+
+    Local<Object>            global = context->Global();
+    Local<FunctionTemplate>  require_tmpl = FunctionTemplate::New(
+      isolate,
+      &analyzer::require,
+      External::New(isolate, this)
+    );
+
+    printf("freezing session: %p\n", this->session_);
+
+    global->Set(context, String::NewFromUtf8(isolate, "require"), require_tmpl->GetFunction());
+  }
+
+  void analyzer::require(const v8::FunctionCallbackInfo<Value> &args) {
+    auto that = (analyzer*)External::Cast(*args.Data())->Value();
+    auto session = that->session_;
+    auto context = that->context_;
+    auto rv = args.GetReturnValue();
+
+    printf("thawing session: %p\n", that->session_);
+    printf("required! %d\n", args.Length());
+
+    if (args.Length() == 1) {
+      auto filepath = string_t(*String::Utf8Value(args[0]->ToString()));
+      auto isolate = args.GetIsolate();
+      // auto context = isolate->GetCurrentContext();
+
+      printf("requiring file: %s\n", *String::Utf8Value(args[0]->ToString()));
+
+      auto exports = session->require(*context, filepath);
+
+      rv.Set(exports);
+    }
+    else {
+      rv.SetUndefined();
+    }
   }
 }

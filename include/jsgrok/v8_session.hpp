@@ -19,11 +19,11 @@ namespace jsgrok {
     v8_session();
     virtual ~v8_session();
 
-    Handle<Object> require(string_t const&);
+    Handle<Object> require(Local<Context>&, string_t const&);
 
     Isolate* get_isolate() const;
 
-    Handle<Value> get(Local<Object> &, const char*);
+    Handle<Value> get(Local<Context> &, Local<Object> &, const char*);
 
   protected:
     Isolate *isolate_;

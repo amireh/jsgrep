@@ -20,14 +20,9 @@ using namespace v8;
 using std::any_of;
 using jsgrok::string_t;
 
-static jsgrok::analyzer::analysis_t apply(jsgrok::v8_session *session) {
-  jsgrok::analyzer analyzer;
+int main(int argc, char* argv[]) {
   string_t source_code("var x = 1; var y = 2;");
 
-  return analyzer.apply(session, source_code);
-}
-
-int main(int argc, char* argv[]) {
   // Initialize V8.
   V8::InitializeICUDefaultLocation(argv[0]);
   V8::InitializeExternalStartupData(argv[0]);
@@ -37,11 +32,11 @@ int main(int argc, char* argv[]) {
 
   // Create a new Isolate and make it the current one.
   jsgrok::v8_session *session = new jsgrok::v8_session();
+  jsgrok::analyzer *analyzer = new jsgrok::analyzer();
   Isolate* isolate = session->get_isolate();
 
   isolate->Enter();
-
-  auto results = apply(session);
+  auto results = analyzer->apply(session, source_code);
 
   printf("%d results\n", results.size());
 
@@ -56,6 +51,7 @@ int main(int argc, char* argv[]) {
   isolate->Exit();
 
   // Dispose the isolate and tear down V8.
+  delete analyzer;
   delete session;
   V8::Dispose();
   V8::ShutdownPlatform();

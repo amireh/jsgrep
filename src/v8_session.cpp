@@ -24,20 +24,24 @@ namespace jsgrok {
     return isolate_;
   };
 
-  Handle<Object> v8_session::require(const string_t &filepath) {
+  Handle<Object> v8_session::require(Local<Context> &context, const string_t &filepath) {
     jsgrok::fs fs;
     string_t source_code;
 
-    Isolate::Scope isolate_scope(isolate_);
+    printf("isolate addr: %p\n", isolate_);
+    printf("isolate in context?? %s\n", isolate_->InContext() ? "true" : "false");
+
+    // Isolate::Scope isolate_scope(isolate_);
 
     // Create a stack-allocated handle scope.
     EscapableHandleScope handle_scope(isolate_);
 
+
     // Create a new context.
-    Local<Context> context = Context::New(isolate_);
+    // Local<Context> context = Context::New(isolate_);
 
     // Enter the context for compiling and running the hello world script.
-    Context::Scope context_scope(context);
+    // Context::Scope context_scope(context);
 
     // Create a string containing the JavaScript source code.
     fs.load_file(filepath, source_code);
@@ -60,11 +64,15 @@ namespace jsgrok {
     return handle_scope.Escape(result->ToObject());
   }
 
-  Handle<Value> v8_session::get(Local<Object> &object, const char* key) {
+  Handle<Value> v8_session::get(Local<Context> &context, Local<Object> &object, const char* key) {
     EscapableHandleScope handle_scope(isolate_);
-    Local<Context>       context = Context::New(isolate_);
+    // Local<Context>       context = Context::New(isolate_);
 
     MaybeLocal<Value>    value = object->Get(context, String::NewFromUtf8(isolate_, key));
+
+    if (value.IsEmpty()) {
+      return Handle<Value>();
+    }
 
     return handle_scope.Escape(value.ToLocalChecked());
   }
