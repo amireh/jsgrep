@@ -16,12 +16,6 @@ using v8::Value;
 namespace jsgrok {
   class v8_session {
   public:
-    // template <typename T>
-    // using getter_t = std::function<void(Local <T>&)>;
-    // // struct types {
-    // //   typedef std::function<void(Local <T>&)> getter_t;
-    // // };
-
     v8_session();
     virtual ~v8_session();
 
@@ -30,24 +24,6 @@ namespace jsgrok {
     Isolate* get_isolate() const;
 
     Handle<Value> get(Local<Object> &, const char*);
-
-    // template <typename T>
-    // Handle<T> get(Local<Object> &object, const char* key, getter_t<T> getter)
-    // {
-    //   Handle<Value> value = get(object, key);
-
-    //   if (value.IsEmpty()) {
-    //     return v8::Null(isolate_);
-    //   }
-    //   else {
-    //     Handle<T> converted = Handle<T>::Cast(value);
-    //     // Handle<Value> escaped = handle_scope.Escape(value.ToLocalChecked());
-
-    //     getter(converted);
-
-    //     return converted;
-    //   }
-    // }
 
   protected:
     Isolate *isolate_;

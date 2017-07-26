@@ -20,9 +20,9 @@ using namespace v8;
 using std::any_of;
 using jsgrok::string_t;
 
-static MaybeLocal<Value> apply(jsgrok::v8_session *session) {
+static jsgrok::analyzer::analysis_t apply(jsgrok::v8_session *session) {
   jsgrok::analyzer analyzer;
-  string_t source_code("var x = 1;");
+  string_t source_code("var x = 1; var y = 2;");
 
   return analyzer.apply(session, source_code);
 }
@@ -40,10 +40,15 @@ int main(int argc, char* argv[]) {
   Isolate* isolate = session->get_isolate();
 
   isolate->Enter();
-  auto result = apply(session);
 
-  if (!result.IsEmpty()) {
-    printf(".type=%s\n", *String::Utf8Value(result.ToLocalChecked()));
+  auto results = apply(session);
+
+  printf("%d results\n", results.size());
+
+  for (auto result : results) {
+    if (!result.IsEmpty()) {
+      printf(".type=%s\n", *String::Utf8Value(result));
+    }
   }
 
   isolate->Exit();

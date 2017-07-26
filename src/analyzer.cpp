@@ -13,7 +13,10 @@ namespace jsgrok {
   analyzer::~analyzer() {
   }
 
-  MaybeLocal<Value> analyzer::apply(jsgrok::v8_session *session, string_t const& source_code) {
+  analyzer::analysis_t analyzer::apply(jsgrok::v8_session *session, string_t const& source_code) {
+    const int ANALYZER_COUNT = 2;
+    analysis_t results;
+
     Isolate *isolate = session->get_isolate();
     // Isolate::Scope isolate_scope(isolate);
 
@@ -32,7 +35,7 @@ namespace jsgrok {
 
     Handle<Object> exports = session->require("deps/acorn.js");
 
-    std::array<Handle<Object>, 2> analyzer_modules = {
+    std::vector<Handle<Object>> analyzer_modules = {
       session->require("src/analyzers/call.js"),
       session->require("src/analyzers/objectProperty.js"),
     };
@@ -41,7 +44,7 @@ namespace jsgrok {
       return x->Has(context, create_key("default")).ToChecked() == false;
     })) {
       printf("some analyzer didn't export a default function!\n");
-      return MaybeLocal<Value>();
+      return results;
     }
 
     Handle<Object> call_analyzer_exports = session->require("src/analyzers/call.js");
@@ -50,10 +53,19 @@ namespace jsgrok {
 
     // MaybeLocal<Value> parse_fn_prop = exports->Get(context, create_key("parse"));
     auto parse_value = session->get(exports, "parse");
-    auto call_value  = session->get(call_analyzer_exports, "default");
 
-    if (parse_value.IsEmpty() || call_value.IsEmpty()) {
-      return MaybeLocal<Value>();
+    if (parse_value.IsEmpty()) {
+      return results;
+    }
+
+    std::vector<Local<Function>> analyzers;
+
+    for (auto x : analyzer_modules) {
+      auto default_fn = session->get(x, "default");
+
+      if (!default_fn.IsEmpty()) {
+        analyzers.push_back(Local<Function>::Cast(default_fn));
+      }
     }
 
     auto parse = Local<Function>::Cast(parse_value);
@@ -66,20 +78,26 @@ namespace jsgrok {
     MaybeLocal<Value> ast_ref = parse->Call(context, exports, 2, args);
 
     if (ast_ref.IsEmpty()) {
-      return MaybeLocal<Value>();
+      return results;
     }
 
     Local<Value> ast = ast_ref.ToLocalChecked();
 
     if (!ast->IsObject()) {
-      return MaybeLocal<Value>();
+      return results;
     }
 
-    auto call = Local<Function>::Cast(call_value);
-    auto call_argc = 1;
     Local<Value> call_argv[] = { ast };
+    const int call_argc = 1;
 
-    return call->Call(context, call_analyzer_exports, call_argc, call_argv);
+    for (auto call : analyzers) {
+      auto result = call->Call(context, call_analyzer_exports, call_argc, call_argv);
+
+      if (!result.IsEmpty()) {
+        results.push_back(result.ToLocalChecked());
+      }
+    }
+
+    return results;
   }
-
 }

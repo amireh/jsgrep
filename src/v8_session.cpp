@@ -66,30 +66,6 @@ namespace jsgrok {
 
     MaybeLocal<Value>    value = object->Get(context, String::NewFromUtf8(isolate_, key));
 
-    // if (value.IsEmpty()) {
-    //   return handle_scope.Escape(v8::Null(isolate_));
-    // }
-    // else {
-      return handle_scope.Escape(value.ToLocalChecked());
-    // }
+    return handle_scope.Escape(value.ToLocalChecked());
   }
-
-  // template <typename T>
-  // Handle<T> v8_session::get(Local<Object> &object, const char* key, getter_t<T> getter) {
-  //   EscapableHandleScope handle_scope(isolate_);
-  //   Local<Context>       context = Context::New(isolate_);
-
-  //   MaybeLocal<Value>    value = object->Get(context, String::NewFromUtf8(isolate_, key));
-
-  //   if (value.IsEmpty()) {
-  //     return handle_scope.Escape(v8::Null(isolate_));
-  //   }
-  //   else {
-  //     Handle<Value> escaped = handle_scope.Escape(value.ToLocalChecked());
-
-  //     getter(Handle<T>::Cast(escaped));
-
-  //     return escaped;
-  //   }
-  // }
 }
