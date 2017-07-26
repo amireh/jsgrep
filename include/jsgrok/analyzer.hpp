@@ -27,10 +27,9 @@ namespace jsgrok {
       Local<Context>  *context;
     } require_context_t;
 
-    void prepare_context(v8_session*, Local<Context>&, require_context_t*);
-
     analysis_t aggregate_results(Local<Context>&, analysis_t const&) const;
 
+    void define_require(v8_session*, Local<Context>&, require_context_t*);
     static void require(const v8::FunctionCallbackInfo<Value> &);
   };
 

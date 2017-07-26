@@ -13,31 +13,25 @@
 #include <functional>
 #include <algorithm>
 #include "jsgrok/types.hpp"
+#include "jsgrok/v8_cluster.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
+#include <pthread.h>
 
 using namespace v8;
 using std::any_of;
 using jsgrok::string_t;
 
-int main(int argc, char* argv[]) {
-  string_t source_code("\
-    var x = 1; \
-    var y = 2; \
-    var z = {  \
-      a: '1'   \
-    }          \
-  ");
+static const string_t source_code("\
+  var x = 1; \
+  var y = 2; \
+  var z = {  \
+    a: '1'   \
+  }          \
+");
 
-  // Initialize V8.
-  V8::InitializeICUDefaultLocation(argv[0]);
-  V8::InitializeExternalStartupData(argv[0]);
-  Platform* platform = platform::CreateDefaultPlatform();
-  V8::InitializePlatform(platform);
-  V8::Initialize();
-
+static void do_work(jsgrok::v8_session *session) {
   // Create a new Isolate and make it the current one.
-  jsgrok::v8_session *session = new jsgrok::v8_session();
   jsgrok::analyzer *analyzer = new jsgrok::analyzer();
   Isolate* isolate = session->get_isolate();
 
@@ -56,12 +50,32 @@ int main(int argc, char* argv[]) {
 
   isolate->Exit();
 
-  // Dispose the isolate and tear down V8.
   delete analyzer;
-  delete session;
+}
+
+int main(int argc, char* argv[]) {
+  // Initialize V8.
+  V8::InitializeICUDefaultLocation(argv[0]);
+  V8::InitializeExternalStartupData(argv[0]);
+  Platform* platform = platform::CreateDefaultPlatform();
+  V8::InitializePlatform(platform);
+  V8::Initialize();
+
+  auto cluster = new jsgrok::v8_cluster();
+
+  cluster->spawn(&do_work);
+  cluster->spawn(&do_work);
+  cluster->spawn(&do_work);
+  cluster->clear();
+
+  delete cluster;
+
+  // Dispose the isolate and tear down V8.
   V8::Dispose();
   V8::ShutdownPlatform();
   delete platform;
+
+  pthread_exit(NULL);
 
   return 0;
 }

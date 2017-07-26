@@ -34,7 +34,7 @@ namespace jsgrok {
     });
 
     // PREPARE CONTEXT:
-    prepare_context(session, context, &require_context);
+    define_require(session, context, &require_context);
 
     // Enter the context for compiling and running the hello world script.
 
@@ -55,14 +55,14 @@ namespace jsgrok {
     assert(exports.IsObject());
     assert(analyze_exports.IsObject());
 
-    auto parse_value = session->get(context, exports, "parse");
+    auto parse_ref = session->get(context, exports, "parse");
 
-    if (parse_value.IsEmpty()) {
+    if (parse_ref.IsEmpty()) {
       printf("Unable to find acorn.parse!\n");
       return results;
     }
 
-    auto parse = Local<Function>::Cast(parse_value);
+    auto parse = Local<Function>::Cast(parse_ref);
 
     Local<Function> analyze = Local<Function>::Cast(
       session->get(context, analyze_exports, "default")
@@ -102,15 +102,14 @@ namespace jsgrok {
   }
 
   analyzer::analysis_t analyzer::aggregate_results(Local<Context> &context, analysis_t const& in) const {
-    // using v8::uint32_t;
-
     analysis_t out;
 
     for (auto result : in) {
       if ((*result)->IsArray()) {
         auto result_list = v8::Array::Cast(*result);
+        auto result_item_count = result_list->Length();
 
-        for (uint32_t i = 0; i < result_list->Length(); ++i) {
+        for (uint32_t i = 0; i < result_item_count; ++i) {
           auto result_item = result_list->Get(context, i);
 
           if (!result_item.IsEmpty()) {
@@ -126,7 +125,7 @@ namespace jsgrok {
     return out;
   }
 
-  void analyzer::prepare_context(v8_session *session, Local<Context> &context, require_context_t *require_context) {
+  void analyzer::define_require(v8_session *session, Local<Context> &context, require_context_t *require_context) {
     Isolate *isolate = session->get_isolate();
 
     Local<Object>            global = context->Global();
@@ -140,25 +139,16 @@ namespace jsgrok {
   }
 
   void analyzer::require(const v8::FunctionCallbackInfo<Value> &args) {
-    auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
-    auto session = require_context->session;
-    auto context = require_context->context;
-    auto rv = args.GetReturnValue();
-
-    printf("required! %d\n", args.Length());
-
     if (args.Length() == 1) {
-      auto filepath = string_t(*String::Utf8Value(args[0]->ToString()));
-      auto isolate = args.GetIsolate();
+      auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
+      auto session = require_context->session;
+      auto context = require_context->context;
+      auto exports = session->require(*context, *String::Utf8Value(args[0]->ToString()));
 
-      printf("requiring file: %s\n", *String::Utf8Value(args[0]->ToString()));
-
-      auto exports = session->require(*context, filepath);
-
-      rv.Set(exports);
+      args.GetReturnValue().Set(exports);
     }
     else {
-      rv.SetUndefined();
+      args.GetReturnValue().SetUndefined();
     }
   }
 }

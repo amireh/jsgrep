@@ -24,6 +24,7 @@ SET(JGROK_SRCS
   analyzer.cpp
   fs.cpp
   main.cpp
+  v8_cluster.cpp
   v8_session.cpp
 )
 

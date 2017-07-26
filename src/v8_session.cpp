@@ -18,6 +18,8 @@ namespace jsgrok {
   v8_session::~v8_session() {
     isolate_->Dispose();
     delete isolate_create_params_.array_buffer_allocator;
+
+    isolate_ = nullptr;
   };
 
   Isolate* v8_session::get_isolate() const {
@@ -28,14 +30,10 @@ namespace jsgrok {
     jsgrok::fs fs;
     string_t source_code;
 
-    printf("isolate addr: %p\n", isolate_);
-    printf("isolate in context?? %s\n", isolate_->InContext() ? "true" : "false");
-
     // Isolate::Scope isolate_scope(isolate_);
 
     // Create a stack-allocated handle scope.
     EscapableHandleScope handle_scope(isolate_);
-
 
     // Create a new context.
     // Local<Context> context = Context::New(isolate_);
@@ -66,7 +64,6 @@ namespace jsgrok {
 
   Handle<Value> v8_session::get(Local<Context> &context, Local<Object> &object, const char* key) {
     EscapableHandleScope handle_scope(isolate_);
-    // Local<Context>       context = Context::New(isolate_);
 
     MaybeLocal<Value>    value = object->Get(context, String::NewFromUtf8(isolate_, key));
 
