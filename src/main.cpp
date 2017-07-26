@@ -21,7 +21,13 @@ using std::any_of;
 using jsgrok::string_t;
 
 int main(int argc, char* argv[]) {
-  string_t source_code("var x = 1; var y = 2;");
+  string_t source_code("\
+    var x = 1; \
+    var y = 2; \
+    var z = {  \
+      a: '1'   \
+    }          \
+  ");
 
   // Initialize V8.
   V8::InitializeICUDefaultLocation(argv[0]);

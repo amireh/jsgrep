@@ -22,13 +22,16 @@ namespace jsgrok {
     analysis_t apply(v8_session*, string_t const&);
 
   protected:
-    void prepare_context(v8_session*, Local<Context>&);
+    typedef struct {
+      v8_session      *session;
+      Local<Context>  *context;
+    } require_context_t;
+
+    void prepare_context(v8_session*, Local<Context>&, require_context_t*);
+
     analysis_t aggregate_results(Local<Context>&, analysis_t const&) const;
 
     static void require(const v8::FunctionCallbackInfo<Value> &);
-
-    Local<Context> *context_;
-    v8_session     *session_;
   };
 
 } // end of namespace jsgrok

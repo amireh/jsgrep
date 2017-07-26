@@ -14,15 +14,10 @@ namespace jsgrok {
   }
 
   analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& source_code) {
-    const int ANALYZER_COUNT = 2;
     analysis_t results;
 
     Isolate *isolate = session->get_isolate();
     // Isolate::Scope isolate_scope(isolate);
-
-    auto create_key = [&](const char* key) -> Local<String> {
-      return String::NewFromUtf8(isolate, key);
-    };
 
     // Create a stack-allocated handle scope.
     HandleScope handle_scope(isolate);
@@ -31,13 +26,15 @@ namespace jsgrok {
     Local<Context> context = Context::New(isolate);
     Context::Scope context_scope(context);
 
-    context_ = &context;
-    session_ = session;
-
     Local<Object> global = context->Global();
 
+    require_context_t require_context({
+      session,
+      &context
+    });
+
     // PREPARE CONTEXT:
-    prepare_context(session, context);
+    prepare_context(session, context, &require_context);
 
     // Enter the context for compiling and running the hello world script.
 
@@ -53,39 +50,28 @@ namespace jsgrok {
     }
 
     auto exports = acorn_ref->ToObject();
-
-    std::vector<Handle<Object>> analyzer_modules = {
-      // session->require(context, "src/analyzers/call.js"),
-      session->require(context, "src/analyzers/objectProperty.js"),
-    };
-
-    if (any_of(analyzer_modules.begin(), analyzer_modules.end(), [&](Handle<Object> x) {
-      return x->Has(context, create_key("default")).ToChecked() == false;
-    })) {
-      printf("some analyzer didn't export a default function!\n");
-      return results;
-    }
+    auto analyze_exports = session->require(context, "src/analyze.js");
 
     assert(exports.IsObject());
+    assert(analyze_exports.IsObject());
 
-    // MaybeLocal<Value> parse_fn_prop = exports->Get(context, create_key("parse"));
     auto parse_value = session->get(context, exports, "parse");
 
     if (parse_value.IsEmpty()) {
+      printf("Unable to find acorn.parse!\n");
       return results;
     }
 
-    std::vector<Local<Function>> analyzers;
-
-    for (auto x : analyzer_modules) {
-      auto default_fn = session->get(context, x, "default");
-
-      if (!default_fn.IsEmpty()) {
-        analyzers.push_back(Local<Function>::Cast(default_fn));
-      }
-    }
-
     auto parse = Local<Function>::Cast(parse_value);
+
+    Local<Function> analyze = Local<Function>::Cast(
+      session->get(context, analyze_exports, "default")
+    );
+
+    if (analyze.IsEmpty()) {
+      printf("Unable to find analyze.js default export!\n");
+      return results;
+    }
 
     Local<Value> args[] = {
       String::NewFromUtf8(isolate, source_code.c_str()),
@@ -95,24 +81,21 @@ namespace jsgrok {
     MaybeLocal<Value> ast_ref = parse->Call(context, exports, 2, args);
 
     if (ast_ref.IsEmpty()) {
+      printf("Unable to generate AST!\n");
       return results;
     }
 
     Local<Value> ast = ast_ref.ToLocalChecked();
 
     if (!ast->IsObject()) {
+      printf("Unable to generate AST!\n");
       return results;
     }
 
-    Local<Value> call_argv[] = { ast };
-    const int call_argc = 1;
+    auto result = analyze->Call(context, analyze_exports, 1, &ast);
 
-    for (auto call : analyzers) {
-      auto result = call->Call(context, call, call_argc, call_argv);
-
-      if (!result.IsEmpty()) {
-        results.push_back(result.ToLocalChecked());
-      }
+    if (!result.IsEmpty()) {
+      results.push_back(result.ToLocalChecked());
     }
 
     return aggregate_results(context, results);
@@ -143,34 +126,30 @@ namespace jsgrok {
     return out;
   }
 
-  void analyzer::prepare_context(v8_session *session, Local<Context> &context) {
+  void analyzer::prepare_context(v8_session *session, Local<Context> &context, require_context_t *require_context) {
     Isolate *isolate = session->get_isolate();
 
     Local<Object>            global = context->Global();
     Local<FunctionTemplate>  require_tmpl = FunctionTemplate::New(
       isolate,
       &analyzer::require,
-      External::New(isolate, this)
+      External::New(isolate, require_context)
     );
-
-    printf("freezing session: %p\n", this->session_);
 
     global->Set(context, String::NewFromUtf8(isolate, "require"), require_tmpl->GetFunction());
   }
 
   void analyzer::require(const v8::FunctionCallbackInfo<Value> &args) {
-    auto that = (analyzer*)External::Cast(*args.Data())->Value();
-    auto session = that->session_;
-    auto context = that->context_;
+    auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
+    auto session = require_context->session;
+    auto context = require_context->context;
     auto rv = args.GetReturnValue();
 
-    printf("thawing session: %p\n", that->session_);
     printf("required! %d\n", args.Length());
 
     if (args.Length() == 1) {
       auto filepath = string_t(*String::Utf8Value(args[0]->ToString()));
       auto isolate = args.GetIsolate();
-      // auto context = isolate->GetCurrentContext();
 
       printf("requiring file: %s\n", *String::Utf8Value(args[0]->ToString()));
 
