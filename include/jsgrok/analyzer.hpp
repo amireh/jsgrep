@@ -6,6 +6,7 @@
 #include <vector>
 
 namespace jsgrok {
+  using v8::Context;
   using v8::Local;
   using v8::Value;
   using std::vector;
@@ -19,6 +20,9 @@ namespace jsgrok {
     virtual ~analyzer();
 
     analysis_t apply(v8_session*, string_t const&);
+
+  protected:
+    analysis_t aggregate_results(Local<Context>&, analysis_t const&) const;
   };
 
 } // end of namespace jsgrok

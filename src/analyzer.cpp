@@ -98,6 +98,31 @@ namespace jsgrok {
       }
     }
 
-    return results;
+    return aggregate_results(context, results);
+  }
+
+  analyzer::analysis_t analyzer::aggregate_results(Local<Context> &context, analysis_t const& in) const {
+    // using v8::uint32_t;
+
+    analysis_t out;
+
+    for (auto result : in) {
+      if ((*result)->IsArray()) {
+        auto result_list = v8::Array::Cast(*result);
+
+        for (uint32_t i = 0; i < result_list->Length(); ++i) {
+          auto result_item = result_list->Get(context, i);
+
+          if (!result_item.IsEmpty()) {
+            out.push_back(result_item.ToLocalChecked());
+          }
+        }
+      }
+      else {
+        out.push_back(result);
+      }
+    }
+
+    return out;
   }
 }

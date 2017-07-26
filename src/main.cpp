@@ -45,9 +45,11 @@ int main(int argc, char* argv[]) {
 
   printf("%d results\n", results.size());
 
+  int i = 0;
+
   for (auto result : results) {
     if (!result.IsEmpty()) {
-      printf(".type=%s\n", *String::Utf8Value(result));
+      printf("\t%d. %s\n", ++i, *String::Utf8Value(result));
     }
   }
 
