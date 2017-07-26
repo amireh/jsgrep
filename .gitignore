@@ -1,0 +1,26 @@
+# build artifacts
+/build
+/deps/*/build
+/deps/*/lib
+/lib
+/log
+/doc/api
+/doc/compiled
+/jgrok.sublime-workspace
+
+# manually excluded sources
+exclude/
+
+# test fixtures
+dumps
+
+# transients
+.kzh
+._*
+*~
+*.o
+*.lo
+.DS_Store
+*.swp
+/doc/diagrams/workspace
+/node_modules
