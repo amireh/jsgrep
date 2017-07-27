@@ -147,10 +147,12 @@ namespace jsgrok {
 
   void analyzer::require(const v8::FunctionCallbackInfo<Value> &args) {
     if (args.Length() == 1) {
+      auto fs = jsgrok::fs();
       auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
       auto session = require_context->session;
       auto context = require_context->context;
-      auto module  = session->require(*context, *String::Utf8Value(args[0]->ToString()));
+      auto module_path = fs.resolve_asset(*String::Utf8Value(args[0]->ToString()));
+      auto module  = session->require(*context, module_path);
 
       if (!module) {
         args.GetReturnValue().SetUndefined();

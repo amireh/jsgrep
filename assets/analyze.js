@@ -1,7 +1,7 @@
 (function(exports) {
   const analyzers = [
-    require('assets/analyzers/call.js').default,
-    require('assets/analyzers/objectProperty.js').default,
+    require('analyzers/call.js').default,
+    require('analyzers/objectProperty.js').default,
   ];
 
   exports.default = function analyze(ast) {
