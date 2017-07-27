@@ -26,6 +26,9 @@ function simple(node, visitors, base, state, override) {
   if (!base) { base = exports.base
   ; }(function c(node, st, override) {
     var type = override || node.type, found = visitors[type];
+    if (typeof base[type] !== 'function') {
+      console.log(`Don't know how to visit "${type}"`);
+    }
     base[type](node, st, c);
     if (found) { found(node, st); }
   })(node, state, override);

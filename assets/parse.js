@@ -1,7 +1,9 @@
 const acorn = require('acorn.js');
 const analyze = require('analyze.js');
+const walk = require('walk.js');
 
-require('acorn-jsx/index.js')(acorn);
+require('acorn-jsx/index.js')(acorn, walk);
+require('acorn-jsx/walk.js')(walk);
 
 module.exports = function parse(sourceCode, filePath) {
   let ast;
@@ -14,6 +16,7 @@ module.exports = function parse(sourceCode, filePath) {
       ecmaVersion: 7,
       allowReturnOutsideFunction: true,
       allowImportExportEverywhere: true,
+      plugins: { jsx: true }
     })
   }
   catch (e) {
@@ -24,6 +27,6 @@ module.exports = function parse(sourceCode, filePath) {
     }];
   }
 
-  return analyze(ast);
+  return analyze(walk, ast);
 }
 

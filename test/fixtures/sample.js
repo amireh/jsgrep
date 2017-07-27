@@ -4,4 +4,4 @@ var z = {
   a: '1'
 }
 
-var y = <Foo />;
+var y = <Foo bar="1">{false}</Foo>;
