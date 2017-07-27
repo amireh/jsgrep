@@ -1,6 +1,8 @@
 const acorn = require('acorn.js');
 const analyze = require('analyze.js');
 
+require('acorn-jsx/index.js')(acorn);
+
 module.exports = function parse(sourceCode, filePath) {
   let ast;
 
