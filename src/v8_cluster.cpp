@@ -10,11 +10,12 @@ namespace jsgrok {
     pthread_mutex_destroy(&sessions_lock_);
   };
 
-  void v8_cluster::spawn(worker_t worker) {
+  void v8_cluster::spawn(worker_t worker, void *data) {
     auto thread = new pthread_t();
     auto spawn_request = new spawn_request_t({
       this,
-      &worker
+      &worker,
+      data
     });
 
     pthread_attr_t attr;
@@ -53,6 +54,7 @@ namespace jsgrok {
     spawn_request_t *spawn_request = (spawn_request_t*)spawn_request_on_the_bus;
     v8_cluster      *cluster = spawn_request->cluster;
     worker_t        *worker = spawn_request->worker;
+    void            *data   = spawn_request->data;
 
     delete spawn_request;
 
@@ -62,7 +64,7 @@ namespace jsgrok {
     cluster->sessions_.push_back(session);
     pthread_mutex_unlock(&cluster->sessions_lock_);
 
-    (*worker)(session);
+    (*worker)(session, data);
 
     pthread_exit(NULL);
   }

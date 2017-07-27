@@ -12,12 +12,12 @@ namespace jsgrok {
   class v8_session;
   class v8_cluster {
   public:
-    typedef std::function<void(v8_session*)> worker_t;
+    typedef std::function<void(v8_session*, void*)> worker_t;
 
     v8_cluster();
     virtual ~v8_cluster();
 
-    void spawn(worker_t);
+    void spawn(worker_t, void* data = nullptr);
     unsigned int session_count();
     void clear();
 
@@ -25,6 +25,7 @@ namespace jsgrok {
     typedef struct {
       v8_cluster *cluster;
       worker_t   *worker;
+      void       *data;
     } spawn_request_t;
 
     vector<pthread_t*>  threads_;

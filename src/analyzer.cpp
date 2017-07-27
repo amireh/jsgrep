@@ -2,7 +2,6 @@
 #include "jsgrok/analyzer.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/fs.hpp"
-#include <assert.h>
 
 namespace jsgrok {
   using namespace v8;
@@ -14,8 +13,9 @@ namespace jsgrok {
   analyzer::~analyzer() {
   }
 
-  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& source_code) {
-    analysis_t  results;
+  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& filepath, string_t const& source_code) {
+    js_analysis_t  js_results;
+    analysis_t     results;
     jsgrok::fs  fs;
     Isolate     *isolate = session->get_isolate();
 
@@ -54,24 +54,26 @@ namespace jsgrok {
 
     auto acorn = acorn_ref->ToObject();
     auto analyze_module = session->require(context, "assets/analyze.js");
+    auto parse_module = session->require(context, "assets/parse.js");
 
-    if (!analyze_module) {
+    if (!analyze_module || !analyze_module.exports->IsObject()) {
       printf("Unable to require 'analyze.js'!\n");
       return results;
     }
 
-    auto analyze_exports = analyze_module.exports->ToObject();
-
-    auto parse_ref = session->get(context, acorn, "parse");
-
-    if (parse_ref.IsEmpty()) {
-      printf("Unable to find acorn.parse!\n");
+    if (!parse_module || !parse_module.exports->IsObject()) {
+      printf("Unable to require 'parse.js'!\n");
       return results;
     }
 
-    auto parse = Local<Function>::Cast(parse_ref);
+    auto analyze_exports = analyze_module.exports->ToObject();
+    auto parse_exports = parse_module.exports->ToObject();
 
-    Local<Function> analyze = Local<Function>::Cast(
+    auto parse = Local<Function>::Cast(
+      session->get(context, parse_exports, "default")
+    );
+
+    auto analyze = Local<Function>::Cast(
       session->get(context, analyze_exports, "default")
     );
 
@@ -82,34 +84,22 @@ namespace jsgrok {
 
     Local<Value> args[] = {
       String::NewFromUtf8(isolate, source_code.c_str()),
-      Null(isolate),
+      String::NewFromUtf8(isolate, filepath.c_str()),
     };
 
-    MaybeLocal<Value> ast_ref = parse->Call(context, acorn, 2, args);
-
-    if (ast_ref.IsEmpty()) {
-      printf("Unable to generate AST!\n");
-      return results;
-    }
-
-    Local<Value> ast = ast_ref.ToLocalChecked();
-
-    if (!ast->IsObject()) {
-      printf("Unable to generate AST!\n");
-      return results;
-    }
-
-    auto result = analyze->Call(context, analyze_exports, 1, &ast);
+    auto result = parse->Call(context, parse_exports, 2, args);
 
     if (!result.IsEmpty()) {
-      results.push_back(result.ToLocalChecked());
+      js_results.push_back(result.ToLocalChecked());
     }
 
-    return aggregate_results(context, results);
+    auto aggregate_js_results = aggregate_results(context, js_results);
+
+    return cast_down(session, context, filepath, aggregate_js_results);
   }
 
-  analyzer::analysis_t analyzer::aggregate_results(Local<Context> &context, analysis_t const& in) const {
-    analysis_t out;
+  analyzer::js_analysis_t analyzer::aggregate_results(Local<Context> &context, js_analysis_t const& in) const {
+    js_analysis_t out;
 
     for (auto result : in) {
       if ((*result)->IsArray()) {
@@ -126,6 +116,53 @@ namespace jsgrok {
       }
       else {
         out.push_back(result);
+      }
+    }
+
+    return out;
+  }
+
+  analyzer::analysis_t analyzer::cast_down(
+    v8_session *session,
+    Local<Context> &context,
+    string_t const& filepath,
+    js_analysis_t const& in
+  ) const {
+    Isolate *isolate = session->get_isolate();
+    analysis_t out;
+
+    auto prop = [&](Local<Object> object, const char* key) -> Local<Value> {
+      return object->Get(context, String::NewFromUtf8(isolate, key)).ToLocalChecked();
+    };
+
+    auto read_string = [&](Local<Object> object, const char* key) -> string_t {
+      return *String::Utf8Value(prop(object, key)->ToString());
+    };
+
+    for (auto result : in) {
+      if (result.IsEmpty()) {
+        continue;
+      }
+      else if (result->IsObject()) {
+        auto object = result->ToObject();
+        auto is_error = object->Has(context, String::NewFromUtf8(isolate, "error"));
+
+        if (!is_error.IsNothing() && is_error.ToChecked()) {
+          out.errors.push_back({ filepath, read_string(object, "message") });
+        }
+        else {
+          analysis_match_t match;
+          match.file = filepath;
+          match.match = read_string(object, "match");
+          match.line = prop(object, "line")->ToUint32()->Value();
+          match.start = prop(object, "start")->ToUint32()->Value();
+          match.end = prop(object, "end")->ToUint32()->Value();
+
+          out.matches.push_back(match);
+        }
+      }
+      else {
+        printf("Don't know how to handle results of this type, yo\n");
       }
     }
 

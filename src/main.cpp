@@ -13,9 +13,12 @@
 #include <functional>
 #include <algorithm>
 #include "jsgrok/types.hpp"
+#include "jsgrok/cli.hpp"
+#include "jsgrok/fs.hpp"
 #include "jsgrok/v8_cluster.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
+#include "jsgrok/functional/partition.hpp"
 #include <pthread.h>
 #include "cpplocate/cpplocate.h"
 #include "cpplocate/ModuleInfo.h"
@@ -23,30 +26,34 @@
 using namespace v8;
 using std::any_of;
 using jsgrok::string_t;
+using jsgrok::v8_session;
+using jsgrok::functional::partition_t;
 
-static const string_t source_code("\
-  var x = 1; \
-  var y = 2; \
-  var z = {  \
-    a: '1'   \
-  }          \
-");
-
-static void do_work(jsgrok::v8_session *session) {
-  // Create a new Isolate and make it the current one.
+static void grok_files(v8_session *session, void *data) {
+  partition_t *files = static_cast<partition_t*>(data);
   jsgrok::analyzer *analyzer = new jsgrok::analyzer();
+  jsgrok::fs fs;
+
   Isolate* isolate = session->get_isolate();
-
   isolate->Enter();
-  auto results = analyzer->apply(session, source_code);
 
-  printf("%d results\n", results.size());
+  for (const string_t &file : *files) {
+    string_t source_code;
 
-  int i = 0;
+    if (!fs.load_file(file, source_code)) {
+      printf("ERROR: unable to read file %s\n", file.c_str());
 
-  for (auto result : results) {
-    if (!result.IsEmpty()) {
-      printf("\t%d. %s\n", ++i, *String::Utf8Value(result));
+      continue;
+    }
+
+    auto analysis = analyzer->apply(session, file, source_code);
+
+    for (auto error : analysis.errors) {
+      printf("[ERROR] %s: %s\n", error.file.c_str(), error.message.c_str());
+    }
+
+    for (auto match : analysis.matches) {
+      printf("%s:%d: %s\n", match.file.c_str(), match.line, match.match.c_str());
     }
   }
 
@@ -63,16 +70,24 @@ int main(int argc, char* argv[]) {
   V8::InitializePlatform(platform);
   V8::Initialize();
 
-  printf("Exec path=%s\n", cpplocate::getExecutablePath().c_str());
-  printf("Bundle path=%s\n", cpplocate::getBundlePath().c_str());
-  printf("Module path=%s\n", cpplocate::getModulePath().c_str());
-  printf("Module path=%s\n", cpplocate::findModule("jsgrok").value("assets_path").c_str());
+  jsgrok::fs fs;
 
+  auto cli = jsgrok::cli();
   auto cluster = new jsgrok::v8_cluster();
+  auto options = cli.parse(argc, argv);
+  int glob_flags = 0;
 
-  cluster->spawn(&do_work);
-  cluster->spawn(&do_work);
-  cluster->spawn(&do_work);
+  if (options.recursive) {
+    glob_flags |= jsgrok::fs::GLOB_RECURSIVE;
+  }
+
+  auto files = fs.glob(options.patterns, glob_flags);
+  auto partitions = jsgrok::functional::partition(files, options.threads);
+
+  for (partition_t &partition : partitions) {
+    cluster->spawn(&grok_files, (void*)&partition);
+  }
+
   cluster->clear();
 
   delete cluster;

@@ -2,8 +2,20 @@
 #include <fstream>
 #include "cpplocate/cpplocate.h"
 #include "cpplocate/ModuleInfo.h"
+#include <glob.h>
 
 namespace jsgrok {
+  static bool ends_with(string_t const& substring, string_t const &string) {
+    return (
+      string.size() >= substring.size() &&
+      string.compare(
+        string.size() - substring.size(),
+        substring.size(),
+        substring
+      ) == 0
+    );
+  }
+
   fs::fs(string_t library_name)
   : module_info_(cpplocate::findModule(library_name))
   {
@@ -52,5 +64,40 @@ namespace jsgrok {
     path_t assets_path(module_info_.value("assets_path"));
 
     return assets_path + "/" + path;
+  }
+
+  vector<fs::file_t> fs::glob(vector<string_t> const &patterns, int flags) {
+    vector<file_t> out;
+    vector<string_t> legit_patterns;
+
+    for (auto pattern : patterns) {
+      // if (ends_with("*", pattern)) {
+      //   legit_patterns.push_back(pattern);
+      // }
+      // else
+      if (flags & GLOB_RECURSIVE == GLOB_RECURSIVE && ends_with("/", pattern)) {
+        legit_patterns.push_back(pattern + "/**/*");
+      }
+      else {
+        legit_patterns.push_back(pattern);
+        // printf("jsgrok: %s is a directory\n", pattern.c_str());
+      }
+    }
+
+    for (auto pattern : legit_patterns) {
+      glob_t globbuf;
+
+      int glob_err = ::glob(pattern.c_str(), 0, NULL, &globbuf);
+
+      if (glob_err == 0) {
+        for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+          out.push_back(string_t(globbuf.gl_pathv[i]));
+        }
+      }
+
+      globfree(&globbuf);
+    }
+
+    return out;
   }
 }

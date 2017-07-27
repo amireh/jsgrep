@@ -16,6 +16,7 @@ ADD_EXECUTABLE(${TARGET}
   ../src/v8_session.cpp
   ../src/analyzer.cpp
   ../src/__tests__/fs.test.cpp
+  ../src/__tests__/partition.test.cpp
   ../src/__tests__/v8_cluster.test.cpp
   ../src/__tests__/v8_session.test.cpp
 

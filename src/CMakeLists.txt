@@ -8,6 +8,7 @@ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/exports)
 # TODO: automate / create Findcpplocate.cmake
 INCLUDE_DIRECTORIES(${cpplocate_DIR}/source/cpplocate/include)
 INCLUDE_DIRECTORIES(${cpplocate_DIR}/build/source/cpplocate/include)
+# INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps/simpleopt)
 
 IF(WIN32)
   ADD_DEFINITIONS("/wd4251")
@@ -26,6 +27,7 @@ ENDIF()
 
 SET(JGROK_SRCS
   analyzer.cpp
+  cli.cpp
   fs.cpp
   main.cpp
   v8_cluster.cpp

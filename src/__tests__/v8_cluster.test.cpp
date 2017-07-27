@@ -10,7 +10,7 @@ TEST_CASE("jsgrok::v8_cluster") {
   jsgrok::v8_cluster subject;
 
   SECTION("It spawns and despawns v8 sessions") {
-    auto do_work = [&](v8_session *) {};
+    auto do_work = [&](v8_session *, void*) {};
 
     subject.spawn(do_work);
     subject.clear();
@@ -20,7 +20,7 @@ TEST_CASE("jsgrok::v8_cluster") {
 
   SECTION("It calls my worker with the spawned session") {
     auto called = false;
-    auto do_work = [&](v8_session *) {
+    auto do_work = [&](v8_session *, void*) {
       called = true;
     };
 
