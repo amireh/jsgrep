@@ -24,6 +24,7 @@ namespace jsgrok {
     Isolate* get_isolate() const;
 
     v8_module require(Local<Context>&, string_t const&);
+    v8_module require(string_t const&);
     Handle<Value> get(Local<Context>&, Local<Object>&, const char*);
 
   protected:

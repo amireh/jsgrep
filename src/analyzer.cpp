@@ -1,11 +1,13 @@
 #include <algorithm>
 #include "jsgrok/analyzer.hpp"
+#include "jsgrok/v8_nodejs_context.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/fs.hpp"
 
 namespace jsgrok {
   using namespace v8;
   using std::any_of;
+  using jsgrok::v8_nodejs_context;
 
   analyzer::analyzer() {
   }
@@ -23,34 +25,23 @@ namespace jsgrok {
     Local<Context> context = Context::New(isolate);
     Context::Scope context_scope(context);
 
-    Local<Object> global = context->Global();
-
-    require_context_t require_context({
-      session,
-      &context
-    });
-
-    define_require(session, context, &require_context);
+    v8_nodejs_context::morph(session, context);
 
     auto parse_module = session->require(context, "assets/parse.js");
 
-    if (!parse_module || !parse_module.exports->IsObject()) {
+    if (!parse_module || !parse_module.exports->IsFunction()) {
       printf("Unable to require 'parse.js'!\n");
       return results;
     }
 
-    auto parse_exports = parse_module.exports->ToObject();
-
-    auto parse = Local<Function>::Cast(
-      session->get(context, parse_exports, "default")
-    );
+    auto parse = Local<Function>::Cast(parse_module.exports);
 
     Local<Value> args[] = {
       String::NewFromUtf8(isolate, source_code.c_str()),
       String::NewFromUtf8(isolate, filepath.c_str()),
     };
 
-    auto result = parse->Call(context, parse_exports, 2, args);
+    auto result = parse->Call(context, parse, 2, args);
 
     if (!result.IsEmpty()) {
       js_results.push_back(result.ToLocalChecked());
@@ -139,43 +130,5 @@ namespace jsgrok {
     }
 
     return out;
-  }
-
-  void analyzer::define_require(
-    v8_session *session,
-    Local<Context> &context,
-    require_context_t *require_context
-  ) {
-    Isolate *isolate = session->get_isolate();
-
-    Local<Object>            global = context->Global();
-    Local<FunctionTemplate>  require_tmpl = FunctionTemplate::New(
-      isolate,
-      &analyzer::require,
-      External::New(isolate, require_context)
-    );
-
-    global->Set(context, String::NewFromUtf8(isolate, "require"), require_tmpl->GetFunction());
-  }
-
-  void analyzer::require(const v8::FunctionCallbackInfo<Value> &args) {
-    if (args.Length() == 1) {
-      auto fs = jsgrok::fs();
-      auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
-      auto session = require_context->session;
-      auto context = require_context->context;
-      auto module_path = fs.resolve_asset(*String::Utf8Value(args[0]->ToString()));
-      auto module  = session->require(*context, module_path);
-
-      if (!module) {
-        args.GetReturnValue().SetUndefined();
-      }
-      else {
-        args.GetReturnValue().Set(module.exports);
-      }
-    }
-    else {
-      args.GetReturnValue().SetUndefined();
-    }
   }
 }

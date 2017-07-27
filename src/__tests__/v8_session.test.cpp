@@ -29,6 +29,10 @@ TEST_CASE("jsgrok::v8_session") {
     Local<Context>  context = Context::New(isolate);
     Context::Scope  context_scope(context);
 
+    auto prop = [&](Local<Object> object, const char *key) {
+      return object->Get(context, String::NewFromUtf8(isolate, key));
+    };
+
     WHEN("The isolate can not be used for some reason...") {
       auto module_path = fs.resolve("fixtures_path", "exportGlobal.js");
 
@@ -58,10 +62,10 @@ TEST_CASE("jsgrok::v8_session") {
         REQUIRE(module.status == v8_module::EC_OK);
       }
 
-      THEN("It yields the return value") {
+      THEN("It yields the default `module.exports` object") {
         auto module = subject.require(context, script_path);
 
-        REQUIRE(module.exports->IsUndefined());
+        REQUIRE(module.exports->IsObject());
       }
     }
 
@@ -78,6 +82,41 @@ TEST_CASE("jsgrok::v8_session") {
         auto module = subject.require(context, script_path);
 
         REQUIRE(module.exports->IsObject());
+      }
+    }
+
+    GIVEN("A module that sets `module.exports`...") {
+      auto script = fs.resolve("fixtures_path", "moduleExports.js");
+
+      THEN("It returns EC_OK") {
+        REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
+      }
+
+      THEN("It yields a handle to the export") {
+        auto module = subject.require(context, script);
+
+        REQUIRE(module.exports->IsNumber());
+        REQUIRE(module.exports->ToNumber()->Value() == 1);
+      }
+    }
+
+    GIVEN("A module that sets property on `exports`...") {
+      auto script = fs.resolve("fixtures_path", "exports.js");
+
+      THEN("It returns EC_OK") {
+        REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
+      }
+
+      THEN("It retains the exports object and the defined property") {
+        auto module = subject.require(context, script);
+
+        REQUIRE(module.exports->IsObject());
+
+        auto a = prop(module.exports->ToObject(), "a");
+
+        REQUIRE(!a.IsEmpty());
+        REQUIRE(a.ToLocalChecked()->IsNumber());
+        REQUIRE(a.ToLocalChecked()->ToNumber()->Value() == 1);
       }
     }
   }

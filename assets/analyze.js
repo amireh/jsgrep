@@ -1,18 +1,15 @@
-(function(exports) {
-  const analyzers = [
-    require('analyzers/call.js').default,
-    require('analyzers/objectProperty.js').default,
-  ];
+const walk = require('walk.js');
+const analyzers = [
+  require('analyzers/call.js'),
+  require('analyzers/objectProperty.js'),
+];
 
-  exports.default = function analyze(ast) {
-    const state = { results: [] }
+module.exports = function analyze(ast) {
+  const state = { results: [] }
 
-    acorn.walk.simple(ast, analyzers.reduce(function(map, analyzer) {
-      return Object.assign(map, analyzer(state))
-    }, {}))
+  walk.simple(ast, analyzers.reduce(function(map, analyzer) {
+    return Object.assign(map, analyzer(state))
+  }, {}))
 
-    return state.results;
-  };
-
-  return exports;
-}({}))
+  return state.results;
+};

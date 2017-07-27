@@ -31,6 +31,7 @@ SET(JGROK_SRCS
   fs.cpp
   main.cpp
   v8_cluster.cpp
+  v8_nodejs_context.cpp
   v8_session.cpp
 )
 

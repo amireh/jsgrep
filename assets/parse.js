@@ -1,31 +1,27 @@
-(function(exports) {
-  require('acorn.js');
-  require('walk.js');
-  const { default: analyze } = require('analyze.js');
+const acorn = require('acorn.js');
+const analyze = require('analyze.js');
 
-  exports.default = function parse(sourceCode, filePath) {
-    let ast;
+module.exports = function parse(sourceCode, filePath) {
+  let ast;
 
-    try {
-      ast = acorn.parse(sourceCode, {
-        sourceType: 'module',
-        locations: true,
-        sourceFile: filePath,
-        ecmaVersion: 7,
-        allowReturnOutsideFunction: true,
-        allowImportExportEverywhere: true,
-      })
-    }
-    catch (e) {
-      return [{
-        error: true,
-        file: filePath,
-        message: e.message
-      }];
-    }
-
-    return analyze(ast);
+  try {
+    ast = acorn.parse(sourceCode, {
+      sourceType: 'module',
+      locations: true,
+      sourceFile: filePath,
+      ecmaVersion: 7,
+      allowReturnOutsideFunction: true,
+      allowImportExportEverywhere: true,
+    })
+  }
+  catch (e) {
+    return [{
+      error: true,
+      file: filePath,
+      message: e.message
+    }];
   }
 
-  return exports;
-}({}))
+  return analyze(ast);
+}
+

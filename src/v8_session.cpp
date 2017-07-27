@@ -1,4 +1,5 @@
 #include "jsgrok/v8_session.hpp"
+#include "jsgrok/v8_nodejs_context.hpp"
 #include "jsgrok/fs.hpp"
 #include <assert.h>
 
@@ -30,7 +31,11 @@ namespace jsgrok {
     return isolate_;
   };
 
-  v8_module v8_session::require(Local<Context> &context, const string_t &filepath) {
+  v8_module v8_session::require(Local<Context> &parent_context, const string_t &filepath) {
+    return require(filepath);
+  }
+
+  v8_module v8_session::require(const string_t &filepath) {
     v8_module             out;
     jsgrok::fs            fs;
     string_t              source_code;
@@ -48,6 +53,12 @@ namespace jsgrok {
       return out;
     }
 
+    Local<Context> context = Context::New(isolate_);
+    Context::Scope context_scope(context);
+
+    v8_nodejs_context::morph(this, context);
+
+    // TODO: switch to boolean since we're now ignoring return values
     MaybeLocal<Value> mebbe_return_value = eval_script(context, source_code);
 
     if (mebbe_return_value.IsEmpty()) {
@@ -55,10 +66,21 @@ namespace jsgrok {
       return out;
     }
 
-    Local<Value> return_value = mebbe_return_value.ToLocalChecked();
-
     out.status = v8_module::EC_OK;
-    out.exports = return_value;
+
+    auto module = context
+      ->Global()
+        ->Get(context, String::NewFromUtf8(isolate_, "module"))
+          .ToLocalChecked()
+            ->ToObject()
+    ;
+
+    auto exports = module
+      ->Get(context, String::NewFromUtf8(isolate_, "exports"))
+        .ToLocalChecked()
+    ;
+
+    out.exports = exports;
 
     return out;
   }

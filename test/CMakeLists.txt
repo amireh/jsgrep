@@ -13,12 +13,14 @@ INCLUDE_DIRECTORIES(${cpplocate_DIR}/build/source/cpplocate/include)
 ADD_EXECUTABLE(${TARGET}
   ../src/fs.cpp
   ../src/v8_cluster.cpp
+  ../src/v8_nodejs_context.cpp
   ../src/v8_session.cpp
   ../src/analyzer.cpp
   ../src/__tests__/analyzer.test.cpp
   ../src/__tests__/fs.test.cpp
   ../src/__tests__/partition.test.cpp
   ../src/__tests__/v8_cluster.test.cpp
+  ../src/__tests__/v8_nodejs_context.test.cpp
   ../src/__tests__/v8_session.test.cpp
 
   test_utils.cpp
