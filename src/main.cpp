@@ -5,13 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-
-#include "v8/libplatform/libplatform.h"
-#include "v8/v8.h"
 #include <fstream>
 #include <functional>
 #include <algorithm>
+#include <pthread.h>
+
+#include "v8/libplatform/libplatform.h"
+#include "v8/v8.h"
 #include "jsgrok/types.hpp"
 #include "jsgrok/cli.hpp"
 #include "jsgrok/fs.hpp"
@@ -19,7 +19,6 @@
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
 #include "jsgrok/functional/partition.hpp"
-#include <pthread.h>
 #include "cpplocate/cpplocate.h"
 #include "cpplocate/ModuleInfo.h"
 
@@ -31,35 +30,21 @@ using jsgrok::functional::partition_t;
 
 static void grok_files(v8_session *session, void *data) {
   partition_t *files = static_cast<partition_t*>(data);
-  jsgrok::analyzer *analyzer = new jsgrok::analyzer();
-  jsgrok::fs fs;
+  jsgrok::analyzer analyzer;
 
-  Isolate* isolate = session->get_isolate();
-  isolate->Enter();
+  session->get_isolate()->Enter();
 
-  for (const string_t &file : *files) {
-    string_t source_code;
+  auto analysis = analyzer.apply(session, *files);
 
-    if (!fs.load_file(file, source_code)) {
-      printf("ERROR: unable to read file %s\n", file.c_str());
-
-      continue;
-    }
-
-    auto analysis = analyzer->apply(session, file, source_code);
-
-    for (auto error : analysis.errors) {
-      printf("[ERROR] %s: %s\n", error.file.c_str(), error.message.c_str());
-    }
-
-    for (auto match : analysis.matches) {
-      printf("%s:%d: %s\n", match.file.c_str(), match.line, match.match.c_str());
-    }
+  for (auto error : analysis.errors) {
+    printf("[ERROR] %s: %s\n", error.file.c_str(), error.message.c_str());
   }
 
-  isolate->Exit();
+  for (auto match : analysis.matches) {
+    printf("%s:%d: %s\n", match.file.c_str(), match.line, match.match.c_str());
+  }
 
-  delete analyzer;
+  session->get_isolate()->Exit();
 }
 
 int main(int argc, char* argv[]) {

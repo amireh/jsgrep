@@ -16,6 +16,10 @@ namespace jsgrok {
   }
 
   analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& filepath, string_t const& source_code) {
+    return apply(session, { filepath });
+  }
+
+  analyzer::analysis_t analyzer::apply(v8_session *session, vector<string_t> const &filepaths) {
     Isolate *isolate = session->get_isolate();
     js_analysis_t js_results;
     analysis_t results;
@@ -36,21 +40,32 @@ namespace jsgrok {
 
     auto parse = Local<Function>::Cast(parse_module.exports);
 
-    Local<Value> args[] = {
-      String::NewFromUtf8(isolate, source_code.c_str()),
-      String::NewFromUtf8(isolate, filepath.c_str()),
-    };
+    for (auto filepath : filepaths) {
+      string_t source_code;
 
-    auto result = parse->Call(context, parse, 2, args);
+      if (!fs.load_file(filepath, source_code)) {
+        printf("ERROR: unable to read file %s\n", filepath.c_str());
+        continue;
+      }
 
-    if (!result.IsEmpty()) {
-      js_results.push_back(result.ToLocalChecked());
+      Local<Value> args[] = {
+        String::NewFromUtf8(isolate, source_code.c_str()),
+        String::NewFromUtf8(isolate, filepath.c_str()),
+      };
+
+      auto result = parse->Call(context, parse, 2, args);
+
+      if (!result.IsEmpty()) {
+        js_results.push_back({
+          filepath,
+          result.ToLocalChecked()
+        });
+      }
     }
 
     return cast_down(
       session,
       context,
-      filepath,
       aggregate_results(
         context,
         js_results
@@ -64,7 +79,9 @@ namespace jsgrok {
   ) const {
     js_analysis_t out;
 
-    for (auto result : in) {
+    for (auto js_result : in) {
+      auto result = js_result.value;
+
       if ((*result)->IsArray()) {
         auto result_list = v8::Array::Cast(*result);
         auto result_item_count = result_list->Length();
@@ -73,12 +90,12 @@ namespace jsgrok {
           auto result_item = result_list->Get(context, i);
 
           if (!result_item.IsEmpty()) {
-            out.push_back(result_item.ToLocalChecked());
+            out.push_back({ js_result.file, result_item.ToLocalChecked() });
           }
         }
       }
       else {
-        out.push_back(result);
+        out.push_back(js_result);
       }
     }
 
@@ -88,7 +105,6 @@ namespace jsgrok {
   analyzer::analysis_t analyzer::cast_down(
     v8_session *session,
     Local<Context> &context,
-    string_t const& filepath,
     js_analysis_t const& in
   ) const {
     Isolate *isolate = session->get_isolate();
@@ -102,7 +118,10 @@ namespace jsgrok {
       return *String::Utf8Value(prop(object, key)->ToString());
     };
 
-    for (auto result : in) {
+    for (auto js_result : in) {
+      auto result = js_result.value;
+      auto file = js_result.file;
+
       if (result.IsEmpty()) {
         continue;
       }
@@ -111,11 +130,11 @@ namespace jsgrok {
         auto is_error = object->Has(context, String::NewFromUtf8(isolate, "error"));
 
         if (!is_error.IsNothing() && is_error.ToChecked()) {
-          out.errors.push_back({ filepath, read_string(object, "message") });
+          out.errors.push_back({ file, read_string(object, "message") });
         }
         else {
           analysis_match_t match;
-          match.file = filepath;
+          match.file = file;
           match.match = read_string(object, "match");
           match.line = prop(object, "line")->ToUint32()->Value();
           match.start = prop(object, "start")->ToUint32()->Value();

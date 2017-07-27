@@ -37,12 +37,18 @@ namespace jsgrok {
     virtual ~analyzer();
 
     analysis_t apply(v8_session*, string_t const&, string_t const&);
+    analysis_t apply(v8_session*, vector<string_t> const&);
 
   protected:
-    typedef vector<Local<Value>> js_analysis_t;
+    typedef struct {
+      string_t     file;
+      Local<Value> value;
+    } js_match_t;
+
+    typedef vector<js_match_t> js_analysis_t;
 
     js_analysis_t aggregate_results(Local<Context>&, js_analysis_t const&) const;
-    analysis_t    cast_down(v8_session*, Local<Context>&, string_t const&, js_analysis_t const&) const;
+    analysis_t    cast_down(v8_session*, Local<Context>&, js_analysis_t const&) const;
   };
 
 } // end of namespace jsgrok
