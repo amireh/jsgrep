@@ -14,15 +14,12 @@ namespace jsgrok {
   }
 
   analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& filepath, string_t const& source_code) {
-    js_analysis_t  js_results;
-    analysis_t     results;
-    jsgrok::fs  fs;
-    Isolate     *isolate = session->get_isolate();
+    Isolate *isolate = session->get_isolate();
+    js_analysis_t js_results;
+    analysis_t results;
+    jsgrok::fs fs;
 
-    // Create a stack-allocated handle scope.
     HandleScope handle_scope(isolate);
-
-    // Create a new context.
     Local<Context> context = Context::New(isolate);
     Context::Scope context_scope(context);
 
@@ -35,52 +32,18 @@ namespace jsgrok {
 
     define_require(session, context, &require_context);
 
-    if (!session->require(context, "assets/acorn.js")) {
-      printf("Unable to require 'acorn.js'!\n");
-      return results;
-    }
-
-    if (!session->require(context, "assets/walk.js")) {
-      printf("Unable to require 'acorn/walk.js'!\n");
-      return results;
-    }
-
-    auto acorn_ref = session->get(context, global, "acorn");
-
-    if (acorn_ref.IsEmpty()) {
-      printf("Unable to find 'acorn' global!\n");
-      return results;
-    }
-
-    auto acorn = acorn_ref->ToObject();
-    auto analyze_module = session->require(context, "assets/analyze.js");
     auto parse_module = session->require(context, "assets/parse.js");
-
-    if (!analyze_module || !analyze_module.exports->IsObject()) {
-      printf("Unable to require 'analyze.js'!\n");
-      return results;
-    }
 
     if (!parse_module || !parse_module.exports->IsObject()) {
       printf("Unable to require 'parse.js'!\n");
       return results;
     }
 
-    auto analyze_exports = analyze_module.exports->ToObject();
     auto parse_exports = parse_module.exports->ToObject();
 
     auto parse = Local<Function>::Cast(
       session->get(context, parse_exports, "default")
     );
-
-    auto analyze = Local<Function>::Cast(
-      session->get(context, analyze_exports, "default")
-    );
-
-    if (analyze.IsEmpty()) {
-      printf("Unable to find analyze.js default export!\n");
-      return results;
-    }
 
     Local<Value> args[] = {
       String::NewFromUtf8(isolate, source_code.c_str()),
@@ -93,12 +56,21 @@ namespace jsgrok {
       js_results.push_back(result.ToLocalChecked());
     }
 
-    auto aggregate_js_results = aggregate_results(context, js_results);
-
-    return cast_down(session, context, filepath, aggregate_js_results);
+    return cast_down(
+      session,
+      context,
+      filepath,
+      aggregate_results(
+        context,
+        js_results
+      )
+    );
   }
 
-  analyzer::js_analysis_t analyzer::aggregate_results(Local<Context> &context, js_analysis_t const& in) const {
+  analyzer::js_analysis_t analyzer::aggregate_results(
+    Local<Context> &context,
+    js_analysis_t const& in
+  ) const {
     js_analysis_t out;
 
     for (auto result : in) {
@@ -169,7 +141,11 @@ namespace jsgrok {
     return out;
   }
 
-  void analyzer::define_require(v8_session *session, Local<Context> &context, require_context_t *require_context) {
+  void analyzer::define_require(
+    v8_session *session,
+    Local<Context> &context,
+    require_context_t *require_context
+  ) {
     Isolate *isolate = session->get_isolate();
 
     Local<Object>            global = context->Global();

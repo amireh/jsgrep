@@ -1,4 +1,6 @@
 (function(exports) {
+  require('acorn.js');
+  require('walk.js');
   const { default: analyze } = require('analyze.js');
 
   exports.default = function parse(sourceCode, filePath) {
