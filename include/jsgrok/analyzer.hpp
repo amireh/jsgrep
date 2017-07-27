@@ -12,6 +12,7 @@ namespace jsgrok {
   using std::vector;
 
   class v8_session;
+  class v8_module;
   class analyzer {
   public:
     typedef vector<Local<Value>> analysis_t;

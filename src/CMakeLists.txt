@@ -1,9 +1,13 @@
-SET(JGROK_BIN jgrok)
+SET(JGROK_BIN jsgrok)
 
 INCLUDE(GenerateExportHeader)
 
 INCLUDE_DIRECTORIES(../include)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/exports)
+
+# TODO: automate / create Findcpplocate.cmake
+INCLUDE_DIRECTORIES(${cpplocate_DIR}/source/cpplocate/include)
+INCLUDE_DIRECTORIES(${cpplocate_DIR}/build/source/cpplocate/include)
 
 IF(WIN32)
   ADD_DEFINITIONS("/wd4251")
@@ -44,10 +48,27 @@ TARGET_LINK_LIBRARIES(${JGROK_BIN}
   ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
   ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
   -Wl,--end-group
+  ${cpplocate_DIR}/build/libcpplocate.a
   rt
   dl
   pthread
 )
+
+generate_module_info(jsgrok
+  VALUES
+  name          "jsgrok"
+  version       "1.0.0"
+  description   "Syntactic JavaScript grep."
+  author        "Instructure, INC."
+
+  BUILD_VALUES
+  assets_path     "${PROJECT_SOURCE_DIR}/assets"
+
+  INSTALL_VALUES
+  assets_path     "\${ModulePath}/assets"
+)
+
+export_module_info(jsgrok TARGET jsgrok)
 
 IF(APPLE)
   TARGET_LINK_LIBRARIES(${JGROK_BIN} ${COREFOUNDATION_LIBRARY})

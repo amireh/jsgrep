@@ -18,6 +18,7 @@ namespace jsgrok {
     virtual ~v8_cluster();
 
     void spawn(worker_t);
+    unsigned int session_count();
     void clear();
 
   protected:

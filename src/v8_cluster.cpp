@@ -39,6 +39,16 @@ namespace jsgrok {
     }
   }
 
+  unsigned int v8_cluster::session_count() {
+    unsigned int count;
+
+    pthread_mutex_lock(&sessions_lock_);
+    count = sessions_.size();
+    pthread_mutex_unlock(&sessions_lock_);
+
+    return count;
+  }
+
   void* v8_cluster::spawn_session_in_background(void *spawn_request_on_the_bus) {
     spawn_request_t *spawn_request = (spawn_request_t*)spawn_request_on_the_bus;
     v8_cluster      *cluster = spawn_request->cluster;

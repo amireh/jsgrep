@@ -17,6 +17,8 @@
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
 #include <pthread.h>
+#include "cpplocate/cpplocate.h"
+#include "cpplocate/ModuleInfo.h"
 
 using namespace v8;
 using std::any_of;
@@ -60,6 +62,11 @@ int main(int argc, char* argv[]) {
   Platform* platform = platform::CreateDefaultPlatform();
   V8::InitializePlatform(platform);
   V8::Initialize();
+
+  printf("Exec path=%s\n", cpplocate::getExecutablePath().c_str());
+  printf("Bundle path=%s\n", cpplocate::getBundlePath().c_str());
+  printf("Module path=%s\n", cpplocate::getModulePath().c_str());
+  printf("Module path=%s\n", cpplocate::findModule("jsgrok").value("assets_path").c_str());
 
   auto cluster = new jsgrok::v8_cluster();
 

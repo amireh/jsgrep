@@ -1,6 +1,7 @@
 #include <algorithm>
 #include "jsgrok/analyzer.hpp"
 #include "jsgrok/v8_session.hpp"
+#include "jsgrok/fs.hpp"
 #include <assert.h>
 
 namespace jsgrok {
@@ -14,10 +15,9 @@ namespace jsgrok {
   }
 
   analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& source_code) {
-    analysis_t results;
-
-    Isolate *isolate = session->get_isolate();
-    // Isolate::Scope isolate_scope(isolate);
+    analysis_t  results;
+    jsgrok::fs  fs;
+    Isolate     *isolate = session->get_isolate();
 
     // Create a stack-allocated handle scope.
     HandleScope handle_scope(isolate);
@@ -33,14 +33,17 @@ namespace jsgrok {
       &context
     });
 
-    // PREPARE CONTEXT:
     define_require(session, context, &require_context);
 
-    // Enter the context for compiling and running the hello world script.
+    if (!session->require(context, "assets/acorn.js")) {
+      printf("Unable to require 'acorn.js'!\n");
+      return results;
+    }
 
-    // Handle<Object> exports = session->require("deps/acorn.js");
-    session->require(context, "deps/acorn.js");
-    session->require(context, "deps/walk.js");
+    if (!session->require(context, "assets/walk.js")) {
+      printf("Unable to require 'acorn/walk.js'!\n");
+      return results;
+    }
 
     auto acorn_ref = session->get(context, global, "acorn");
 
@@ -49,13 +52,17 @@ namespace jsgrok {
       return results;
     }
 
-    auto exports = acorn_ref->ToObject();
-    auto analyze_exports = session->require(context, "src/analyze.js");
+    auto acorn = acorn_ref->ToObject();
+    auto analyze_module = session->require(context, "assets/analyze.js");
 
-    assert(exports.IsObject());
-    assert(analyze_exports.IsObject());
+    if (!analyze_module) {
+      printf("Unable to require 'analyze.js'!\n");
+      return results;
+    }
 
-    auto parse_ref = session->get(context, exports, "parse");
+    auto analyze_exports = analyze_module.exports->ToObject();
+
+    auto parse_ref = session->get(context, acorn, "parse");
 
     if (parse_ref.IsEmpty()) {
       printf("Unable to find acorn.parse!\n");
@@ -78,7 +85,7 @@ namespace jsgrok {
       Null(isolate),
     };
 
-    MaybeLocal<Value> ast_ref = parse->Call(context, exports, 2, args);
+    MaybeLocal<Value> ast_ref = parse->Call(context, acorn, 2, args);
 
     if (ast_ref.IsEmpty()) {
       printf("Unable to generate AST!\n");
@@ -143,9 +150,14 @@ namespace jsgrok {
       auto require_context = (require_context_t*)External::Cast(*args.Data())->Value();
       auto session = require_context->session;
       auto context = require_context->context;
-      auto exports = session->require(*context, *String::Utf8Value(args[0]->ToString()));
+      auto module  = session->require(*context, *String::Utf8Value(args[0]->ToString()));
 
-      args.GetReturnValue().Set(exports);
+      if (!module) {
+        args.GetReturnValue().SetUndefined();
+      }
+      else {
+        args.GetReturnValue().Set(module.exports);
+      }
     }
     else {
       args.GetReturnValue().SetUndefined();
