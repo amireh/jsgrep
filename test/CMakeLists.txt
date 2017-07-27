@@ -22,6 +22,7 @@ ADD_EXECUTABLE(${TARGET}
   ../src/__tests__/v8_cluster.test.cpp
   ../src/__tests__/v8_nodejs_context.test.cpp
   ../src/__tests__/v8_session.test.cpp
+  ../src/__tests__/integration.test.cpp
 
   test_utils.cpp
   main.cpp
