@@ -9,8 +9,8 @@ TEST_CASE("jsgrok::fs") {
 
   jsgrok::fs subject;
 
-  SECTION("loading_files") {
-    auto acorn_path = subject.resolve_asset("acorn.js");
+  SECTION("#resolve") {
+    auto acorn_path = subject.resolve("assets_path", "parse.js");
     string_t acorn_src;
 
     subject.load_file(acorn_path, acorn_src);
@@ -18,8 +18,17 @@ TEST_CASE("jsgrok::fs") {
     REQUIRE(acorn_src.length() > 0);
   }
 
-  SECTION("resolving_assets") {
-    REQUIRE_THAT(subject.resolve_asset("analyze.js"), EndsWith("/analyze.js"));
+  SECTION("#resolve_asset") {
+    auto acorn_path = subject.resolve_asset("parse.js");
+    string_t acorn_src;
+
+    subject.load_file(acorn_path, acorn_src);
+
+    REQUIRE(acorn_src.length() > 0);
+  }
+
+  SECTION("resolving assets") {
+    REQUIRE_THAT(subject.resolve_asset("parse.js"), EndsWith("/parse.js"));
   }
 
   SECTION("#glob") {

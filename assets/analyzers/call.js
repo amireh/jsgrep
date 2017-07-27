@@ -1,4 +1,4 @@
-module.exports = function call(state) {
+module.exports = function(state) {
   return {
     VariableDeclaration(node) {
       // const decl = node.declarations[0];

@@ -34,4 +34,8 @@ TEST_CASE("jsgrok") {
   SECTION("Object rest/spread") {
     assert_script_is_analyzed("plugins/objectSpread.js");
   }
+
+  SECTION("dynamic imports") {
+    assert_script_is_analyzed("plugins/dynamicImport.js");
+  }
 }

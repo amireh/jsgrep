@@ -28,7 +28,7 @@ namespace jsgrok {
     jsgrok::fs fs;
 
     options.recursive = false; // TODO
-    options.threads = 4;
+    options.threads = 5;
 
     for (int i = 1; i < argc; ++i) {
       options.patterns.push_back(string_t(argv[i]));
