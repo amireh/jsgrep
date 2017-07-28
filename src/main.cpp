@@ -21,31 +21,49 @@
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
 #include "jsgrok/functional/partition.hpp"
+#include "jsgrok/functional/filter.hpp"
 #include "cpplocate/cpplocate.h"
 #include "cpplocate/ModuleInfo.h"
 
 using namespace v8;
 using std::any_of;
+using std::vector;
 using jsgrok::string_t;
+using jsgrok::cli;
 using jsgrok::v8_session;
 using jsgrok::functional::partition_t;
+using options_t = jsgrok::cli::options_t;
+
+typedef struct {
+  partition_t     *partition;
+  cli::options_t  *options;
+} job_t;
 
 static std::vector<string_t> excluded_dirs({
   "*/node_modules/*"
 });
 
 static void grok_files(v8_session *session, void *data) {
-  partition_t *files = static_cast<partition_t*>(data);
-  partition_t  filtered_files;
-  jsgrok::analyzer analyzer;
+  job_t *job = static_cast<job_t*>(data);
 
-  for (auto file : *files) {
-    if (FNM_NOMATCH == fnmatch(excluded_dirs[0].c_str(), file.c_str(), 0)) {
-      filtered_files.push_back(file);
-    }
+  partition_t *files = job->partition;
+  options_t *options = job->options;
+  partition_t  filtered_files(
+    jsgrok::functional::filter(
+      *files,
+      options->file_inclusion_patterns,
+      options->file_exclusion_patterns,
+      options->dir_exclusion_patterns
+    )
+  );
+
+  if (options->verbosity == options_t::VERBOSITY_DEBUG) {
+    printf("[D] Scanning %d files...\n", filtered_files.size());
   }
 
   session->get_isolate()->Enter();
+
+  jsgrok::analyzer analyzer;
 
   auto analysis = analyzer.apply(session, filtered_files);
 
@@ -71,15 +89,11 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  for (auto pattern : options.file_exclusion_patterns) {
-    printf("Excluding files that match '%s'\n", pattern.c_str());
-  }
-
-  for (auto pattern : options.dir_exclusion_patterns) {
-    printf("Excluding dirs that match '%s'\n", pattern.c_str());
-  }
-
   jsgrok::fs fs;
+
+  if (options.verbosity == options_t::VERBOSITY_DEBUG) {
+    printf("[D] Using %d V8 instances.\n", options.threads);
+  }
 
   auto files = options.recursive ?
     fs.recursive_glob(options.file_patterns, 0) :
@@ -87,6 +101,7 @@ int main(int argc, char* argv[]) {
   ;
 
   auto partitions = jsgrok::functional::partition(files, options.threads);
+  vector<job_t*> jobs(partitions.size());
 
   // Initialize V8.
   V8::InitializeICUDefaultLocation(argv[0]);
@@ -98,14 +113,21 @@ int main(int argc, char* argv[]) {
   {
     jsgrok::v8_cluster cluster;
 
-    printf("Scanning %d files for \"%s\"...\n", files.size(), options.search_pattern.c_str());
-
     for (partition_t &partition : partitions) {
-      cluster.spawn(&grok_files, (void*)&partition);
+      job_t *job = new job_t({ &partition, &options });
+      jobs.push_back(job);
+
+      cluster.spawn(&grok_files, (void*)job);
     }
 
     cluster.clear();
   }
+
+  for (job_t *job : jobs) {
+    delete job;
+  }
+
+  jobs.clear();
 
   // Dispose the isolate and tear down V8.
   V8::Dispose();

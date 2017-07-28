@@ -1,4 +1,5 @@
 #include "jsgrok/cli.hpp"
+#include "jsgrok/functional/filter.hpp"
 #include "cpplocate/ModuleInfo.h"
 #include <glob.h>
 #include "args/args.hxx"
@@ -34,6 +35,8 @@ namespace jsgrok {
       "recursive", "search all files under directories", {'r', "recursive"});
     args::ValueFlag<int> threads(search_options,
       "threads", "number of V8 instances to use", {'j', "threads"});
+    args::ValueFlagList<std::string> file_inclusion_patterns(search_options,
+      "FILE_PATTERN", "filenames that match FILE_PATTERN will be included", { "include" });
     args::ValueFlagList<std::string> file_exclusion_patterns(search_options,
       "FILE_PATTERN", "filenames that match FILE_PATTERN will be skipped", { "exclude" });
     args::ValueFlagList<std::string> dir_exclusion_patterns(search_options,
@@ -51,7 +54,10 @@ namespace jsgrok {
       "print_matching_filenames", "print only names of FILEs containing matches", {'l', "files-with-matches"});
     args::Flag colorize(output_options,
       "colorize", "use markers to highlight the matching strings", {'c', "color"});
-
+    args::Flag quiet(output_options,
+      "quiet", "do not print any informational messages", {'q', "quiet"});
+    args::Flag verbose(output_options,
+      "verbose", "print informational and debug messages", {'v', "verbose"});
 
     try {
       parser.ParseCLI(argc, argv);
@@ -73,8 +79,18 @@ namespace jsgrok {
       return options;
     }
 
+    if (quiet) {
+      options.verbosity = options_t::VERBOSITY_QUIET;
+    }
+    else if (verbose) {
+      options.verbosity = options_t::VERBOSITY_DEBUG;
+    }
+    else {
+      options.verbosity = options_t::VERBOSITY_INFO;
+    }
+
     options.recursive = !!recursive;
-    options.threads = threads || 5;
+    options.threads = threads == 0 ? 5 : args::get(threads);
 
     if (print_line_numbers) {
       options.print_line_numbers = print_line_numbers;
@@ -84,6 +100,14 @@ namespace jsgrok {
 
     for (const auto pattern : args::get(file_patterns)) {
       options.file_patterns.push_back(string_t(pattern));
+    }
+
+    for (const auto pattern : args::get(file_inclusion_patterns)) {
+      options.file_inclusion_patterns.push_back(string_t(pattern));
+    }
+
+    if (options.file_inclusion_patterns.empty()) {
+      options.file_inclusion_patterns = jsgrok::functional::INCLUDE_ALL;
     }
 
     for (const auto pattern : args::get(file_exclusion_patterns)) {

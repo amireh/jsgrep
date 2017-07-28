@@ -17,9 +17,16 @@ namespace jsgrok {
         CLI_PARSE_ERROR = 2,
       } state;
 
+      enum {
+        VERBOSITY_QUIET = 0,
+        VERBOSITY_INFO  = 1,
+        VERBOSITY_DEBUG = 2
+      } verbosity;
+
       // scan control:
       string_t          search_pattern;
       vector<string_t>  file_patterns;
+      vector<string_t>  file_inclusion_patterns;
       vector<string_t>  file_exclusion_patterns;
       vector<string_t>  dir_exclusion_patterns;
       bool              recursive;

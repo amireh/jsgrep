@@ -18,6 +18,7 @@ ADD_EXECUTABLE(${TARGET}
   ../src/analyzer.cpp
   ../src/__tests__/analyzer.test.cpp
   ../src/__tests__/fs.test.cpp
+  ../src/__tests__/filter.test.cpp
   ../src/__tests__/partition.test.cpp
   ../src/__tests__/v8_cluster.test.cpp
   ../src/__tests__/v8_nodejs_context.test.cpp
