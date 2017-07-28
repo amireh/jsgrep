@@ -54,6 +54,8 @@ SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
 INCLUDE_DIRECTORIES(
   ${V8_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/deps/SSVUtils/include
+  ${CMAKE_SOURCE_DIR}/deps/args/include
 )
 
 SET(JSGROK_LIBRARIES

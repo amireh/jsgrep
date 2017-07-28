@@ -11,9 +11,26 @@ namespace jsgrok {
   class cli {
   public:
     typedef struct {
-      vector<string_t>  patterns;
+      enum {
+        CLI_OK = 0,
+        CLI_REQUESTED_HELP = 1,
+        CLI_PARSE_ERROR = 2,
+      } state;
+
+      // scan control:
+      string_t          search_pattern;
+      vector<string_t>  file_patterns;
+      vector<string_t>  file_exclusion_patterns;
+      vector<string_t>  dir_exclusion_patterns;
       bool              recursive;
       uint32_t          threads;
+
+      // output control:
+      bool              print_line_numbers;
+      bool              suppress_filename;
+      bool              print_filename;
+      bool              print_matching_filenames;
+      bool              colorize;
     } options_t;
 
     cli();

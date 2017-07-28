@@ -19,10 +19,11 @@ module.exports = function parse(sourceCode, filePath) {
     ast = acorn.parse(sourceCode, {
       sourceType: 'module',
       locations: true,
-      sourceFile: filePath,
-      ecmaVersion: 8,
+      ranges: false,
+      ecmaVersion: 9,
       allowReturnOutsideFunction: true,
       allowImportExportEverywhere: true,
+      allowHashBang: true,
       plugins: {
         jsx: true,
         staticClassPropertyInitializer: true,

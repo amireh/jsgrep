@@ -27,6 +27,7 @@ namespace jsgrok {
     path_t resolve_asset(string_t const&) const;
 
     vector<file_t> glob(vector<string_t> const& patterns, int opts = 0);
+    vector<file_t> recursive_glob(vector<string_t> const&, int = 0);
 
   protected:
     cpplocate::ModuleInfo module_info_;
