@@ -56,6 +56,22 @@ INCLUDE_DIRECTORIES(
   ${V8_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/deps/SSVUtils/include
   ${CMAKE_SOURCE_DIR}/deps/args/include
+
+  # TODO: automate / create Findcpplocate.cmake
+  ${cpplocate_DIR}/source/cpplocate/include
+  ${cpplocate_DIR}/build/source/cpplocate/include
+
+  ${CMAKE_SOURCE_DIR}/include
+)
+
+SET(JSGROK_SOURCES
+  ${CMAKE_SOURCE_DIR}/src/analyzer.cpp
+  ${CMAKE_SOURCE_DIR}/src/cli.cpp
+  ${CMAKE_SOURCE_DIR}/src/fs.cpp
+  ${CMAKE_SOURCE_DIR}/src/reporter.cpp
+  ${CMAKE_SOURCE_DIR}/src/v8_cluster.cpp
+  ${CMAKE_SOURCE_DIR}/src/v8_nodejs_context.cpp
+  ${CMAKE_SOURCE_DIR}/src/v8_session.cpp
 )
 
 SET(JSGROK_LIBRARIES
@@ -75,13 +91,6 @@ SET(JSGROK_LIBRARIES
   dl
   pthread
 )
-
-# LINK_DIRECTORIES()
-
-# LINK_LIBRARIES(
-#   ${V8_LIBRARY}
-#   ${V8_LIBPLATFORM_LIBRARY}
-# )
 
 ADD_SUBDIRECTORY(src)
 

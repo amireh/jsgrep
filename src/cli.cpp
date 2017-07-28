@@ -2,8 +2,8 @@
 #include "jsgrok/functional/filter.hpp"
 #include "cpplocate/ModuleInfo.h"
 #include <glob.h>
-#include "args/args.hxx"
 #include <iostream>
+#include "args/args.hxx"
 
 namespace jsgrok {
   cli::cli()
@@ -13,8 +13,21 @@ namespace jsgrok {
   cli::~cli() {
   }
 
-  cli::options_t cli::parse(int argc, char** argv) {
-    options_t options({ options_t::CLI_OK });
+  cli::options_t cli::parse(vector<string_t> const& argv) const {
+    return parse([&](args::ArgumentParser& parser) {
+      parser.ParseArgs<decltype(argv)>(argv);
+    });
+  }
+
+  cli::options_t cli::parse(int argc, char** argv) const {
+    return parse([&](args::ArgumentParser& parser) {
+      parser.ParseCLI(argc, argv);
+    });
+  }
+
+  cli::options_t cli::parse(applier_t apply_fn) const {
+    options_t options;
+    options.state = options_t::CLI_OK;
 
     args::ArgumentParser parser(
       "Syntactic JavaScript search.",
@@ -22,7 +35,7 @@ namespace jsgrok {
     );
 
     args::HelpFlag help(parser,
-      "help", "Display this help menu", {'h', "help"});
+      "help", "Display this help menu", {"help"});
 
     // SCANNING
     args::Positional<std::string> search_pattern(parser,
@@ -46,21 +59,19 @@ namespace jsgrok {
     args::Group output_options(parser, "Output control:");
     args::Flag print_line_numbers(output_options,
       "print_line_numbers", "print line number with output lines", {'n', "line-number"});
-    args::Flag suppress_filename(output_options,
-      "suppress_filename", "suppress the file name prefix on output", {'h', "no-filename"});
-    args::Flag print_filename(output_options,
-      "print_filename", "print the file name for each match [default]", {'H', "with-filename"});
+    args::Flag dont_print_filename(output_options,
+      "dont_print_filename", "suppress the file name prefix on output", {'h', "no-filename"});
     args::Flag print_matching_filenames(output_options,
-      "print_matching_filenames", "print only names of FILEs containing matches", {'l', "files-with-matches"});
-    args::Flag colorize(output_options,
-      "colorize", "use markers to highlight the matching strings", {'c', "color"});
+      "print_matching_filenames", "print only the NAMES of FILEs containing matches", {'l', "files-with-matches"});
+    args::Flag dont_colorize(output_options,
+      "dont_colorize", "use markers to highlight the matching strings", {'C', "no-color"});
     args::Flag quiet(output_options,
       "quiet", "suppress informational messages such as parse errors", {'q', "quiet"});
     args::Flag verbose(output_options,
       "verbose", "print debug messages", {'v', "verbose"});
 
     try {
-      parser.ParseCLI(argc, argv);
+      apply_fn(parser);
     }
     catch (args::Help) {
       std::cout << parser;
@@ -92,9 +103,10 @@ namespace jsgrok {
     options.recursive = !!recursive;
     options.threads = threads == 0 ? 5 : args::get(threads);
 
-    if (print_line_numbers) {
-      options.print_line_numbers = print_line_numbers;
-    }
+    options.print_line_numbers = print_line_numbers;
+    options.print_filename = !dont_print_filename;
+    options.print_match = !print_matching_filenames;
+    options.colorize = !dont_colorize;
 
     options.search_pattern = args::get(search_pattern);
 

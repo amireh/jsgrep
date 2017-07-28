@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <fnmatch.h>
 #include <vector>
+#include <iostream>
 
 #include "v8/libplatform/libplatform.h"
 #include "v8/v8.h"
@@ -20,6 +21,7 @@
 #include "jsgrok/v8_cluster.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
+#include "jsgrok/reporter.hpp"
 #include "jsgrok/functional/partition.hpp"
 #include "jsgrok/functional/filter.hpp"
 #include "cpplocate/cpplocate.h"
@@ -62,19 +64,9 @@ static void grok_files(v8_session *session, void *data) {
   jsgrok::analyzer analyzer;
 
   auto analysis = analyzer.apply(session, filtered_files);
+  auto reporter = jsgrok::reporter(*options);
 
-  for (auto error : analysis.errors) {
-    if (
-      error.error_type == jsgrok::analyzer::ParseError &&
-      options->verbosity > options_t::VERBOSITY_QUIET
-    ) {
-      printf("[ParseError] %s: %s\n", error.file.c_str(), error.message.c_str());
-    }
-  }
-
-  for (auto match : analysis.matches) {
-    printf("%s:%d: %s\n", match.file.c_str(), match.line, match.match.c_str());
-  }
+  reporter.report(analysis, std::cout);
 
   session->get_isolate()->Exit();
 }

@@ -1,14 +1,4 @@
-SET(JGROK_BIN jsgrok)
-
-INCLUDE(GenerateExportHeader)
-
-INCLUDE_DIRECTORIES(../include)
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/exports)
-
-# TODO: automate / create Findcpplocate.cmake
-INCLUDE_DIRECTORIES(${cpplocate_DIR}/source/cpplocate/include)
-INCLUDE_DIRECTORIES(${cpplocate_DIR}/build/source/cpplocate/include)
-# INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps/simpleopt)
+SET(JSGROK_BIN jsgrok)
 
 IF(WIN32)
   ADD_DEFINITIONS("/wd4251")
@@ -25,21 +15,11 @@ IF(APPLE)
   MARK_AS_ADVANCED (COREFOUNDATION_LIBRARY)
 ENDIF()
 
-SET(JGROK_SRCS
-  analyzer.cpp
-  cli.cpp
-  fs.cpp
-  main.cpp
-  v8_cluster.cpp
-  v8_nodejs_context.cpp
-  v8_session.cpp
-)
-
 SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
-ADD_EXECUTABLE(${JGROK_BIN} ${JGROK_SRCS})
+ADD_EXECUTABLE(${JSGROK_BIN} ${JSGROK_SOURCES} main.cpp)
 
-TARGET_LINK_LIBRARIES(${JGROK_BIN}
+TARGET_LINK_LIBRARIES(${JSGROK_BIN}
   -Wl,--start-group
   ${V8_BUILD_DIR}/obj/libv8_base.a
   ${V8_BUILD_DIR}/obj/libv8_external_snapshot.a
@@ -74,6 +54,6 @@ generate_module_info(jsgrok
 export_module_info(jsgrok TARGET jsgrok)
 
 IF(APPLE)
-  TARGET_LINK_LIBRARIES(${JGROK_BIN} ${COREFOUNDATION_LIBRARY})
+  TARGET_LINK_LIBRARIES(${JSGROK_BIN} ${COREFOUNDATION_LIBRARY})
 ENDIF()
 

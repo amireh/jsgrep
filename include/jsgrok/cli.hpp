@@ -1,8 +1,13 @@
 #ifndef H_JSGROK_CLI_H
 #define H_JSGROK_CLI_H
 
-#include "jsgrok/types.hpp"
 #include <vector>
+#include <functional>
+#include "jsgrok/types.hpp"
+
+namespace args {
+  class ArgumentParser;
+}
 
 namespace jsgrok {
   using std::vector;
@@ -33,19 +38,22 @@ namespace jsgrok {
       uint32_t          threads;
 
       // output control:
-      bool              print_line_numbers;
-      bool              suppress_filename;
-      bool              print_filename;
-      bool              print_matching_filenames;
-      bool              colorize;
+      bool              print_line_numbers = false;
+      bool              print_filename = true;
+      bool              print_match = true;
+      bool              colorize = true;
     } options_t;
 
     cli();
     virtual ~cli();
 
-    virtual options_t parse(int argc, char** argv);
+    options_t parse(int argc, char** argv) const;
+    options_t parse(vector<string_t> const&) const;
 
   protected:
+    typedef std::function<void(args::ArgumentParser&)> applier_t;
+
+    options_t parse(applier_t) const;
   };
 
 } // end of namespace jsgrok

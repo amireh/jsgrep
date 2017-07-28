@@ -1,9 +1,9 @@
 #ifndef H_JSGROK_ANALYZER_H
 #define H_JSGROK_ANALYZER_H
 
-#include "jsgrok/types.hpp"
-#include "v8/v8.h"
 #include <vector>
+#include "v8/v8.h"
+#include "jsgrok/types.hpp"
 
 namespace jsgrok {
   using v8::Context;
