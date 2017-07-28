@@ -130,7 +130,13 @@ namespace jsgrok {
         auto is_error = object->Has(context, String::NewFromUtf8(isolate, "error"));
 
         if (!is_error.IsNothing() && is_error.ToChecked()) {
-          out.errors.push_back({ file, read_string(object, "message") });
+          auto error_type = prop(object, "error_type")->ToUint32()->Value();
+
+          out.errors.push_back({
+            file,
+            read_string(object, "message"),
+            error_type
+          });
         }
         else {
           analysis_match_t match;
@@ -144,7 +150,7 @@ namespace jsgrok {
         }
       }
       else {
-        printf("Don't know how to handle results of this type, yo\n");
+        out.errors.push_back({ file, "don't know how to handle results of this type" });
       }
     }
 

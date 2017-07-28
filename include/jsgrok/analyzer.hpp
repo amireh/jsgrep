@@ -15,9 +15,14 @@ namespace jsgrok {
   class v8_module;
   class analyzer {
   public:
+    enum {
+      ParseError = 1
+    };
+
     typedef struct {
       string_t file;
       string_t message;
+      uint32_t error_type;
     } analysis_error_t;
 
     typedef struct {

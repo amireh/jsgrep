@@ -12,6 +12,11 @@ require('acorn-static-class-property-initializer/walk.js')(walk);
 require('acorn-dynamic-import/index.js')(acorn);
 require('acorn-dynamic-import/walk.js')(walk);
 
+// THIS MUST BE IN SYNC WITH analyzer.cpp
+const ERROR_TYPES = {
+  ParseError: 1,
+};
+
 module.exports = function parse(sourceCode, filePath) {
   let ast;
 
@@ -39,6 +44,7 @@ module.exports = function parse(sourceCode, filePath) {
   catch (e) {
     return [{
       error: true,
+      error_type: ERROR_TYPES.ParseError,
       file: filePath,
       message: e.message
     }];

@@ -55,9 +55,9 @@ namespace jsgrok {
     args::Flag colorize(output_options,
       "colorize", "use markers to highlight the matching strings", {'c', "color"});
     args::Flag quiet(output_options,
-      "quiet", "do not print any informational messages", {'q', "quiet"});
+      "quiet", "suppress informational messages such as parse errors", {'q', "quiet"});
     args::Flag verbose(output_options,
-      "verbose", "print informational and debug messages", {'v', "verbose"});
+      "verbose", "print debug messages", {'v', "verbose"});
 
     try {
       parser.ParseCLI(argc, argv);

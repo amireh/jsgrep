@@ -39,10 +39,6 @@ typedef struct {
   cli::options_t  *options;
 } job_t;
 
-static std::vector<string_t> excluded_dirs({
-  "*/node_modules/*"
-});
-
 static void grok_files(v8_session *session, void *data) {
   job_t *job = static_cast<job_t*>(data);
 
@@ -68,7 +64,12 @@ static void grok_files(v8_session *session, void *data) {
   auto analysis = analyzer.apply(session, filtered_files);
 
   for (auto error : analysis.errors) {
-    printf("[ERROR] %s: %s\n", error.file.c_str(), error.message.c_str());
+    if (
+      error.error_type == jsgrok::analyzer::ParseError &&
+      options->verbosity > options_t::VERBOSITY_QUIET
+    ) {
+      printf("[ParseError] %s: %s\n", error.file.c_str(), error.message.c_str());
+    }
   }
 
   for (auto match : analysis.matches) {
