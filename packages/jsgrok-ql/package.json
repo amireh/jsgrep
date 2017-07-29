@@ -1,0 +1,24 @@
+{
+  "name": "jsgrok-ql",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js",
+    "build:watch": "bin/npm__build-watch.sh",
+    "test": "mocha 'src/**/*.test.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amireh/jsgrok.git"
+  },
+  "dependencies": {
+    "nearley": "2.10.2"
+  },
+  "devDependencies": {
+    "chai": "4.1.0",
+    "glob": "^7.1.2",
+    "mocha": "3.4.2",
+    "nodemon": "1.11.0"
+  }
+}
