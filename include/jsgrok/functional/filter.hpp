@@ -29,6 +29,7 @@ namespace jsgrok {
 
     static const vector<string_t> EXCLUDE_NONE;
     static const vector<string_t> INCLUDE_ALL({ "*" });
+    static const vector<string_t> INCLUDE_JS_FILES({ "*.js", "*.jsx" });
     static vector<string_t> filter(
       vector<string_t> const &files,
       vector<string_t> const &file_includes = INCLUDE_ALL,

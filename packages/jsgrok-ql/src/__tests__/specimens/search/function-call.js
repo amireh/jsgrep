@@ -9,9 +9,9 @@ module.exports = [
     `,
 
     matches: [
-      { line: 1 },
       { line: 2 },
       { line: 3 },
+      { line: 4 },
     ]
   },
 
@@ -23,5 +23,29 @@ module.exports = [
     `,
 
     matches: []
+  },
+
+  {
+    spec: 'using a receiver, it does not match static function calls',
+    query: '*.foo()',
+    source: `
+      foo()
+    `,
+
+    matches: []
+  },
+  {
+    spec: 'with * for a receiver: it matches member function calls to all receivers',
+    query: '*.foo()',
+    source: `
+      foo()
+      this.foo()
+      foo.foo()
+    `,
+
+    matches: [
+      { line: 3 },
+      { line: 4 },
+    ]
   },
 ];

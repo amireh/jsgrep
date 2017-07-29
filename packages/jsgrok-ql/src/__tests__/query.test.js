@@ -5,8 +5,11 @@ const { assertExpressionMatch, createSpecimenTests } = require('./utils')
 describe('jsgrok-ql', function() {
   createSpecimenTests('query')(specs => {
     specs.forEach(function([ input, output ]) {
-      it(`parses ${input}`, function() {
-        if (output === null) {
+      it(input, function() {
+        if (output && typeof output.error === 'string') {
+          assert.throws(() => subject(input), output.error)
+        }
+        else if (output === null) {
           assert.equal(subject(input), null);
         }
         else if (output === undefined) {

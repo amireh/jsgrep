@@ -14,7 +14,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
   let ast;
 
   try {
-    ast = parseSourceCode(sourceCode.trim());
+    ast = parseSourceCode(sourceCode);
   }
   catch (e) {
     return [{
@@ -26,7 +26,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
   }
 
   try {
-    return search(walkSourceCode, query, ast);
+    return search(walkSourceCode, query, ast, sourceCode);
   }
   catch (e) {
     return [{

@@ -52,7 +52,11 @@ namespace jsgrok {
   }
 
   void reporter::report_match(analyzer::analysis_match_t const& match, std::ostream& buf) const {
-    buf << match.match << std::endl;
+    string_t prefix = match.match.substr(0, match.start);
+    string_t token = match.match.substr(match.start, match.end - match.start);
+    string_t suffix = match.match.substr(match.start + token.size());
+
+    buf << prefix << mebbe_colorize(Color::Red, token) << suffix << std::endl;
   }
 
   void reporter::report_filename_and_match(analyzer::analysis_match_t const& match, std::ostream& buf) const {
@@ -66,7 +70,7 @@ namespace jsgrok {
       buf << " ";
     }
 
-    buf << match.match << std::endl;
+    report_match(match, buf);
   }
 
   string_t reporter::mebbe_colorize(const Color color, const string_t &string) const {

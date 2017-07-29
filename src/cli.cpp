@@ -119,7 +119,7 @@ namespace jsgrok {
     }
 
     if (options.file_inclusion_patterns.empty()) {
-      options.file_inclusion_patterns = jsgrok::functional::INCLUDE_ALL;
+      options.file_inclusion_patterns = jsgrok::functional::INCLUDE_JS_FILES;
     }
 
     for (const auto pattern : args::get(file_exclusion_patterns)) {

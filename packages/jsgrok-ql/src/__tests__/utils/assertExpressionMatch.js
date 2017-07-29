@@ -6,19 +6,30 @@ const throwUnknownVerifier = type => assert(false, `Don't know how to verify exp
 const verify = type => TypeVerifiers[type] || throwUnknownVerifier(type);
 const TypeVerifiers = {
   'function-call': (expected, actual) => {
-    if (expected.id) {
-      assert.equal(expected.id, actual.id);
-    }
+    Object.keys(expected).forEach(key => {
+      switch (key) {
+        case 'id':
+          assert.equal(expected.id, actual.id);
+        break;
 
-    if (expected.arguments) {
-      verify('function-call-arguments')(
-        expected.arguments.map(asPair),
-        actual.arguments.map(asPair)
-      );
-    }
+        case 'receiver':
+          assert.equal(expected.receiver, actual.receiver);
+        break;
+
+        case 'arguments':
+          verify('function-call::arguments')(
+            expected.arguments.map(asPair),
+            actual.arguments.map(asPair)
+          );
+        break;
+
+        default:
+          assert(false, `Don't know how to verify function-call property "${key}"`)
+      }
+    })
   },
 
-  'function-call-arguments': (expected, actual) => {
+  'function-call::arguments': (expected, actual) => {
      expected.forEach((arg, index) => {
       assert.equal(arg[0], actual[index][0])
     })
