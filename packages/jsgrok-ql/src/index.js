@@ -1,5 +1,6 @@
 const parseQuery = require('./parseQuery');
-const { parseSourceCode, walkSourceCode } = require('./parseSourceCode');
+const parseSourceCode = require('./parseSourceCode');
+const walkSourceCode = require('./walkSourceCode');
 const search = require('./search');
 
 // THIS MUST BE IN SYNC WITH analyzer.cpp
@@ -13,7 +14,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
   let ast;
 
   try {
-    ast = parseSourceCode(sourceCode.trim(), filePath);
+    ast = parseSourceCode(sourceCode.trim());
   }
   catch (e) {
     return [{

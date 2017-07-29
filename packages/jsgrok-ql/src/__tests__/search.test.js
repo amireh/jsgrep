@@ -1,16 +1,12 @@
 const { assert } = require('chai');
-const search = require('../search');
-const parseQuery = require('../parseQuery');
-const { parseSourceCode, walkSourceCode } = require('../parseSourceCode');
+const { apply } = require('../')
 const { createSpecimenTests } = require('./utils')
 
 describe('jsgrok-ql::search', function() {
   createSpecimenTests('search')(specs => {
     specs.forEach(function({ spec = null, query: sourceQuery, source, matches: expectedMatches }) {
       it(spec || `applies ${sourceQuery}`, function() {
-        const query = parseQuery(sourceQuery)
-        const ast = parseSourceCode(source.trim());
-        const results = search(walkSourceCode, query, ast);
+        const results = apply(sourceQuery, source);
 
         if (expectedMatches) {
           assert(!results.some(x => x.error === true))

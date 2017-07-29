@@ -6,7 +6,7 @@
 /log
 /doc/api
 /doc/compiled
-/jgrok.sublime-workspace
+/jsgrok.sublime-workspace
 
 # manually excluded sources
 exclude/
