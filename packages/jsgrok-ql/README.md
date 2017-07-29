@@ -1,4 +1,4 @@
-% jsgrok(2)
+% jsgrok-ql(1)
 % Ahmad Amireh
 % July 29, 2017
 

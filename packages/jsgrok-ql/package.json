@@ -4,8 +4,11 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "build": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js && webpack",
-    "build:watch": "bin/npm__build-watch.sh",
+    "build": "npm run build-grammar && npm run build-bundle",
+    "build-grammar": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js",
+    "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrok-ql.ne -o src/grammar.js\"",
+    "build-bundle": "webpack",
+    "build-bundle:watch": "webpack -w --progress",
     "test": "mocha 'src/**/*.test.js'"
   },
   "repository": {

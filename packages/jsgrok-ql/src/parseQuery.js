@@ -1,6 +1,6 @@
 const nearley = require('nearley');
-const NEARLEY_PARSE_ERROR = 'nearley: No possible parsings';
 const grammar = require('./grammar');
+const NEARLEY_PARSE_ERROR = 'nearley: No possible parsings';
 
 module.exports = input => {
   const parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart);
