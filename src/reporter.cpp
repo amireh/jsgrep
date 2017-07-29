@@ -12,8 +12,11 @@ namespace jsgrok {
   void reporter::report(analyzer::analysis_t const& analysis, std::ostream& buf) const {
     if (options_.verbosity > options_t::VERBOSITY_QUIET) {
       for (auto error : analysis.errors) {
-        if (error.error_type == jsgrok::analyzer::ParseError) {
+        if (error.error_type == jsgrok::analyzer::SourceCodeError) {
           buf << "[ParseError] " << error.file << ": " << error.message << std::endl;
+        }
+        else if (error.error_type == jsgrok::analyzer::SearchError) {
+          buf << "[InternalError] " << error.file << ": " << error.message << std::endl;
         }
         else {
           buf << "[UnexpectedError] " << error.file << ": " << error.message << std::endl;

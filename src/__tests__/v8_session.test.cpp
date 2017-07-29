@@ -53,6 +53,22 @@ TEST_CASE("jsgrok::v8_session") {
       }
     }
 
+    WHEN("The script source code is passed in") {
+      unsigned char script[] = R"""(
+        module.exports = 42;
+      )""";
+
+      unsigned int script_len = sizeof(script);
+
+      THEN("It evaluates it") {
+        auto module = subject.require(context, script, script_len);
+
+        REQUIRE(module.status == v8_module::EC_OK);
+        REQUIRE(module.exports->IsNumber());
+        REQUIRE(module.exports->ToNumber()->Value() == 42);
+      }
+    }
+
     GIVEN("A module that exports to global...") {
       auto script_path = fs.resolve("fixtures_path", "exportGlobal.js");
 

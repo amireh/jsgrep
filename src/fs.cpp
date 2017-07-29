@@ -1,12 +1,9 @@
-#include "jsgrok/fs.hpp"
 #include <fstream>
-#include "cpplocate/cpplocate.h"
-#include "cpplocate/ModuleInfo.h"
 #include <glob.h>
-#include <fts.h>
 #include <ftw.h>
-#include <cstring>
-#include <algorithm>
+#include "cpplocate/ModuleInfo.h"
+#include "cpplocate/cpplocate.h"
+#include "jsgrok/fs.hpp"
 
 namespace jsgrok {
   static bool ends_with(string_t const& substring, string_t const &string) {
@@ -72,18 +69,8 @@ namespace jsgrok {
 
   vector<fs::file_t> fs::glob(vector<string_t> const &patterns, int flags) {
     vector<file_t> out;
-    vector<string_t> legit_patterns;
 
     for (auto pattern : patterns) {
-      if (flags & GLOB_RECURSIVE == GLOB_RECURSIVE && ends_with("/", pattern)) {
-        legit_patterns.push_back(pattern + "/**/*");
-      }
-      else {
-        legit_patterns.push_back(pattern);
-      }
-    }
-
-    for (auto pattern : legit_patterns) {
       glob_t globbuf;
 
       int glob_err = ::glob(pattern.c_str(), GLOB_NOSORT | GLOB_MARK | GLOB_BRACE, NULL, &globbuf);
@@ -100,17 +87,11 @@ namespace jsgrok {
     return out;
   }
 
-  char *convert(const std::string & s) {
-    char *pc = new char[s.size()+1];
-    std::strcpy(pc, s.c_str());
-    return pc;
-  }
-
   vector<fs::file_t> fs::recursive_glob(vector<string_t> const &patterns, int flags) {
     static vector<file_t> out;
 
     auto callback = [](const char *filepath, const struct stat*, int type) -> int {
-      if (type == FTW_F && ends_with(".js", filepath)) {
+      if (type == FTW_F) {
         out.push_back(string_t(filepath));
       }
 
@@ -123,51 +104,4 @@ namespace jsgrok {
 
     return out;
   }
-
-  // vector<fs::file_t> fs::recursive_glob(vector<string_t> const &patterns, int flags) {
-  //   vector<file_t> out;
-  //   vector<string_t> legit_patterns;
-  //   std::vector<char*> paths;
-
-  //   auto die = [&]() {
-  //     for (char *path : paths) {
-  //       delete [] path;
-  //     }
-
-  //     paths.clear();
-
-  //     return out;
-  //   };
-
-  //   if (patterns.empty()) {
-  //     return die();
-  //   }
-
-  //   std::transform(patterns.begin(), patterns.end(), std::back_inserter(paths), convert);
-
-  //   FTS *tree = fts_open(&paths[0], FTS_NOCHDIR, 0);
-
-  //   if (!tree) {
-  //     printf("[ERROR] fts_open\n");
-  //     return out;
-  //   }
-
-  //   FTSENT *node;
-
-  //   while ((node = fts_read(tree))) {
-  //     if (node->fts_level > 0 && node->fts_name[0] == '.') {
-  //       fts_set(tree, node, FTS_SKIP);
-  //     }
-  //     else if (node->fts_info & FTS_F) {
-  //       out.push_back(string_t(node->fts_path));
-  //     }
-  //   }
-
-  //   if (fts_close(tree)) {
-  //     printf("[ERROR] fts_close\n");
-  //     return die();
-  //   }
-
-  //   return die();
-  // }
 }

@@ -16,7 +16,8 @@ namespace jsgrok {
   class analyzer {
   public:
     enum {
-      ParseError = 1
+      SourceCodeError = 1,
+      SearchError = 2,
     };
 
     typedef struct {
@@ -41,8 +42,7 @@ namespace jsgrok {
     analyzer();
     virtual ~analyzer();
 
-    analysis_t apply(v8_session*, string_t const&, string_t const&);
-    analysis_t apply(v8_session*, vector<string_t> const&);
+    analysis_t apply(v8_session*, string_t const& query, vector<string_t> const& files);
 
   protected:
     typedef struct {

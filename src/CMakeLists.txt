@@ -45,6 +45,7 @@ generate_module_info(jsgrok
   author        "Instructure, INC."
 
   BUILD_VALUES
+  source_path     "${PROJECT_SOURCE_DIR}"
   assets_path     "${PROJECT_SOURCE_DIR}/assets"
 
   INSTALL_VALUES

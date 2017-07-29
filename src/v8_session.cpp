@@ -35,22 +35,12 @@ namespace jsgrok {
     return require(filepath);
   }
 
-  v8_module v8_session::require(const string_t &filepath) {
-    v8_module             out;
-    jsgrok::fs            fs;
-    string_t              source_code;
+  v8_module v8_session::require(Local<Context> &parent_context, const unsigned char *buf, const unsigned int bufsz) {
+    v8_module module;
 
     if (!isolate_->IsInUse()) {
-      out.status = v8_module::EC_ISOLATE_NOT_ENTERED;
-      return out;
-    }
-
-    // Create a string containing the JavaScript source code.
-    auto file_ok = fs.load_file(filepath, source_code);
-
-    if (!file_ok) {
-      out.status = v8_module::EC_FILE_ERROR;
-      return out;
+      module.status = v8_module::EC_ISOLATE_NOT_ENTERED;
+      return module;
     }
 
     Local<Context> context = Context::New(isolate_);
@@ -58,15 +48,49 @@ namespace jsgrok {
 
     v8_nodejs_context::morph(this, context);
 
-    // TODO: switch to boolean since we're now ignoring return values
-    MaybeLocal<Value> mebbe_return_value = eval_script(context, source_code);
+    read_module_exports(context, module, eval_script(context, buf, bufsz));
 
-    if (mebbe_return_value.IsEmpty()) {
-      out.status = v8_module::EC_SCRIPT_ERROR;
-      return out;
+    return module;
+  }
+
+  v8_module v8_session::require(const string_t &filepath) {
+    v8_module module;
+    jsgrok::fs fs;
+    string_t source_code;
+
+    if (!isolate_->IsInUse()) {
+      module.status = v8_module::EC_ISOLATE_NOT_ENTERED;
+      return module;
     }
 
-    out.status = v8_module::EC_OK;
+    // Create a string containing the JavaScript source code.
+    auto file_ok = fs.load_file(filepath, source_code);
+
+    if (!file_ok) {
+      module.status = v8_module::EC_FILE_ERROR;
+      return module;
+    }
+
+    Local<Context> context = Context::New(isolate_);
+    Context::Scope context_scope(context);
+
+    v8_nodejs_context::morph(this, context);
+
+    read_module_exports(context, module, eval_script(context, source_code));
+
+    return module;
+  }
+
+  void v8_session::read_module_exports(
+    Local<Context> const &context,
+    v8_module &out,
+    MaybeLocal<Value> const& return_value
+  ) const {
+    if (return_value.IsEmpty()) {
+      out.status = v8_module::EC_SCRIPT_ERROR;
+
+      return;
+    }
 
     auto module = context
       ->Global()
@@ -80,12 +104,11 @@ namespace jsgrok {
         .ToLocalChecked()
     ;
 
+    out.status = v8_module::EC_OK;
     out.exports = exports;
-
-    return out;
   }
 
-  Handle<Value> v8_session::get(Local<Context> &context, Local<Object> &object, const char* key) {
+  Handle<Value> v8_session::get(Local<Context> &context, Local<Object> const &object, const char* key) {
     MaybeLocal<Value> value = object->Get(context, String::NewFromUtf8(isolate_, key));
 
     if (value.IsEmpty()) {
@@ -97,18 +120,30 @@ namespace jsgrok {
   }
 
   MaybeLocal<Value> v8_session::eval_script(Local<Context> &context, string_t const& source_code) {
-    Local<String> source_code_utf8 = String::NewFromUtf8(
+    return eval_script(context, String::NewFromUtf8(
       isolate_,
       source_code.c_str(),
-      v8::NewStringType::kNormal
-    ).ToLocalChecked();
+      v8::NewStringType::kInternalized
+    ).ToLocalChecked());
+  }
 
+  MaybeLocal<Value> v8_session::eval_script(Local<Context> &context, const unsigned char* source_code, const unsigned int bufsz) {
+    return eval_script(context, String::NewFromOneByte(
+      isolate_,
+      source_code,
+      v8::NewStringType::kInternalized
+      // bufsz
+    ).ToLocalChecked());
+  }
+
+  MaybeLocal<Value> v8_session::eval_script(Local<Context> &context, Local<String> const &source_code) {
     v8::TryCatch try_catch;
 
-    MaybeLocal<Script> script_eval = Script::Compile(context, source_code_utf8);
+    MaybeLocal<Script> script_eval = Script::Compile(context, source_code);
 
     if (script_eval.IsEmpty() || !try_catch.CanContinue()) {
-      printf("Unable to compile script!\n");
+      printf("Unable to compile script! %s\n", *String::Utf8Value(try_catch.Message()->Get()));
+      printf("Source code: %s\n", *String::Utf8Value(source_code));
 
       return MaybeLocal<Value>();
     }

@@ -29,7 +29,7 @@ namespace jsgrok {
       } verbosity;
 
       // scan control:
-      string_t          search_pattern;
+      string_t          query;
       vector<string_t>  file_patterns;
       vector<string_t>  file_inclusion_patterns;
       vector<string_t>  file_exclusion_patterns;

@@ -72,6 +72,7 @@ SET(JSGROK_SOURCES
   ${CMAKE_SOURCE_DIR}/src/v8_cluster.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_nodejs_context.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_session.cpp
+  ${CMAKE_SOURCE_DIR}/src/jsgrok-ql.cpp
 )
 
 SET(JSGROK_LIBRARIES

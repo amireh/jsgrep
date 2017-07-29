@@ -63,7 +63,7 @@ static void grok_files(v8_session *session, void *data) {
 
   jsgrok::analyzer analyzer;
 
-  auto analysis = analyzer.apply(session, filtered_files);
+  auto analysis = analyzer.apply(session, options->query, filtered_files);
   auto reporter = jsgrok::reporter(*options);
 
   reporter.report(analysis, std::cout);

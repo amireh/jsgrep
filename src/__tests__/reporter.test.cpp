@@ -19,25 +19,38 @@ TEST_CASE("jsgrok::reporter") {
   jsgrok::reporter subject(options);
 
   WHEN("There are errors") {
-    analyzer::analysis_t analysis;
     std::ostringstream out;
+
+    analyzer::analysis_t analysis;
     analyzer::analysis_error_t error;
     error.file = "some_file.js";
     error.message = ":barf:";
-    error.error_type = analyzer::ParseError;
+    error.error_type = analyzer::SourceCodeError;
 
     analysis.errors.push_back(error);
 
-    THEN("It reports them if verbosity allows it") {
+    WHEN("The verbosity allows it...") {
       options.verbosity = options_t::VERBOSITY_DEBUG;
-      subject.report(analysis, out);
-      REQUIRE(out.str() == "[ParseError] some_file.js: :barf:\n");
+
+      THEN("It reports parse errors") {
+        subject.report(analysis, out);
+        REQUIRE(out.str() == "[ParseError] some_file.js: :barf:\n");
+      }
+
+      THEN("It reports search routine errors as an internal error") {
+        analysis.errors.back().error_type = analyzer::SearchError;
+        subject.report(analysis, out);
+        REQUIRE(out.str() == "[InternalError] some_file.js: :barf:\n");
+      }
     }
 
-    THEN("It does not report them if verbosity is QUIET") {
+    WHEN("The verbosity is set to QUIET...") {
       options.verbosity = options_t::VERBOSITY_QUIET;
-      subject.report(analysis, out);
-      REQUIRE(out.str() == "");
+
+      THEN("It does not report them") {
+        subject.report(analysis, out);
+        REQUIRE(out.str() == "");
+      }
     }
   }
 

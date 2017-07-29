@@ -4,6 +4,9 @@
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/fs.hpp"
 
+extern unsigned char jsgrok_ql_js[];
+extern unsigned int jsgrok_ql_js_len;
+
 namespace jsgrok {
   using namespace v8;
   using std::any_of;
@@ -15,11 +18,7 @@ namespace jsgrok {
   analyzer::~analyzer() {
   }
 
-  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& filepath, string_t const& source_code) {
-    return apply(session, { filepath });
-  }
-
-  analyzer::analysis_t analyzer::apply(v8_session *session, vector<string_t> const &filepaths) {
+  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& query, vector<string_t> const &filepaths) {
     Isolate *isolate = session->get_isolate();
     js_analysis_t js_results;
     analysis_t results;
@@ -31,14 +30,34 @@ namespace jsgrok {
 
     v8_nodejs_context::morph(session, context);
 
-    auto parse_module = session->require(context, "assets/parse.js");
+    auto load_jsgrok_ql_from_memory = [&]() {
+      return session->require(context, jsgrok_ql_js, jsgrok_ql_js_len);
+    };
 
-    if (!parse_module || !parse_module.exports->IsFunction()) {
-      printf("Unable to require 'parse.js'!\n");
+    auto load_jsgrok_ql_from_disk = [&]() {
+      return session->require(context, fs.resolve("source_path", "packages/jsgrok-ql/dist/jsgrok-ql.js"));
+    };
+
+    #ifdef JSGROK_USE_PRECOMPILED_ASSETS
+    auto jsgrok_ql_module = load_jsgrok_ql_from_memory();
+    #else
+    auto jsgrok_ql_module = load_jsgrok_ql_from_disk();
+    #endif
+
+    if (!jsgrok_ql_module || !jsgrok_ql_module.exports->IsObject()) {
+      printf("Unable to require 'jsgrok-ql'!\n");
       return results;
     }
 
-    auto parse = Local<Function>::Cast(parse_module.exports);
+    auto apply_ref = session->get(context, jsgrok_ql_module.exports->ToObject(), "apply");
+
+    if (apply_ref->IsUndefined() || !apply_ref->IsFunction()) {
+      printf("Unable to find 'apply' exports in 'jsgrok-ql'!\n");
+
+      return results;
+    }
+
+    auto apply = Local<Function>::Cast(apply_ref);
 
     for (auto filepath : filepaths) {
       string_t source_code;
@@ -49,11 +68,12 @@ namespace jsgrok {
       }
 
       Local<Value> args[] = {
+        String::NewFromUtf8(isolate, query.c_str()),
         String::NewFromUtf8(isolate, source_code.c_str()),
         String::NewFromUtf8(isolate, filepath.c_str()),
       };
 
-      auto result = parse->Call(context, parse, 2, args);
+      auto result = apply->Call(context, apply, 3, args);
 
       if (!result.IsEmpty()) {
         js_results.push_back({

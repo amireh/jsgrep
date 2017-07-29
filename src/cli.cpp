@@ -38,7 +38,7 @@ namespace jsgrok {
       "help", "Display this help menu", {"help"});
 
     // SCANNING
-    args::Positional<std::string> search_pattern(parser,
+    args::Positional<std::string> query(parser,
       "PATTERN", "jsgrok PATTERN to search for");
     args::PositionalList<std::string> file_patterns(parser,
       "FILE", "files or directories to search");
@@ -108,7 +108,7 @@ namespace jsgrok {
     options.print_match = !print_matching_filenames;
     options.colorize = !dont_colorize;
 
-    options.search_pattern = args::get(search_pattern);
+    options.query = args::get(query);
 
     for (const auto pattern : args::get(file_patterns)) {
       options.file_patterns.push_back(string_t(pattern));
