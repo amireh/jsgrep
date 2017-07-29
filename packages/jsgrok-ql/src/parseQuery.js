@@ -18,6 +18,6 @@ module.exports = input => {
   }
 
   return {
-    expressions: parser.results[0][0]
+    expressions: parser.results[0] ? parser.results[0][0] : []
   };
 };

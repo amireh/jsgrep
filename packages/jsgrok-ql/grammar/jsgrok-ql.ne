@@ -5,7 +5,7 @@
 Main -> Expression
 Expression -> FunctionExpression
 FunctionExpression ->
-  FunctionIdentifier "(" _ FunctionTypeExpression:? _ ")"
+  Identifier "(" _ FunctionTypeExpression:? _ ")"
   {%
     d => (
       ['function-call', {
@@ -15,16 +15,16 @@ FunctionExpression ->
     )
   %}
 
-FunctionIdentifier -> [a-z]:+
-  {%
-    d => d[0].join('')
-  %}
-
 # TODO: multiple arguments delimited by ,
 FunctionTypeExpression -> VoidLiteral | TypeExpression
 
 # - Identifiers: a, foo, bar
 TypeExpression -> [a-z]
+
+Identifier -> [a-zA-Z_] [a-zA-Z_1-9]:+
+  {%
+    ([ leadingChar, rest ]) => leadingChar + rest.join('')
+  %}
 
 VoidLiteral -> "void"
   {%

@@ -11,11 +11,6 @@ require('./acorn-static-class-property-initializer/walk.js')(walk);
 require('./acorn-dynamic-import/index.js')(acorn);
 require('./acorn-dynamic-import/walk.js')(walk);
 
-// THIS MUST BE IN SYNC WITH analyzer.cpp
-const ERROR_TYPES = {
-  ParseError: 1,
-};
-
 exports.parseSourceCode = function parseSourceCode(sourceCode, filePath) {
   try {
     return acorn.parse(sourceCode, {
