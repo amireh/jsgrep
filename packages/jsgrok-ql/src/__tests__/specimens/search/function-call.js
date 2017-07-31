@@ -273,4 +273,49 @@ module.exports = [
       { line: 2 },
     ]
   },
+
+  {
+    spec: 'with { a, ?b } it matches object literals that have "a" and maybe have "b"',
+    query: 'foo({ a, ?b })',
+    source: `
+      foo({ a: 1 }) // OK
+      foo({ a: 1, b: 3 }) // OK, both
+      foo({ b: 5 }) // NOP, a is required
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
+
+  {
+    spec: 'with { ^a } it matches object literals that do not have the "a" property',
+    query: 'foo({ ^a })',
+    source: `
+      foo({ b: 2 })
+      foo({})
+      foo({ a: 1 })
+      foo({ a: 1, b: 2, c: 3 })
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
+
+  {
+    spec: 'with { a, ^b } it matches object literals that do have the "a" property but not the "b" one',
+    query: 'foo({ a, ^b })',
+    source: `
+      foo({ a }) // OK
+      foo({}) // NOP, a is required
+      foo({ a, b: 2 }) // NOP, b is there
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+    ]
+  },
 ];

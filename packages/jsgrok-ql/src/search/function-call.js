@@ -1,5 +1,7 @@
 const { t } = require('./utils');
 const {
+  F_OPT,
+  F_NOT,
   L_ANY,
   L_THIS,
   L_VOID,
@@ -187,14 +189,28 @@ const isMatchingObject = (object, node) => {
   }, {})
 
   return object.keys.every(propKey => {
-    if (!nodeProps.hasOwnProperty(propKey)) {
+    const [ valueSpec, flag ] = extractPropertyValueSpec(object.properties[propKey]);
+    const isDefined = nodeProps.hasOwnProperty(propKey);
+
+    // { ?a }
+    if (!isDefined && flag === F_OPT) {
+      return true;
+    }
+    // { ^a }
+    else if (isDefined && flag === F_NOT) {
+      return false;
+    }
+    // { a } but there is no a
+    else if (!isDefined && flag !== F_NOT) {
       return false;
     }
     else {
-      return isMatchingArgument(object.properties[propKey], nodeProps[propKey])
+      return isMatchingArgument(valueSpec, nodeProps[propKey])
     }
   })
 }
+
+const extractPropertyValueSpec = spec => Array.isArray(spec) ? spec : [ spec, null ];
 
 const extractPropertyKey = node => {
   return t.identifier(node.key) && node.key.name || null;

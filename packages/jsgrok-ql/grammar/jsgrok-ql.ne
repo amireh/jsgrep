@@ -14,6 +14,20 @@
     x[k] = v;
     return x;
   };
+
+  const FLAGS = {
+    '?': 'F_OPT',
+    '^': 'F_NOT'
+  }
+
+  const createObjectValuePair = (flag, value) => {
+    if (flag) {
+      return [ value, FLAGS[flag] ]
+    }
+    else {
+      return value
+    }
+  }
 %}
 
 Query -> Expression
@@ -114,10 +128,11 @@ ObjectPropertyList ->
   | ObjectPropertyList _  "," _ ObjectProperty {% d => Object.assign({}, d[0], d[4]) %}
 
 ObjectProperty ->
-    ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[0], d[4]) %}
-  | ObjectKey                     {% d => assoc({}, d[0], 'L_ANY') %}
+    ObjectPropertyFlag:? ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[1], createObjectValuePair(d[0], d[5])) %}
+  | ObjectPropertyFlag:? ObjectKey                     {% d => assoc({}, d[1], createObjectValuePair(d[0], 'L_ANY')) %}
 
 ObjectKey -> Identifier {% id %}
+ObjectPropertyFlag -> [\?\^] {% id %}
 ObjectValue ->
     BuiltInClassLiteral {% id %}
   | AnyLiteral {% id %}

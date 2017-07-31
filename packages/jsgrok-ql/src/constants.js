@@ -8,3 +8,5 @@ exports.L_CLASS_BOOLEAN = 'L_CLASS_BOOLEAN';
 exports.L_CLASS_OBJECT = 'L_CLASS_OBJECT';
 exports.L_CLASS_ARRAY = 'L_CLASS_ARRAY';
 exports.L_EMPTY_OBJECT = 'L_EMPTY_OBJECT';
+exports.F_OPT = 'F_OPT'
+exports.F_NOT = 'F_NOT'

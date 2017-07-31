@@ -53,8 +53,9 @@ createTokenTests('ObjectLiteral', {
     [ '{ a: "b", b: * }', { object: { keys: ['a','b'], properties: { 'a': 'b', 'b': 'L_ANY' } } } ],
 
     // Flags
-    // [ '{ ?a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', '?'] } } } ],
-    // [ '{ ^a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', '^'] } } } ],
+    [ '{ ?a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', 'F_OPT'] } } } ],
+    [ '{ ^a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', 'F_NOT'] } } } ],
+    [ '{ ?a, ^b }',        { object: { keys: ['a','b'], properties: { 'a': ['L_ANY', 'F_OPT'], 'b': ['L_ANY', 'F_NOT'] } } } ],
   ]
 })
 
