@@ -1,5 +1,11 @@
 const { t } = require('./utils');
-const { L_ANY, L_THIS, L_VOID } = require('../constants');
+const {
+  L_ANY,
+  L_THIS,
+  L_VOID,
+  L_CLASS_NUMBER,
+  L_CLASS_STRING,
+} = require('../constants');
 const notVoid = x => x !== L_VOID
 
 const collectMatchingStaticFunctionCalls = (query, nodes) => {
@@ -75,6 +81,12 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
       if (argSpec === L_ANY) {
         return true;
       }
+      else if (argSpec === L_CLASS_STRING) {
+        return isStringArgument(argNode)
+      }
+      else if (argSpec === L_CLASS_NUMBER) {
+        return isNumberArgument(argNode)
+      }
       else if (typeof argSpec === 'number') {
         return t.literal(argNode) && argNode.value === argSpec;
       }
@@ -87,6 +99,29 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
     })
   })
 }
+
+const isNumberArgument = node => (
+  t.literal(node) && typeof node.value === 'number' ||
+  (
+    t.unaryExpression(node) &&
+    t.literal(node.argument) &&
+    typeof node.argument.value === 'number'
+  ) ||
+  (
+    t.callExpression(node) &&
+    t.identifier(node.callee) &&
+    node.callee.name === 'Number'
+  )
+)
+
+const isStringArgument = node => (
+  t.literal(node) && typeof node.value === 'string' ||
+  (
+    t.callExpression(node) &&
+    t.identifier(node.callee) &&
+    node.callee.name === 'String'
+  )
+)
 
 // we'll avoid pipe / compose for the overhead
 const collectStaticCalls = (query, nodes) => (
@@ -125,24 +160,15 @@ const collectMemberCalls = (query, nodes) => (
   )
 )
 
-class Visitor {
-  constructor([ , query ]) {
-    this.query = query;
+module.exports = expr => {
+  if (expr[0] === 'function-call' && expr[1].receiver) {
+    return [
+      [ 'CallExpression', node => collectMemberCalls(expr[1], [node]) ]
+    ]
   }
-
-  CallExpression(node) {
-    const { query } = this;
-
-    if (query.receiver) {
-      return collectMemberCalls(query, [node])
-    }
-    else {
-      return collectStaticCalls(query, [node])
-    }
+  else if (expr[0] === 'function-call') {
+    return [
+      ['CallExpression', node => collectStaticCalls(expr[1], [node]) ]
+    ]
   }
-}
-
-module.exports = {
-  applyOn: [ 'function-call' ],
-  Visitor: Visitor
 }

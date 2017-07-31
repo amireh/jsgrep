@@ -24,6 +24,12 @@ createTokenTests('StringLiteral', {
   ]
 })
 
+createTokenTests('BuiltInClassLiteral', {
+  ok: [
+    [ 'String()', 'L_CLASS_STRING' ]
+  ]
+})
+
 createTokenTests('NumberLiteral', {
   ok: [
     [ '0', 0 ],
@@ -87,6 +93,10 @@ createTokenTests('FunctionCallExpression', {
 
     // TypeExpression::Identifier argument
     [ 'foo(bar)', ["function-call", { arguments: ['bar'], id: 'foo', receiver: null }] ],
+
+    // TypeExpression::BuiltInClassLiteral argument
+    [ 'foo(String())', ["function-call", { arguments: ['L_CLASS_STRING'], id: 'foo', receiver: null }] ],
+    [ 'foo(Number())', ["function-call", { arguments: ['L_CLASS_NUMBER'], id: 'foo', receiver: null }] ],
 
     // </ARGUMENTS>
 

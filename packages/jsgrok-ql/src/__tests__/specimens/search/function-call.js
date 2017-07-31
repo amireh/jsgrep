@@ -139,4 +139,35 @@ module.exports = [
       { line: 2 },
     ]
   },
+
+  {
+    spec: 'with String for an argument: it matches StringLiteral arguments',
+    query: 'foo(String())',
+    source: `
+      foo('a')
+      foo("b")
+      foo(String('c'))
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+      { line: 3 },
+    ]
+  },
+  {
+    spec: 'with Number for an argument: it matches NumberLiteral arguments',
+    query: 'foo(Number())',
+    source: `
+      foo(1)
+      foo(-0.5)
+      foo(Number('42'))
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+      { line: 3 },
+    ]
+  },
 ];

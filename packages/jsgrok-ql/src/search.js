@@ -1,8 +1,9 @@
 const MAX_LINE_LEN = 80;
+const { pipe } = require('./functional');
 
-const QueryEvaluators = {
-  'function-call': require('./search/function-call')
-}
+const evaluators = [
+  require('./search/function-call')
+]
 
 const cram = line => line.substr(0, MAX_LINE_LEN - 3);
 
@@ -47,23 +48,21 @@ const track = (state, node) => {
 }
 
 const createVisitors = (state, query) => {
-  const visitors = {};
+  const trackForThis = track.bind(null, state);
+  const trackReturnedNodes = nodes => {
+    nodes.forEach(trackForThis);
+  }
 
-  query.expressions.forEach(expr => {
-    if (expr[0] === 'function-call') {
-      const queryVisitors = [
-        new QueryEvaluators['function-call'].Visitor(expr)
-      ]
+  const visitors = query.expressions.slice(0, 1).reduce((map, expr) => {
+    evaluators.forEach(evaluator => {
+      evaluator(expr).forEach(([ nodeType, f ]) => {
+        // todo: compose them i guess
+        map[nodeType] = pipe(f, trackReturnedNodes);
+      })
+    })
 
-      visitors.CallExpression = function(node) {
-        const nodesToTrack = queryVisitors.reduce((list, x) => {
-          return list.concat( x.CallExpression(node) || [] );
-        }, [])
-
-        nodesToTrack.forEach(track.bind(null, state));
-      }
-    }
-  })
+    return map
+  }, {})
 
   return visitors;
 }

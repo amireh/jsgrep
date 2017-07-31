@@ -12,6 +12,7 @@
   const always = x => () => x;
   const reject = (d, loc, reject) => reject;
   const asArray = f => x => Array(f(x));
+  const collectString = d => d[0].join('');
 %}
 
 Query -> Expression
@@ -50,10 +51,11 @@ FunctionTypeExpression ->
 
 # - Identifiers: a, foo, bar
 TypeExpression ->
-    Identifier {% id %}
+    BuiltInClassLiteral {% id %}
   | AnyLiteral {% id %}
   | NumberLiteral {% id %}
   | StringLiteral {% id %}
+  | Identifier {% id %}
 
 Receiver ->
     AnyLiteral {% id %}
@@ -74,6 +76,10 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
       }
     }
   %}
+
+BuiltInClassLiteral ->
+    "String()" {% d => 'L_CLASS_STRING' %}
+  | "Number()" {% d => 'L_CLASS_NUMBER' %}
 
 AnyLiteral -> "*" {% always(L_ANY) %}
 VoidLiteral -> "void" {% always(L_VOID) %}
