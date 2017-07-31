@@ -18,6 +18,7 @@ namespace jsgrok {
     enum {
       SourceCodeError = 1,
       SearchError = 2,
+      QueryError = 3,
     };
 
     typedef struct {

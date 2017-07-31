@@ -6,4 +6,4 @@
 - [ ] look into minifying the JS to reduce binary size
 - [ ] stream results from JS to reporter
 - [ ] embed v8 data blobs (natives_blob.bin, snapshot_blob.bin) into binary
-- [ ] parse query only once per thread
+- [x] parse query only once per thread

@@ -10,6 +10,15 @@ namespace jsgrok {
   }
 
   void reporter::report(analyzer::analysis_t const& analysis, std::ostream& buf) const {
+    // TODO: might be a good idea to use exit codes now
+    for (auto error : analysis.errors) {
+      if (error.error_type == jsgrok::analyzer::QueryError) {
+        buf << "[QueryError] " << error.message << std::endl;
+
+        break;
+      }
+    }
+
     if (options_.verbosity > options_t::VERBOSITY_QUIET) {
       for (auto error : analysis.errors) {
         if (error.error_type == jsgrok::analyzer::SourceCodeError) {
@@ -18,7 +27,7 @@ namespace jsgrok {
         else if (error.error_type == jsgrok::analyzer::SearchError) {
           buf << "[InternalError] " << error.file << ": " << error.message << std::endl;
         }
-        else {
+        else if (error.error_type != jsgrok::analyzer::QueryError) {
           buf << "[UnexpectedError] " << error.file << ": " << error.message << std::endl;
         }
       }

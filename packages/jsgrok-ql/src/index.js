@@ -7,10 +7,47 @@ const search = require('./search');
 const ERROR_TYPES = {
   SourceCodeError: 1,
   SearchError: 2,
+  QueryError: 3,
 };
 
+const InvalidQuery = {};
+
+const queryCache = {};
+const memoize = f => x => {
+  if (queryCache.hasOwnProperty(x)) {
+    return queryCache[x];
+  }
+
+  const y = f(x);
+
+  queryCache[x] = y;
+
+  return y;
+}
+
+const loadOrParseQuery = memoize(parseQuery);
+
 exports.apply = function(sourceQuery, sourceCode, filePath) {
-  const query = parseQuery(sourceQuery)
+  let query;
+
+  try {
+    query = loadOrParseQuery(sourceQuery)
+  }
+  catch (e) {
+    queryCache[sourceQuery] = InvalidQuery;
+
+    return [{
+      error: true,
+      error_type: ERROR_TYPES.QueryError,
+      file: filePath,
+      message: e.message
+    }]
+  }
+
+  if (query === InvalidQuery) {
+    return [];
+  }
+
   let ast;
 
   try {
