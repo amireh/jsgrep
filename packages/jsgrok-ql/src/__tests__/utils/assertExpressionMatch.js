@@ -30,7 +30,10 @@ const TypeVerifiers = {
   },
 
   'function-call::arguments': (expected, actual) => {
-     expected.forEach((arg, index) => {
+     expected.map(asPair).forEach((arg, index) => {
+      if (!actual[index]) {
+        console.log(actual)
+      }
       assert.equal(arg[0], actual[index][0])
     })
   }

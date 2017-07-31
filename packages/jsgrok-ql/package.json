@@ -9,7 +9,7 @@
     "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrok-ql.ne -o src/grammar.js\"",
     "build-bundle": "webpack",
     "build-bundle:watch": "webpack -w --progress",
-    "test": "mocha 'src/**/*.test.js'"
+    "test": "mocha 'src/**/*.test.js' 'grammar/__tests__/**/*.test.js'"
   },
   "repository": {
     "type": "git",

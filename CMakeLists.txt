@@ -82,7 +82,6 @@ SET(JSGROK_LIBRARIES
   ${V8_BUILD_DIR}/obj/libv8_libbase.a
   ${V8_BUILD_DIR}/obj/libv8_libplatform.a
   ${V8_BUILD_DIR}/obj/libv8_libsampler.a
-  ${V8_BUILD_DIR}/obj/libv8_libsampler.a
   ${V8_BUILD_DIR}/obj/third_party/icu/libicuuc.a
   ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
   ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a

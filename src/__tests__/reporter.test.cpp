@@ -67,7 +67,7 @@ TEST_CASE("jsgrok::reporter") {
 
     analysis.matches.push_back(match);
 
-    auto assert = [&](string_t const& expected) {
+    auto assert_equals = [&](string_t const& expected) {
       subject.report(analysis, out);
       REQUIRE(out.str() == expected);
     };
@@ -96,7 +96,7 @@ TEST_CASE("jsgrok::reporter") {
       }
 
       THEN("It reports the match") {
-        assert_contains("Hello World!");
+        assert_contains("H" + colorize(Color::Red, "ell") + "o World!");
       }
     }
 
@@ -115,10 +115,10 @@ TEST_CASE("jsgrok::reporter") {
     }
 
     WHEN("-h, --no-filename") {
-      configure({ "-h" });
+      configure({ "-h", "--no-color" });
 
       THEN("It hides file names") {
-        assert("Hello World!\n");
+        assert_equals("Hello World!\n");
       }
     }
 

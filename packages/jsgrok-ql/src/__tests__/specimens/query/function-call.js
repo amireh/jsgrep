@@ -50,4 +50,15 @@ module.exports = [
       }]
     ]
   } ],
+
+  // numbers
+  [ 'foo(42)', {
+    directives: [
+      [ 'function-call', {
+        arguments: [
+          42
+        ]
+      }]
+    ]
+  }]
 ];

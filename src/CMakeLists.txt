@@ -19,23 +19,7 @@ SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
 ADD_EXECUTABLE(${JSGROK_BIN} ${JSGROK_SOURCES} main.cpp)
 
-TARGET_LINK_LIBRARIES(${JSGROK_BIN}
-  -Wl,--start-group
-  ${V8_BUILD_DIR}/obj/libv8_base.a
-  ${V8_BUILD_DIR}/obj/libv8_external_snapshot.a
-  ${V8_BUILD_DIR}/obj/libv8_libbase.a
-  ${V8_BUILD_DIR}/obj/libv8_libplatform.a
-  ${V8_BUILD_DIR}/obj/libv8_libsampler.a
-  ${V8_BUILD_DIR}/obj/libv8_libsampler.a
-  ${V8_BUILD_DIR}/obj/third_party/icu/libicuuc.a
-  ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
-  ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
-  -Wl,--end-group
-  ${cpplocate_DIR}/build/libcpplocate.a
-  rt
-  dl
-  pthread
-)
+TARGET_LINK_LIBRARIES(${JSGROK_BIN} ${JSGROK_LIBRARIES})
 
 generate_module_info(jsgrok
   VALUES

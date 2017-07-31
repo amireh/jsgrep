@@ -1,58 +1,83 @@
+@builtin "whitespace.ne"
+
 @{%
-  const RETURN_NULL = () => null;
   const RESERVED_IDENTIFIERS = {
     'void': true,
     'this': true,
     'null': true,
   }
+  const L_ANY = 'L_ANY';
+  const L_VOID = 'L_VOID';
+  const L_THIS = 'L_THIS';
+  const always = x => () => x;
+  const reject = (d, loc, reject) => reject;
+  const asArray = f => x => Array(f(x));
 %}
 
-Main -> Expression
+Query -> Expression
 Expression -> FunctionCallExpression
 
 FunctionCallExpression ->
-  MemberExpression:? Identifier "(" _ FunctionTypeExpression:? _ ")"
+  MemberExpression:? Identifier
+  "(" _
+    (
+      FunctionTypeExpression {% id %} |
+      VoidLiteral {% id %}
+    ):?
+  _ ")"
+
   {%
-    d => (
+    ([ receiver, id,,, arguments = [] ]) => (
       ['function-call', {
-        id: d[1],
-        arguments: d[4] || [],
-        receiver: d[0]
+        id,
+        arguments: [].concat(arguments || []),
+        receiver
       }]
     )
   %}
 
-MemberExpression -> Receiver "."
-  {%
-    d => d[0]
-  %}
+MemberExpression -> Receiver "." {% id %}
 
-# TODO: multiple arguments delimited by ,
-FunctionTypeExpression -> VoidLiteral | TypeExpression
+FunctionTypeExpression ->
+    TypeExpression
+  | FunctionTypeExpression _ "," _ TypeExpression
+    {%
+      (d, loc) => {
+        return d[0].concat(d[4])
+      }
+    %}
+
 
 # - Identifiers: a, foo, bar
-TypeExpression -> [a-z]
+TypeExpression ->
+    Identifier {% id %}
+  | AnyLiteral {% id %}
+  | NumberLiteral {% id %}
 
-Receiver -> (AnyLiteral | ThisLiteral | Identifier)
-  {%
-    d => d[0][0]
-  %}
+Receiver ->
+    AnyLiteral {% id %}
+  | ThisLiteral {% id %}
+  | Identifier {% id %}
 
-Identifier -> [a-zA-Z_] [a-zA-Z_1-9]:+
+Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
   {%
     ([ leadingChar, rest ], loc, reject) => {
       const id = leadingChar + rest.join('');
 
       if (RESERVED_IDENTIFIERS[id]) {
-        return reject;// (`reserved keyword "${id}" may not appear as an identifier`);
+        // throw new Error(`reserved keyword "${id}" may not appear as an identifier`);
+        return reject;
       }
-
-      return id;
+      else {
+        return id;
+      }
     }
   %}
 
-AnyLiteral -> "*" {% () => 'L_ANY' %}
-VoidLiteral -> "void" {% () => 'L_VOID' %}
-ThisLiteral -> "this" {% () => 'L_THIS' %}
+AnyLiteral -> "*" {% always(L_ANY) %}
+VoidLiteral -> "void" {% always(L_VOID) %}
+ThisLiteral -> "this" {% always(L_THIS) %}
 
-_ -> [\s]:*     {% RETURN_NULL %}
+# yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
+# they get
+NumberLiteral -> "-":? [\.0-9]:+ {% d => parseFloat((d[0] || '') + d[1].join('')) %}

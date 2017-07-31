@@ -9,7 +9,10 @@ describe('jsgrok-ql::search', function() {
         const results = apply(sourceQuery, source);
 
         if (expectedMatches) {
-          assert(!results.some(x => x.error === true))
+          assert(!results.some(x => x.error === true),
+            `Some results had errors: ${JSON.stringify(results.filter(x => x.error), null, 4)}`
+          )
+
           assert.equal(expectedMatches.length, results.length,
             `Expected ${expectedMatches.length} match(es), not ${results.length}`
           )
