@@ -66,6 +66,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
     return search(walkSourceCode, query, ast, sourceCode);
   }
   catch (e) {
+    console.log(e.stack)
     return [{
       error: true,
       error_type: ERROR_TYPES.SearchError,

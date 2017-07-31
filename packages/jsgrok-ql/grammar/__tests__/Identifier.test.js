@@ -18,6 +18,12 @@ createTokenTests('VoidLiteral', {
   ]
 })
 
+createTokenTests('StringLiteral', {
+  ok: [
+    [ '"Hello World!"', 'Hello World!' ]
+  ]
+})
+
 createTokenTests('NumberLiteral', {
   ok: [
     [ '0', 0 ],
@@ -75,6 +81,10 @@ createTokenTests('FunctionCallExpression', {
     // TypeExpression::NumberLiteral argument
     [ 'foo(1)', ["function-call", { arguments: [1], id: 'foo', receiver: null }] ],
 
+    // TypeExpression::StringLiteral argument
+    [ 'foo(\'Hello\')', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
+    [ 'foo("Hello")', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
+
     // TypeExpression::Identifier argument
     [ 'foo(bar)', ["function-call", { arguments: ['bar'], id: 'foo', receiver: null }] ],
 
@@ -95,6 +105,8 @@ createTokenTests('FunctionCallExpression', {
     // Mixed
 
     [ 'foo(*, bar, 10)', ["function-call", { arguments: ['L_ANY', 'bar', 10], id: 'foo', receiver: null }] ],
+    [ 'foo(bar, *, 10)', ["function-call", { arguments: ['bar', 'L_ANY', 10], id: 'foo', receiver: null }] ],
+    [ 'foo(10, bar, *)', ["function-call", { arguments: [10, 'bar', 'L_ANY'], id: 'foo', receiver: null }] ],
 
     // </MULTIPLE ARGUMENTS>
   ],

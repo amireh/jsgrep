@@ -4,8 +4,16 @@ const { createSpecimenTests } = require('./utils')
 
 describe('jsgrok-ql::search', function() {
   createSpecimenTests('search')(specs => {
-    specs.forEach(function({ spec = null, query: sourceQuery, source, matches: expectedMatches }) {
-      it(spec || `applies ${sourceQuery}`, function() {
+    specs.forEach(function({
+      spec = null,
+      query: sourceQuery,
+      source,
+      only,
+      matches: expectedMatches
+    }) {
+      const fn = only ? it.only : it;
+
+      fn(spec || `applies ${sourceQuery}`, function() {
         const results = apply(sourceQuery, source);
 
         if (expectedMatches) {

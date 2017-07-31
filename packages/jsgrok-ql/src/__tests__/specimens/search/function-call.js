@@ -1,6 +1,6 @@
 module.exports = [
   {
-    spec: 'It matches function calls regardless of arity',
+    spec: 'function call of any arity',
     query: 'foo()',
     source: `
       foo()
@@ -28,6 +28,54 @@ module.exports = [
     matches: [
       { line: 2 },
       { line: 3 },
+    ]
+  },
+
+  {
+    spec: 'function call with an argument of a NumberLiteral type and value',
+    query: 'foo(42)',
+    source: `
+      foo(42)         // <-- matches
+      foo()           // no value at position
+      foo('a')        // different type
+      foo(Number(42)) // different type
+      foo('a', 42)    // different position
+    `.trim(),
+
+    matches: [
+      { line: 0 },
+    ]
+  },
+
+  {
+    spec: 'function call with an argument of a StringLiteral type and value',
+    query: 'foo("Hello World!")',
+    source: `
+      foo('Hello World!')         // <-- matches
+      foo()
+      foo('Hello')                // different value
+      foo(String("Hello World!")) // different type
+      foo('a', "Hello World!")    // different position
+    `.trim(),
+
+    matches: [
+      { line: 0 },
+    ]
+  },
+
+  {
+    spec: 'function call with argument "void" does not match any function call with arity > 0',
+    query: 'foo(void)',
+    source: `
+      foo()
+      foo(1)
+      foo(void 0, 1)
+      foo(null)
+      foo(undefined)
+    `.trim(),
+
+    matches: [
+      { line: 0 },
     ]
   },
 

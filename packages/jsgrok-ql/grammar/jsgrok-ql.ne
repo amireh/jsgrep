@@ -53,6 +53,7 @@ TypeExpression ->
     Identifier {% id %}
   | AnyLiteral {% id %}
   | NumberLiteral {% id %}
+  | StringLiteral {% id %}
 
 Receiver ->
     AnyLiteral {% id %}
@@ -77,6 +78,13 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
 AnyLiteral -> "*" {% always(L_ANY) %}
 VoidLiteral -> "void" {% always(L_VOID) %}
 ThisLiteral -> "this" {% always(L_THIS) %}
+StringLiteral ->
+  StringQuoteLiteral _
+    [^\"\']:*
+  _ StringQuoteLiteral
+  {% d => d[2].join('') %}
+
+StringQuoteLiteral -> [\"\'] {% always(null) %}
 
 # yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
 # they get
