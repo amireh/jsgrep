@@ -318,4 +318,19 @@ module.exports = [
       { line: 1 },
     ]
   },
+
+  {
+    spec: 'with { a: ^Number() } it matches object literals that do have the "a" property but is not a number',
+    query: 'foo({ a: ^Number() })',
+    source: `
+      foo({ a }) // OK, don't know what it is
+      foo({ a: '1' }) // OK, not a number
+      foo({ a: 4 }) // NOP
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
 ];

@@ -87,42 +87,42 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
   })
 }
 
-const isMatchingArgument = (argSpec, argNode) => {
-  if (argSpec === L_ANY) {
+const isMatchingArgument = (valueSpec, node) => {
+  if (valueSpec === L_ANY) {
     return true;
   }
-  else if (argSpec === L_CLASS_STRING) {
-    return isStringArgument(argNode)
+  else if (valueSpec === L_CLASS_STRING) {
+    return isStringArgument(node)
   }
-  else if (argSpec === L_CLASS_NUMBER) {
-    return isNumberArgument(argNode)
+  else if (valueSpec === L_CLASS_NUMBER) {
+    return isNumberArgument(node)
   }
-  else if (argSpec === L_CLASS_REGEXP) {
-    return isRegExpArgument(argNode)
+  else if (valueSpec === L_CLASS_REGEXP) {
+    return isRegExpArgument(node)
   }
-  else if (argSpec === L_CLASS_OBJECT) {
-    return isObjectArgument(argNode)
+  else if (valueSpec === L_CLASS_OBJECT) {
+    return isObjectArgument(node)
   }
-  else if (argSpec === L_EMPTY_OBJECT) {
-    return isObjectArgument(argNode) && argNode.properties.length === 0;
+  else if (valueSpec === L_EMPTY_OBJECT) {
+    return isObjectArgument(node) && node.properties.length === 0;
   }
-  else if (argSpec.object) {
+  else if (valueSpec.object) {
     return (
-      isObjectArgument(argNode) &&
-      isMatchingObject(argSpec.object, argNode)
+      isObjectArgument(node) &&
+      isMatchingObject(valueSpec.object, node)
     )
   }
-  else if (argSpec.regexp) {
+  else if (valueSpec.regexp) {
     return (
-      isRegExpArgument(argNode) &&
-      isMatchingRegExp(argSpec.regexp, argNode)
+      isRegExpArgument(node) &&
+      isMatchingRegExp(valueSpec.regexp, node)
     )
   }
-  else if (typeof argSpec === 'number') {
-    return t.literal(argNode) && argNode.value === argSpec;
+  else if (typeof valueSpec === 'number') {
+    return t.literal(node) && node.value === valueSpec;
   }
-  else if (typeof argSpec === 'string') {
-    return t.literal(argNode) && argNode.value === argSpec;
+  else if (typeof valueSpec === 'string') {
+    return t.literal(node) && node.value === valueSpec;
   }
   else {
     return false;
@@ -189,7 +189,7 @@ const isMatchingObject = (object, node) => {
   }, {})
 
   return object.keys.every(propKey => {
-    const [ valueSpec, flag ] = extractPropertyValueSpec(object.properties[propKey]);
+    const [ propSpec, flag ] = extractValueAndFlag(object.properties[propKey]);
     const isDefined = nodeProps.hasOwnProperty(propKey);
 
     // { ?a }
@@ -205,12 +205,20 @@ const isMatchingObject = (object, node) => {
       return false;
     }
     else {
-      return isMatchingArgument(valueSpec, nodeProps[propKey])
+      const [ valueSpec, valueFlag ] = extractValueAndFlag(propSpec)
+      const ok = isMatchingArgument(valueSpec, nodeProps[propKey])
+
+      if (valueFlag === F_NOT) {
+        return !ok
+      }
+      else {
+        return ok
+      }
     }
   })
 }
 
-const extractPropertyValueSpec = spec => Array.isArray(spec) ? spec : [ spec, null ];
+const extractValueAndFlag = spec => Array.isArray(spec) ? spec : [ spec, null ];
 
 const extractPropertyKey = node => {
   return t.identifier(node.key) && node.key.name || null;

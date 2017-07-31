@@ -20,12 +20,12 @@
     '^': 'F_NOT'
   }
 
-  const createObjectValuePair = (flag, value) => {
+  const createValueFlagPair = (flag, value) => {
     if (flag) {
       return [ value, FLAGS[flag] ]
     }
     else {
-      return value
+      return [ value ]
     }
   }
 %}
@@ -123,25 +123,26 @@ ObjectLiteral ->
   | "{" _ ObjectPropertyList _ "}"
     {% d => ({ object: { keys: Object.keys(d[2]), properties: d[2] } }) %}
 
+EmptyObjectLiteral -> "{" _ "}" {% always('L_EMPTY_OBJECT') %}
+
 ObjectPropertyList ->
     ObjectProperty {% id %}
   | ObjectPropertyList _  "," _ ObjectProperty {% d => Object.assign({}, d[0], d[4]) %}
 
 ObjectProperty ->
-    ObjectPropertyFlag:? ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[1], createObjectValuePair(d[0], d[5])) %}
-  | ObjectPropertyFlag:? ObjectKey                     {% d => assoc({}, d[1], createObjectValuePair(d[0], 'L_ANY')) %}
+    ObjectPropertyFlag:? ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[1], createValueFlagPair(d[0], d[5])) %}
+  | ObjectPropertyFlag:? ObjectKey                     {% d => assoc({}, d[1], createValueFlagPair(d[0], ['L_ANY'])) %}
 
 ObjectKey -> Identifier {% id %}
-ObjectPropertyFlag -> [\?\^] {% id %}
 ObjectValue ->
-    BuiltInClassLiteral {% id %}
-  | AnyLiteral {% id %}
-  | NumberLiteral {% id %}
-  | StringLiteral {% id %}
-  | RegExpLiteral {% id %}
-  | NullLiteral   {% id %}
+    ObjectPropertyFlag:? BuiltInClassLiteral  {% d => createValueFlagPair(d[0], d[1]) %}
+  | ObjectPropertyFlag:? AnyLiteral           {% d => createValueFlagPair(d[0], d[1]) %}
+  | ObjectPropertyFlag:? NumberLiteral        {% d => createValueFlagPair(d[0], d[1]) %}
+  | ObjectPropertyFlag:? StringLiteral        {% d => createValueFlagPair(d[0], d[1]) %}
+  | ObjectPropertyFlag:? RegExpLiteral        {% d => createValueFlagPair(d[0], d[1]) %}
+  | ObjectPropertyFlag:? NullLiteral          {% d => createValueFlagPair(d[0], d[1]) %}
 
-EmptyObjectLiteral -> "{" _ "}" {% always('L_EMPTY_OBJECT') %}
+ObjectPropertyFlag -> [\?\^] {% id %}
 
 Quote -> [\"\'] {% always(null) %}
 NotAQuote -> [^\"\']
