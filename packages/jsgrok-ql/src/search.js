@@ -1,7 +1,7 @@
 const MAX_LINE_LEN = 80;
 const { pipe } = require('./functional');
 
-const evaluators = [
+const queryEvaluators = [
   require('./search/function-call')
 ]
 
@@ -53,6 +53,7 @@ const createVisitors = (state, query) => {
     nodes.forEach(trackForThis);
   }
 
+  const evaluators = queryEvaluators.map(x => x.evaluate)
   const visitors = query.expressions.slice(0, 1).reduce((map, expr) => {
     evaluators.forEach(evaluator => {
       evaluator(expr).forEach(([ nodeType, f ]) => {

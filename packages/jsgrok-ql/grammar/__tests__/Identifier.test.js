@@ -30,6 +30,12 @@ createTokenTests('BuiltInClassLiteral', {
   ]
 })
 
+createTokenTests('RegExpLiteral', {
+  ok: [
+    [ '/foo/', { regexp: 'foo' } ]
+  ]
+})
+
 createTokenTests('NumberLiteral', {
   ok: [
     [ '0', 0 ],
@@ -97,6 +103,7 @@ createTokenTests('FunctionCallExpression', {
     // TypeExpression::BuiltInClassLiteral argument
     [ 'foo(String())', ["function-call", { arguments: ['L_CLASS_STRING'], id: 'foo', receiver: null }] ],
     [ 'foo(Number())', ["function-call", { arguments: ['L_CLASS_NUMBER'], id: 'foo', receiver: null }] ],
+    [ 'foo(RegExp())', ["function-call", { arguments: ['L_CLASS_REGEXP'], id: 'foo', receiver: null }] ],
 
     // </ARGUMENTS>
 

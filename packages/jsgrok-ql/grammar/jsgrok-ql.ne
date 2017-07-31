@@ -55,6 +55,7 @@ TypeExpression ->
   | AnyLiteral {% id %}
   | NumberLiteral {% id %}
   | StringLiteral {% id %}
+  | RegExpLiteral {% id %}
   | Identifier {% id %}
 
 Receiver ->
@@ -80,10 +81,13 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
 BuiltInClassLiteral ->
     "String()" {% d => 'L_CLASS_STRING' %}
   | "Number()" {% d => 'L_CLASS_NUMBER' %}
+  | "RegExp()" {% d => 'L_CLASS_REGEXP' %}
 
 AnyLiteral -> "*" {% always(L_ANY) %}
 VoidLiteral -> "void" {% always(L_VOID) %}
 ThisLiteral -> "this" {% always(L_THIS) %}
+RegExpLiteral -> "/" [^\/]:+ "/" {% d => ({ regexp: d[1].join('') }) %}
+
 StringLiteral ->
   StringQuoteLiteral _
     [^\"\']:*

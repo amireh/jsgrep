@@ -4,6 +4,7 @@ const {
   L_THIS,
   L_VOID,
   L_CLASS_NUMBER,
+  L_CLASS_REGEXP,
   L_CLASS_STRING,
 } = require('../constants');
 const notVoid = x => x !== L_VOID
@@ -87,6 +88,15 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
       else if (argSpec === L_CLASS_NUMBER) {
         return isNumberArgument(argNode)
       }
+      else if (argSpec === L_CLASS_REGEXP) {
+        return isRegExpArgument(argNode)
+      }
+      else if (argSpec.regexp) {
+        return (
+          isRegExpArgument(argNode) &&
+          isRegExpMatching(argSpec.regexp, argNode)
+        )
+      }
       else if (typeof argSpec === 'number') {
         return t.literal(argNode) && argNode.value === argSpec;
       }
@@ -122,6 +132,27 @@ const isStringArgument = node => (
     node.callee.name === 'String'
   )
 )
+
+const isRegExpArgument = node => (
+  t.literal(node) && node.value instanceof RegExp ||
+  (
+    t.newExpression(node) &&
+    node.callee.name === 'RegExp'
+  )
+)
+
+const isRegExpMatching = (source, node) => {
+  if (t.literal(node)) {
+    // acorn seems to generate this node.regex struct which is super handy
+    return node.regex && node.regex.pattern === source;
+  }
+  else if (t.newExpression(node)) {
+    return t.literal(node.arguments[0]) && node.arguments[0].value === source;
+  }
+  else {
+    return false;
+  }
+}
 
 // we'll avoid pipe / compose for the overhead
 const collectStaticCalls = (query, nodes) => (
@@ -160,7 +191,7 @@ const collectMemberCalls = (query, nodes) => (
   )
 )
 
-module.exports = expr => {
+exports.evaluate = expr => {
   if (expr[0] === 'function-call' && expr[1].receiver) {
     return [
       [ 'CallExpression', node => collectMemberCalls(expr[1], [node]) ]

@@ -141,7 +141,7 @@ module.exports = [
   },
 
   {
-    spec: 'with String for an argument: it matches StringLiteral arguments',
+    spec: 'with String() for an argument: it matches StringLiteral arguments',
     query: 'foo(String())',
     source: `
       foo('a')
@@ -155,8 +155,9 @@ module.exports = [
       { line: 3 },
     ]
   },
+
   {
-    spec: 'with Number for an argument: it matches NumberLiteral arguments',
+    spec: 'with Number() for an argument: it matches NumberLiteral arguments',
     query: 'foo(Number())',
     source: `
       foo(1)
@@ -168,6 +169,49 @@ module.exports = [
       { line: 1 },
       { line: 2 },
       { line: 3 },
+    ]
+  },
+
+  {
+    spec: 'with RegExp() for an argument: it matches regexp literals',
+    query: 'foo(RegExp())',
+    source: `
+      foo(/foo/)
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+    ]
+  },
+
+  {
+    spec: 'with RegExp() for an argument: it matches regexp constructs',
+    query: 'foo(RegExp())',
+    source: `
+      foo(new RegExp('bar'))
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+    ]
+  },
+
+  {
+    spec: 'with /bar/ for an argument: it matches regexp literals matching that',
+    query: 'foo(/bar/)',
+    source: `
+      foo(/bar/)
+      foo(/bar/i)
+      foo(new RegExp('bar'))
+      foo(new RegExp('bar', 'i'))
+      foo(/barz/)
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+      { line: 3 },
+      { line: 4 },
     ]
   },
 ];

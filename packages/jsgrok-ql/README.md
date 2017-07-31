@@ -268,6 +268,23 @@ echo ".foo((Object|String))" | jsgrok
 Numerical value matchers
 ------------------------
 
+EXAMPLES
+
+    Number()
+    42
+    -0.5
+
+Regular expression matchers
+---------------------------
+
+EXAMPLES
+
+    # match any kind of regex; literal or constructed using new RegExp()
+    RegExp()
+
+    # match a regexp by pattern:
+    /foo/
+
 #### Exact decimals and integers
 
 ```sql
