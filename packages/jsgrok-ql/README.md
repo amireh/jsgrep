@@ -160,19 +160,19 @@ EXAMPLES:
     # Object has the "a" property
     { a }
 
-    # Object has either the "a" or "b" properties or both
-    { ?a, ?b }
+    # Object does not have the "a" property
+    { ^a }
 
     # Object has both the "a" and "b" properties
     { a, b }
 
-    # Object does not have the "a" property
-    { ^a }
-
     # Object has the "a" property but not the "b" property
     { a, ^b }
 
-    # Object has neither the "a" property nor the "b" property
+    # Object may have the "a" property but not the "b" property
+    { ?a, ^b }
+
+    # Object is not empty but has neither "a" nor "b" for properties
     { ^a, ^b }
 
     # Object has the "a" property with a value of type Type
