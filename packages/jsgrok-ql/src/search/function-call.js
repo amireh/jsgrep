@@ -4,8 +4,10 @@ const {
   L_THIS,
   L_VOID,
   L_CLASS_NUMBER,
+  L_CLASS_OBJECT,
   L_CLASS_REGEXP,
   L_CLASS_STRING,
+  L_EMPTY_OBJECT,
 } = require('../constants');
 const notVoid = x => x !== L_VOID
 
@@ -78,36 +80,51 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
   return nodes.filter(node => {
     return query.arguments.filter(notVoid).every((argSpec, index) => {
       const argNode = node.arguments[index]
-
-      if (argSpec === L_ANY) {
-        return true;
-      }
-      else if (argSpec === L_CLASS_STRING) {
-        return isStringArgument(argNode)
-      }
-      else if (argSpec === L_CLASS_NUMBER) {
-        return isNumberArgument(argNode)
-      }
-      else if (argSpec === L_CLASS_REGEXP) {
-        return isRegExpArgument(argNode)
-      }
-      else if (argSpec.regexp) {
-        return (
-          isRegExpArgument(argNode) &&
-          isRegExpMatching(argSpec.regexp, argNode)
-        )
-      }
-      else if (typeof argSpec === 'number') {
-        return t.literal(argNode) && argNode.value === argSpec;
-      }
-      else if (typeof argSpec === 'string') {
-        return t.literal(argNode) && argNode.value === argSpec;
-      }
-      else {
-        return false;
-      }
+      return isMatchingArgument(argSpec, argNode)
     })
   })
+}
+
+const isMatchingArgument = (argSpec, argNode) => {
+  if (argSpec === L_ANY) {
+    return true;
+  }
+  else if (argSpec === L_CLASS_STRING) {
+    return isStringArgument(argNode)
+  }
+  else if (argSpec === L_CLASS_NUMBER) {
+    return isNumberArgument(argNode)
+  }
+  else if (argSpec === L_CLASS_REGEXP) {
+    return isRegExpArgument(argNode)
+  }
+  else if (argSpec === L_CLASS_OBJECT) {
+    return isObjectArgument(argNode)
+  }
+  else if (argSpec === L_EMPTY_OBJECT) {
+    return isObjectArgument(argNode) && argNode.properties.length === 0;
+  }
+  else if (argSpec.object) {
+    return (
+      isObjectArgument(argNode) &&
+      isMatchingObject(argSpec.object, argNode)
+    )
+  }
+  else if (argSpec.regexp) {
+    return (
+      isRegExpArgument(argNode) &&
+      isMatchingRegExp(argSpec.regexp, argNode)
+    )
+  }
+  else if (typeof argSpec === 'number') {
+    return t.literal(argNode) && argNode.value === argSpec;
+  }
+  else if (typeof argSpec === 'string') {
+    return t.literal(argNode) && argNode.value === argSpec;
+  }
+  else {
+    return false;
+  }
 }
 
 const isNumberArgument = node => (
@@ -141,7 +158,7 @@ const isRegExpArgument = node => (
   )
 )
 
-const isRegExpMatching = (source, node) => {
+const isMatchingRegExp = (source, node) => {
   if (t.literal(node)) {
     // acorn seems to generate this node.regex struct which is super handy
     return node.regex && node.regex.pattern === source;
@@ -152,6 +169,39 @@ const isRegExpMatching = (source, node) => {
   else {
     return false;
   }
+}
+
+const isObjectArgument = node => (
+  t.objectExpression(node)
+)
+
+const isMatchingObject = (object, node) => {
+  // lack fo "properties" indicates that we're searching for an empty object
+  if (object.properties === null) {
+    return node.properties.length === 0;
+  }
+
+  const nodeProps = node.properties.reduce(function(map, propNode) {
+    map[extractPropertyKey(propNode)] = extractPropertyValue(propNode)
+    return map;
+  }, {})
+
+  return object.keys.every(propKey => {
+    if (!nodeProps.hasOwnProperty(propKey)) {
+      return false;
+    }
+    else {
+      return isMatchingArgument(object.properties[propKey], nodeProps[propKey])
+    }
+  })
+}
+
+const extractPropertyKey = node => {
+  return t.identifier(node.key) && node.key.name || null;
+}
+
+const extractPropertyValue = node => {
+  return node.value;
 }
 
 // we'll avoid pipe / compose for the overhead

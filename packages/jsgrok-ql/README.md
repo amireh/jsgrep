@@ -152,31 +152,34 @@ Where ObjectProperty is defined as:
 EXAMPLES:
 
     # Object has 0 more properties
-    Object
+    Object()
+
+    # Object has 0 properties (i.e. an empty object)
+    {}
     
     # Object has the "a" property
-    Object(a)
+    { a }
 
     # Object has either the "a" or "b" properties or both
-    Object(a | b)
+    { ?a, ?b }
 
     # Object has both the "a" and "b" properties
-    Object(a & b)
+    { a, b }
 
     # Object does not have the "a" property
-    Object(^a)
+    { ^a }
 
     # Object has the "a" property but not the "b" property
-    Object(a & ^b)
+    { a, ^b }
 
     # Object has neither the "a" property nor the "b" property
-    Object(^a & ^b)
+    { ^a, ^b }
 
     # Object has the "a" property with a value of type Type
-    Object(a: Type)
+    { a: Type }
 
     # Object has the "a" property with a value of type other than Type
-    Object(a: ^Type)
+    { a: ^Type }
 
 Module exports matcher
 ----------------------

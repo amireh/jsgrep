@@ -26,13 +26,35 @@ createTokenTests('StringLiteral', {
 
 createTokenTests('BuiltInClassLiteral', {
   ok: [
-    [ 'String()', 'L_CLASS_STRING' ]
+    [ 'String()', 'L_CLASS_STRING' ],
+    [ 'Number()', 'L_CLASS_NUMBER' ],
+    [ 'RegExp()', 'L_CLASS_REGEXP' ],
+    [ 'Object()', 'L_CLASS_OBJECT' ],
   ]
 })
 
 createTokenTests('RegExpLiteral', {
   ok: [
-    [ '/foo/', { regexp: 'foo' } ]
+    [ '/foo/', { regexp: 'foo' } ],
+  ]
+})
+
+createTokenTests('ObjectLiteral', {
+  ok: [
+    [ '{}',               'L_EMPTY_OBJECT' ],
+
+    [ '{ a }',            { object: { keys: ['a'], properties: { 'a': 'L_ANY' } } } ],
+    [ '{ a: "b" }',       { object: { keys: ['a'], properties: { 'a': 'b' } } } ],
+    [ '{ a: 42 }',        { object: { keys: ['a'], properties: { 'a': 42 } } } ],
+    [ '{ a: /foo/ }',     { object: { keys: ['a'], properties: { 'a': { regexp: 'foo' } } } } ],
+    [ '{ a: Object() }',  { object: { keys: ['a'], properties: { 'a': 'L_CLASS_OBJECT' } } } ],
+    [ '{ a: null }',      { object: { keys: ['a'], properties: { 'a': 'L_NULL' } } } ],
+    [ '{ a, b }',         { object: { keys: ['a','b'], properties: { 'a': 'L_ANY', 'b': 'L_ANY' } } } ],
+    [ '{ a: "b", b: * }', { object: { keys: ['a','b'], properties: { 'a': 'b', 'b': 'L_ANY' } } } ],
+
+    // Flags
+    // [ '{ ?a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', '?'] } } } ],
+    // [ '{ ^a }',            { object: { keys: ['a'], properties: { 'a': ['L_ANY', '^'] } } } ],
   ]
 })
 
@@ -97,13 +119,16 @@ createTokenTests('FunctionCallExpression', {
     [ 'foo(\'Hello\')', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
     [ 'foo("Hello")', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
 
-    // TypeExpression::Identifier argument
     [ 'foo(bar)', ["function-call", { arguments: ['bar'], id: 'foo', receiver: null }] ],
+
+    // TypeExpression::ObjectLiteral argument
+    [ 'foo({})', ["function-call", { arguments: ['L_EMPTY_OBJECT'], id: 'foo', receiver: null }] ],
 
     // TypeExpression::BuiltInClassLiteral argument
     [ 'foo(String())', ["function-call", { arguments: ['L_CLASS_STRING'], id: 'foo', receiver: null }] ],
     [ 'foo(Number())', ["function-call", { arguments: ['L_CLASS_NUMBER'], id: 'foo', receiver: null }] ],
     [ 'foo(RegExp())', ["function-call", { arguments: ['L_CLASS_REGEXP'], id: 'foo', receiver: null }] ],
+    [ 'foo(Object())', ["function-call", { arguments: ['L_CLASS_OBJECT'], id: 'foo', receiver: null }] ],
 
     // </ARGUMENTS>
 

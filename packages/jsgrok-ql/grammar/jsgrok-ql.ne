@@ -6,13 +6,14 @@
     'this': true,
     'null': true,
   }
-  const L_ANY = 'L_ANY';
-  const L_VOID = 'L_VOID';
-  const L_THIS = 'L_THIS';
   const always = x => () => x;
   const reject = (d, loc, reject) => reject;
   const asArray = f => x => Array(f(x));
   const collectString = d => d[0].join('');
+  const assoc = (x, k, v) => {
+    x[k] = v;
+    return x;
+  };
 %}
 
 Query -> Expression
@@ -56,6 +57,7 @@ TypeExpression ->
   | NumberLiteral {% id %}
   | StringLiteral {% id %}
   | RegExpLiteral {% id %}
+  | ObjectLiteral {% id %}
   | Identifier {% id %}
 
 Receiver ->
@@ -79,23 +81,52 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
   %}
 
 BuiltInClassLiteral ->
-    "String()" {% d => 'L_CLASS_STRING' %}
-  | "Number()" {% d => 'L_CLASS_NUMBER' %}
-  | "RegExp()" {% d => 'L_CLASS_REGEXP' %}
+    "String()" {% always('L_CLASS_STRING') %}
+  | "Number()" {% always('L_CLASS_NUMBER') %}
+  | "RegExp()" {% always('L_CLASS_REGEXP') %}
+  | "Object()" {% always('L_CLASS_OBJECT') %}
 
-AnyLiteral -> "*" {% always(L_ANY) %}
-VoidLiteral -> "void" {% always(L_VOID) %}
-ThisLiteral -> "this" {% always(L_THIS) %}
+AnyLiteral -> "*" {% always('L_ANY') %}
+VoidLiteral -> "void" {% always('L_VOID') %}
+ThisLiteral -> "this" {% always('L_THIS') %}
+NullLiteral -> "null" {% always('L_NULL') %}
 RegExpLiteral -> "/" [^\/]:+ "/" {% d => ({ regexp: d[1].join('') }) %}
-
-StringLiteral ->
-  StringQuoteLiteral _
-    [^\"\']:*
-  _ StringQuoteLiteral
-  {% d => d[2].join('') %}
-
-StringQuoteLiteral -> [\"\'] {% always(null) %}
 
 # yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
 # they get
 NumberLiteral -> "-":? [\.0-9]:+ {% d => parseFloat((d[0] || '') + d[1].join('')) %}
+
+StringLiteral ->
+  StringQuoteLiteral _
+    NotAQuote:*
+  _ StringQuoteLiteral
+  {% d => d[2].join('') %}
+
+StringQuoteLiteral -> Quote
+
+ObjectLiteral ->
+    EmptyObjectLiteral {% always('L_EMPTY_OBJECT') %}
+  | "{" _ ObjectPropertyList _ "}"
+    {% d => ({ object: { keys: Object.keys(d[2]), properties: d[2] } }) %}
+
+ObjectPropertyList ->
+    ObjectProperty {% id %}
+  | ObjectPropertyList _  "," _ ObjectProperty {% d => Object.assign({}, d[0], d[4]) %}
+
+ObjectProperty ->
+    ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[0], d[4]) %}
+  | ObjectKey                     {% d => assoc({}, d[0], 'L_ANY') %}
+
+ObjectKey -> Identifier {% id %}
+ObjectValue ->
+    BuiltInClassLiteral {% id %}
+  | AnyLiteral {% id %}
+  | NumberLiteral {% id %}
+  | StringLiteral {% id %}
+  | RegExpLiteral {% id %}
+  | NullLiteral   {% id %}
+
+EmptyObjectLiteral -> "{" _ "}" {% always('L_EMPTY_OBJECT') %}
+
+Quote -> [\"\'] {% always(null) %}
+NotAQuote -> [^\"\']

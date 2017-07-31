@@ -214,4 +214,63 @@ module.exports = [
       { line: 4 },
     ]
   },
+
+  {
+    spec: 'with Object() for an argument: it matches all object literals',
+    query: 'foo(Object())',
+    source: `
+      foo({})
+      foo({ foo: '1' })
+      foo()
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
+
+  {
+    spec: 'with {} for an argument: it matches object literals that are empty',
+    query: 'foo({})',
+    source: `
+      foo({})
+      foo({ foo: '1' })
+      foo()
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+    ]
+  },
+
+  {
+    spec: 'with { a } for an argument: it matches object literals that define the "a" property',
+    query: 'foo({ a })',
+    source: `
+      foo({ a: '1' })
+      foo({ b: '1' })
+      foo({ a: 1, b: 2 })
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 3 },
+    ]
+  },
+
+  {
+    spec: 'with { a: Object() } for an argument: it matches object literals that define the "a" property and have a value that is an object',
+    query: 'foo({ a: Object() })',
+    source: `
+      foo({ a: {} })
+      foo({ a: {}, b: 2 })
+      foo({ b: {} })
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
 ];
