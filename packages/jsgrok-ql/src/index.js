@@ -1,7 +1,7 @@
 const parseQuery = require('./parseQuery');
 const parseSourceCode = require('./parseSourceCode');
 const walkSourceCode = require('./walkSourceCode');
-const evalQuery = require('./eval');
+const evaluateQuery = require('./evaluateQuery');
 
 // THIS MUST BE IN SYNC WITH analyzer.cpp
 const ERROR_TYPES = {
@@ -63,7 +63,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
   }
 
   try {
-    return evalQuery(walkSourceCode, query, ast, sourceCode);
+    return evaluateQuery(walkSourceCode, query, ast, sourceCode);
   }
   catch (e) {
     console.log(e.stack)

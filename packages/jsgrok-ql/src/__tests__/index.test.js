@@ -4,7 +4,7 @@ const path = require('path');
 const glob = require('glob')
 
 const createSpecimenTests = f => {
-  const groups = glob.sync(path.resolve(__dirname, `./specimens/*.js`)).map(function(filepath) {
+  const groups = glob.sync(path.resolve(__dirname, `./expressions/*.js`)).map(function(filepath) {
     return {
       name: path.basename(filepath).replace('.js', ''),
       specs: require(filepath)
