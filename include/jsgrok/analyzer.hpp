@@ -43,7 +43,7 @@ namespace jsgrok {
     analyzer();
     virtual ~analyzer();
 
-    analysis_t apply(v8_session*, string_t const& query, vector<string_t> const& files);
+    analysis_t apply(v8_session*, string_t const& query, vector<string_t> const& files) const;
 
   protected:
     typedef struct {

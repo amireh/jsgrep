@@ -4,9 +4,13 @@ createTokenTests('FunctionCallExpression', {
   ok: [
     [ 'foo()', ["function-call", { arguments: [], id: 'foo', receiver: null }] ],
 
-    // Member expression call receivers
+    // `x` as a receiver
     [ 'x.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'x' }] ],
+
+    // `this` as a receiver
     [ 'this.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'L_THIS' }] ],
+
+    // any receiver
     [ '*.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'L_ANY' }] ],
 
     // <ARGUMENTS>
@@ -63,5 +67,13 @@ createTokenTests('FunctionCallExpression', {
 
     [ 'foo(void, 10)' ],
     [ 'foo(10, void)' ],
+
+    // forbids reserved keywords as identifiers
+    [ 'this()' ],
+    [ 'void()' ],
+    [ '*()'    ],
+
+    // no receiver defined, should use *. instead
+    [ '.()'    ],
   ]
 })

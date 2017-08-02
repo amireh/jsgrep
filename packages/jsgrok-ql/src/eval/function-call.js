@@ -10,7 +10,8 @@ const {
   L_CLASS_REGEXP,
   L_CLASS_STRING,
   L_EMPTY_OBJECT,
-} = require('../constants');
+} = require('./constants');
+
 const notVoid = x => x !== L_VOID
 
 const wildcardMatch = (a, b) => {

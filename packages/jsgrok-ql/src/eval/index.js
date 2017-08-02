@@ -1,8 +1,8 @@
 const MAX_LINE_LEN = 80;
-const { pipe } = require('./functional');
+const { pipe } = require('../functional');
 
 const queryEvaluators = [
-  require('./search/function-call')
+  require('./function-call')
 ]
 
 const cram = line => line.substr(0, MAX_LINE_LEN - 3);

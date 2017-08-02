@@ -8,6 +8,9 @@ createTokenTests('Identifier', {
     [ '_foo' ],
     [ 'foo_' ],
     [ '_foo_' ],
+    [ 'fooBar' ],
+    [ 'FooBar' ],
+    [ 'FOO_BAR' ],
   ],
 
   notOk: [

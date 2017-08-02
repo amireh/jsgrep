@@ -18,7 +18,7 @@ namespace jsgrok {
   analyzer::~analyzer() {
   }
 
-  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& query, vector<string_t> const &filepaths) {
+  analyzer::analysis_t analyzer::apply(v8_session *session, string_t const& query, vector<string_t> const &filepaths) const {
     Isolate *isolate = session->get_isolate();
     js_analysis_t js_results;
     analysis_t results;

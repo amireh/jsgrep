@@ -1,9 +1,25 @@
 const { assert } = require('chai');
-const { apply } = require('../')
-const { createSpecimenTests } = require('./utils')
+const { apply } = require('../../')
+const path = require('path');
+const glob = require('glob')
+
+const createSpecimenTests = f => {
+  const groups = glob.sync(path.resolve(__dirname, `./specimens/*.js`)).map(function(filepath) {
+    return {
+      name: path.basename(filepath).replace('.js', ''),
+      specs: require(filepath)
+    }
+  })
+
+  groups.forEach(({ name, specs }) => {
+    describe(name, function() {
+      f(specs)
+    })
+  })
+}
 
 describe('jsgrok-ql::search', function() {
-  createSpecimenTests('search')(specs => {
+  createSpecimenTests(specs => {
     specs.forEach(function({
       spec = null,
       query: sourceQuery,
