@@ -216,7 +216,7 @@ module.exports = [
   },
 
   {
-    spec: 'with /bar/ for an argument: it matches regexp literals matching that',
+    spec: 'with /bar/ for an argument: it matches regexp literals and constructs with equal pattern',
     query: 'foo(/bar/)',
     source: `
       foo(/bar/)
