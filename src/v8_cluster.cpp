@@ -51,7 +51,7 @@ namespace jsgrok {
   }
 
   void* v8_cluster::spawn_session_in_background(void *spawn_request_on_the_bus) {
-    spawn_request_t *spawn_request = (spawn_request_t*)spawn_request_on_the_bus;
+    spawn_request_t *spawn_request = reinterpret_cast<spawn_request_t*>(spawn_request_on_the_bus);
     v8_cluster      *cluster = spawn_request->cluster;
     worker_t        *worker = spawn_request->worker;
     void            *data   = spawn_request->data;

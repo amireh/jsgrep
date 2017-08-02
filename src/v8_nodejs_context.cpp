@@ -66,7 +66,7 @@ namespace jsgrok {
   void v8_nodejs_context::require(const v8::FunctionCallbackInfo<Value> &args) {
     if (args.Length() == 1) {
       auto fs = jsgrok::fs();
-      auto session = (v8_session*)External::Cast(*args.Data())->Value();
+      auto session = static_cast<v8_session*>(External::Cast(*args.Data())->Value());
       auto module_path = fs.resolve_asset(*String::Utf8Value(args[0]->ToString()));
       auto module = session->require(module_path);
 

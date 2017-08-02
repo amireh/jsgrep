@@ -72,7 +72,7 @@ SET(JSGROK_SOURCES
   ${CMAKE_SOURCE_DIR}/src/v8_cluster.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_nodejs_context.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_session.cpp
-  ${CMAKE_SOURCE_DIR}/src/jsgrok-ql.cpp
+  ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
 )
 
 SET(JSGROK_LIBRARIES
@@ -94,18 +94,35 @@ SET(JSGROK_LIBRARIES
 
 # embed jsgrok-ql
 ADD_CUSTOM_COMMAND(
-  OUTPUT ${CMAKE_SOURCE_DIR}/src/jsgrok-ql.cpp
+  OUTPUT ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
   # references:
   # - https://stackoverflow.com/questions/13660850/is-it-possible-to-store-binary-files-inside-an-exe
   # - https://stackoverflow.com/questions/4864866/c-c-with-gcc-statically-add-resource-files-to-executable-library
   # - https://stackoverflow.com/questions/5316152/store-data-in-executable
-  COMMAND xxd -i -u jsgrok-ql.js ${CMAKE_SOURCE_DIR}/src/jsgrok-ql.cpp
+  COMMAND xxd -i -u jsgrok-ql.js ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packages/jsgrok-ql/dist
   DEPENDS ${CMAKE_SOURCE_DIR}/packages/jsgrok-ql/dist/jsgrok-ql.js
   COMMENT "Generating jsgrok-ql.cpp"
 )
 
-ADD_CUSTOM_TARGET(jsgrok-ql ALL DEPENDS ${CMAKE_SOURCE_DIR}/src/jsgrok-ql.cpp)
+ADD_CUSTOM_TARGET(jsgrok-ql ALL DEPENDS ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp)
+
+ADD_CUSTOM_TARGET(
+  cppcheck
+  ALL
+  COMMAND cppcheck
+    --std=c++11
+    --quiet
+    --force
+    --enable=all
+    --template="[{file}:{line}]: \({severity}\) [{id}] {message}"
+    --suppress=missingInclude
+    -I ${CMAKE_SOURCE_DIR}/deps
+    -I ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+  VERBATIM
+)
 
 ADD_SUBDIRECTORY(src)
 

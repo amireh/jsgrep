@@ -6,18 +6,7 @@
 #include "jsgrok/fs.hpp"
 
 namespace jsgrok {
-  static bool ends_with(string_t const& substring, string_t const &string) {
-    return (
-      string.size() >= substring.size() &&
-      string.compare(
-        string.size() - substring.size(),
-        substring.size(),
-        substring
-      ) == 0
-    );
-  }
-
-  fs::fs(string_t library_name)
+  fs::fs(string_t const &library_name)
   : module_info_(cpplocate::findModule(library_name))
   {
   }

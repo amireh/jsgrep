@@ -61,7 +61,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
       message: e.message
     }];
   }
-
+//
   try {
     return search(walkSourceCode, query, ast, sourceCode);
   }

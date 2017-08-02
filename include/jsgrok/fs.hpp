@@ -14,7 +14,7 @@ namespace jsgrok {
 
     enum { GLOB_RECURSIVE = 0x1 };
 
-    fs(string_t = "jsgrok");
+    explicit fs(string_t const & library = "jsgrok");
     virtual ~fs();
 
     /** Loads the content of a file stream into memory */

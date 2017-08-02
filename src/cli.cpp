@@ -80,7 +80,7 @@ namespace jsgrok {
 
       return options;
     }
-    catch (args::ParseError e)
+    catch (args::ParseError &e)
     {
       options.state = options_t::CLI_PARSE_ERROR;
 
