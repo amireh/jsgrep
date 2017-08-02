@@ -11,6 +11,12 @@ exports.L_EMPTY_OBJECT = 'L_EMPTY_OBJECT';
 exports.F_OPT = 'F_OPT'
 exports.F_NOT = 'F_NOT'
 
-exports.O_EVAL = 'O_EVAL'
 exports.O_EVAL_MONOMIAL = 'O_EVAL_MONOMIAL'
+exports.O_EVAL_POLYNOMIAL = 'O_EVAL_POLYNOMIAL'
 exports.O_PRODUCT = 'O_PRODUCT'
+
+exports.Q_MONOMIAL = 'Q_MONOMIAL'
+exports.Q_POLYNOMIAL = 'Q_POLYNOMIAL'
+
+// termination product
+exports.P_T = {};

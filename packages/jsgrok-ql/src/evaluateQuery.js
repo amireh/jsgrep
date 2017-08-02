@@ -4,25 +4,18 @@ const createMatchSerializer = require('./createMatchSerializer')
 const expressionEvaluators = require('./expressions')
 const resolveExpressionType = require('./resolveExpressionType')
 const products = require('./products')
-const terminations = require('./terminations')
+const { P_T } = require('./constants')
 
 const evaluateOperation = (state, expr) => {
   switch (expr.op) {
     case 'O_PRODUCT':
       return applyProduct(state, expr.lhs, expr.rhs)
 
-    case 'O_EVAL':
+    case 'O_EVAL_POLYNOMIAL':
       return evaluateExpression(state, expr.expr);
 
     case 'O_EVAL_MONOMIAL':
-
-      return (
-        terminations[resolveExpressionType(expr)]
-        (
-          state,
-          evaluateExpression(state, expr.expr)
-        )
-      );
+      return applyProduct(state, P_T, expr)
 
     case undefined:
       throw new Error(`Malform OP construct: ${JSON.stringify(expr)}`);
@@ -57,7 +50,11 @@ const applyProduct = (state, lhsExpr, rhsExpr) => {
   // console.log('lhs type?', resolveTypeOf(lhsExpr))
   // console.log('rhs type?', resolveTypeOf(rhsExpr))
 
-  const productType = `${resolveExpressionType(lhsExpr)} . ${resolveExpressionType(rhsExpr)}`
+  const productType = lhsExpr === products.T ?
+    `T . ${resolveExpressionType(rhsExpr)}` :
+    `${resolveExpressionType(lhsExpr)} . ${resolveExpressionType(rhsExpr)}`
+  ;
+
   const production = products[productType]
 
   invariant(typeof production === 'function',
@@ -77,16 +74,15 @@ const applyProduct = (state, lhsExpr, rhsExpr) => {
  * @property {Number} start
  * @property {Number} end
  */
-module.exports = function search(walk, query, ast, sourceCode) {
+module.exports = function search(walk, [ query ], ast, sourceCode) {
   const serializeMatch = createMatchSerializer({ sourceCode })
-  const matchingNodes = evaluateOperation({
+
+  return evaluateOperation({
     nodes: [ ast ],
     // we need to expose this to expression evaluators
     walk,
-    // we need to expose those to products and terminations
+    // we need to expose those to products
     evaluateOperation,
     evaluateExpression
-  }, query[0]);
-
-  return matchingNodes.map(serializeMatch)
+  }, query).map(serializeMatch)
 };

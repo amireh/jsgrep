@@ -29,22 +29,21 @@
     }
   }
 
-  const evalExpr = x => ({ op: 'O_EVAL', expr: x })
+  const O_EVAL_POLYNOMIAL = 'O_EVAL_POLYNOMIAL'
+  const O_EVAL_MONOMIAL = 'O_EVAL_MONOMIAL'
+
+  const evalMonoExpr = x => ({ op: O_EVAL_MONOMIAL, expr: x })
+  const evalPolyExpr = x => ({ op: O_EVAL_POLYNOMIAL, expr: x })
 %}
 
-Query -> PolynomialQuery {% id %} | MonomialQuery {% id %}
-
-MonomialQuery ->
-  Expression {% d => ({ op: 'O_EVAL_MONOMIAL', expr: d[0] }) %}
-
-PolynomialQuery ->
-    PolynomialQuery _ "." _ Expression {% d => ({
+Query ->
+    Query _ "." _ Expression {% d => ({
         op: 'O_PRODUCT',
         lhs: d[0],
-        rhs: evalExpr(d[4])
+        rhs: evalPolyExpr(d[4])
       })
     %}
-  | Expression {% d => evalExpr(d[0]) %}
+  | Expression {% d => evalMonoExpr(d[0]) %}
 
 Expression ->
     Receiver {% d => ([ 'identifier', d[0] ]) %}

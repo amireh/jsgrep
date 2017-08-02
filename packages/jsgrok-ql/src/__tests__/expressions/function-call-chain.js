@@ -2,12 +2,12 @@ module.exports = [
   {
     only: false,
 
-    spec: 'member function call bar() on return value of foo() as receiver',
     query: 'foo().bar()',
     source: `
       foo().bar()
       foo().bar().baz()
       foo().baz()
+      foo()
       other().bar()
       bar()
     `.trim(),
@@ -21,7 +21,6 @@ module.exports = [
   {
     only: false,
 
-    spec: 'member function call bar() on return value of foo() as receiver',
     query: 'foo(String()).bar()',
     source: `
       foo("Hello!").bar()
@@ -36,7 +35,6 @@ module.exports = [
   {
     only: false,
 
-    spec: 'member function call bar() on return value of foo() as receiver',
     query: 'foo().bar(String())',
     source: `
       foo().bar("Hello!")
@@ -51,7 +49,6 @@ module.exports = [
   {
     only: false,
 
-    spec: 'member function call bar() on return value of foo() as receiver',
     query: 'foo().bar().baz()',
     source: `
       foo().bar().baz()
@@ -62,6 +59,26 @@ module.exports = [
 
     matches: [
       { line: 1 },
+    ]
+  },
+
+  {
+    only: false,
+
+    query: 'this.bar().baz()',
+    source: `
+      this.bar().baz()
+      this.bar(23).baz()
+      this.bar().baz(23)
+      foo().bar().bax()
+      foo().bar()
+      foo()
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+      { line: 3 },
     ]
   },
 ];

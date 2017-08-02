@@ -33,3 +33,13 @@ exports['identifier . function-call'] = (state, identifier, functionCall) => {
 
   return rhsNodes.filter(collectMatchingReceiverCalls)
 }
+
+exports['T . function-call'] = (state, identifier, functionCall) => {
+  const rhsNodes = state.evaluateExpression(state, functionCall.expr)
+
+  const collectMatchingReceiverCalls = node => {
+    return !t.memberExpression(node.callee)
+  }
+
+  return rhsNodes.filter(collectMatchingReceiverCalls)
+}
