@@ -134,6 +134,29 @@ Type matchers
 `Function` type matcher
 -----------------------
 
+String type matcher
+-------------------
+
+EXAMPLES
+
+    # Any string
+    String()
+
+    # An empty string
+    ""
+
+    # The "foo" string
+    "foo"
+
+**Wildcards**
+
+The character sequence ".*" found in string matchers is treated as a wildcard.
+
+EXAMPLES
+
+    # Match "Hello", "Hello World!", or "Hello anything"
+    "Hello.*"
+
 SYNOPSIS:
 
     Function([Type[,...Type]])

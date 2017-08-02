@@ -51,15 +51,34 @@ module.exports = [
     spec: 'function call with an argument of a StringLiteral type and value',
     query: 'foo("Hello World!")',
     source: `
-      foo('Hello World!')         // <-- matches
+      foo('Hello World!')         // OK
+      foo(String("Hello World!")) // OK
       foo()
       foo('Hello')                // different value
-      foo(String("Hello World!")) // different type
       foo('a', "Hello World!")    // different position
     `.trim(),
 
     matches: [
-      { line: 0 },
+      { line: 1 },
+      { line: 2 },
+    ]
+  },
+
+  {
+    spec: 'function call with a wildcard StringLiteral',
+    query: 'foo("Hello.*")',
+    source: `
+      foo('Hello World!')         // OK
+      foo('Hello')                // OK
+      foo(String("Hello World!")) // OK
+      foo()
+      foo('a', "Hello World!")    // different position
+    `.trim(),
+
+    matches: [
+      { line: 1 },
+      { line: 2 },
+      { line: 3 },
     ]
   },
 

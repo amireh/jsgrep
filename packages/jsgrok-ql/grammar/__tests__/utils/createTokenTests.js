@@ -13,10 +13,10 @@ const evaluate = f => x => {
 }
 
 module.exports = (token, { ok = [], notOk = [] }) => {
-  const grammar = createGrammarForToken(token)
-  const subject = parseWithGrammar(grammar);
-
   describe(`jsgrok-ql::grammar::${token}`, function() {
+    const grammar = createGrammarForToken(token)
+    const subject = parseWithGrammar(grammar);
+
     ok.forEach(function([ input, output = id, options = {} ]) {
       const fn = options && options.focus ? it.only : it;
 

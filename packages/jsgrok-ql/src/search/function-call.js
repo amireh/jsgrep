@@ -13,16 +13,22 @@ const {
 } = require('../constants');
 const notVoid = x => x !== L_VOID
 
+const wildcardMatch = (a, b) => {
+  if (a.indexOf('.*') > -1) {
+    return b.match(a)
+  }
+  else {
+    return a === b
+  }
+}
+
 const collectMatchingStaticFunctionCalls = (query, nodes) => {
   return nodes.filter(node => {
     if (!t.identifier(node.callee)) {
       return false;
     }
-    else if (query.id !== node.callee.name) {
-      return false;
-    }
     else {
-      return true;
+      return query.id === node.callee.name;
     }
   })
 }
@@ -35,11 +41,8 @@ const collectMatchingMemberFunctionCalls = (query, nodes) => {
     else if (!t.identifier(node.callee.property)) {
       return false;
     }
-    else if (query.id !== node.callee.property.name) {
-      return false;
-    }
     else {
-      return true;
+      return query.id === node.callee.property.name;
     }
   })
 }
@@ -122,7 +125,7 @@ const isMatchingArgument = (valueSpec, node) => {
     return t.literal(node) && node.value === valueSpec;
   }
   else if (typeof valueSpec === 'string') {
-    return t.literal(node) && node.value === valueSpec;
+    return isStringArgument(node) && isMatchingString(valueSpec, node)
   }
   else {
     return false;
@@ -149,6 +152,10 @@ const isStringArgument = node => (
     t.callExpression(node) &&
     t.identifier(node.callee) &&
     node.callee.name === 'String'
+  ) ||
+  (
+    t.newExpression(node) &&
+    node.callee.name === 'RegExp'
   )
 )
 
@@ -159,6 +166,20 @@ const isRegExpArgument = node => (
     node.callee.name === 'RegExp'
   )
 )
+
+const isMatchingString = (valueSpec, node) => {
+  if (t.literal(node)) {
+    return wildcardMatch(valueSpec, node.value)
+  }
+  // String('blah')
+  else if (t.callExpression(node)) {
+    return isMatchingString(valueSpec, node.arguments[0])
+  }
+  // new String('blah')
+  else if (t.newExpression(node)) {
+    return isMatchingString(valueSpec, node.arguments[0])
+  }
+}
 
 const isMatchingRegExp = (source, node) => {
   if (t.literal(node)) {
