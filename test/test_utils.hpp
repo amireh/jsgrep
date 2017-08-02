@@ -1,13 +1,10 @@
 #ifndef H_JSGROK_TEST_UTILS_H
 #define H_JSGROK_TEST_UTILS_H
 
-namespace jsgrok {
-  typedef struct {
-    int  argc;
-    char **argv;
-  } test_config_t;
+#include "jsgrok/types.hpp"
 
-  extern test_config_t test_config;
+namespace jsgrok::test_utils {
+  string_t resolve(string_t const& group, string_t const&);
 }
 
 #endif

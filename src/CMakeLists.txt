@@ -22,23 +22,6 @@ ADD_DEPENDENCIES(jsgrok jsgrok-ql)
 
 TARGET_LINK_LIBRARIES(${JSGROK_BIN} ${JSGROK_LIBRARIES})
 
-generate_module_info(jsgrok
-  VALUES
-  name          "jsgrok"
-  version       "1.0.0"
-  description   "Syntactic JavaScript grep."
-  author        "Instructure, INC."
-
-  BUILD_VALUES
-  source_path     "${PROJECT_SOURCE_DIR}"
-  assets_path     "${PROJECT_SOURCE_DIR}/assets"
-
-  INSTALL_VALUES
-  assets_path     "\${ModulePath}/assets"
-)
-
-export_module_info(jsgrok TARGET jsgrok)
-
 IF(APPLE)
   TARGET_LINK_LIBRARIES(${JSGROK_BIN} ${COREFOUNDATION_LIBRARY})
 ENDIF()

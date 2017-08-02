@@ -1,13 +1,10 @@
 #include <fstream>
 #include <glob.h>
 #include <ftw.h>
-#include "cpplocate/ModuleInfo.h"
-#include "cpplocate/cpplocate.h"
 #include "jsgrok/fs.hpp"
 
 namespace jsgrok {
-  fs::fs(string_t const &library_name)
-  : module_info_(cpplocate::findModule(library_name))
+  fs::fs()
   {
   }
 
@@ -43,17 +40,6 @@ namespace jsgrok {
     fs.close();
 
     return rc;
-  }
-
-  path_t fs::resolve(string_t const& group, string_t const& path) const {
-    path_t base_path(module_info_.value(group));
-    return base_path + "/" + path;
-  }
-
-  path_t fs::resolve_asset(string_t const& path) const {
-    path_t assets_path(module_info_.value("assets_path"));
-
-    return assets_path + "/" + path;
   }
 
   vector<fs::file_t> fs::glob(vector<string_t> const &patterns, int flags) {

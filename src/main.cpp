@@ -24,8 +24,6 @@
 #include "jsgrok/reporter.hpp"
 #include "jsgrok/functional/partition.hpp"
 #include "jsgrok/functional/filter.hpp"
-#include "cpplocate/cpplocate.h"
-#include "cpplocate/ModuleInfo.h"
 
 using namespace v8;
 using std::any_of;

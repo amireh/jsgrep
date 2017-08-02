@@ -1,14 +1,14 @@
 #include "catch.hpp"
+#include "test_utils.hpp"
 #include "jsgrok/v8_session.hpp"
-#include "jsgrok/fs.hpp"
 #include "jsgrok/types.hpp"
 
 TEST_CASE("jsgrok::v8_session") {
   using jsgrok::string_t;
   using jsgrok::v8_module;
+  using jsgrok::test_utils::resolve;
   using namespace v8;
 
-  jsgrok::fs fs("jsgrok-tests");
   jsgrok::v8_session subject;
 
   SECTION("It generates an isolate implicitly") {
@@ -34,7 +34,7 @@ TEST_CASE("jsgrok::v8_session") {
     };
 
     WHEN("The isolate can not be used for some reason...") {
-      auto module_path = fs.resolve("fixtures_path", "exportGlobal.js");
+      auto module_path = resolve("fixtures_path", "exportGlobal.js");
 
       isolate->Exit();
 
@@ -45,7 +45,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     WHEN("The script file does not exist or can't be read...") {
-      auto script_path = fs.resolve("fixtures_path", "adsfasdf.js");
+      auto script_path = resolve("fixtures_path", "adsfasdf.js");
 
       THEN("It returns EC_FILE_ERROR") {
         auto module = subject.require(context, script_path);
@@ -70,7 +70,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that exports to global...") {
-      auto script_path = fs.resolve("fixtures_path", "exportGlobal.js");
+      auto script_path = resolve("fixtures_path", "exportGlobal.js");
 
       THEN("It returns EC_OK") {
         auto module = subject.require(context, script_path);
@@ -86,7 +86,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that exports an object...") {
-      auto script_path = fs.resolve("fixtures_path", "exportObject.js");
+      auto script_path = resolve("fixtures_path", "exportObject.js");
 
       THEN("It returns EC_OK") {
         auto module = subject.require(context, script_path);
@@ -102,7 +102,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that sets `module.exports`...") {
-      auto script = fs.resolve("fixtures_path", "moduleExports.js");
+      auto script = resolve("fixtures_path", "moduleExports.js");
 
       THEN("It returns EC_OK") {
         REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
@@ -117,7 +117,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that sets property on `exports`...") {
-      auto script = fs.resolve("fixtures_path", "exports.js");
+      auto script = resolve("fixtures_path", "exports.js");
 
       THEN("It returns EC_OK") {
         REQUIRE(subject.require(context, script).status == v8_module::EC_OK);

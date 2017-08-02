@@ -1,18 +1,18 @@
 #include "catch.hpp"
+#include "test_utils.hpp"
 #include "jsgrok/analyzer.hpp"
 #include "jsgrok/types.hpp"
 #include "jsgrok/v8_session.hpp"
-#include "jsgrok/fs.hpp"
 
 TEST_CASE("jsgrok") {
   using jsgrok::string_t;
+  using jsgrok::test_utils::resolve;
 
-  jsgrok::fs fs("jsgrok-tests");
   jsgrok::analyzer analyzer;
   jsgrok::v8_session session;
 
   auto assert_script_is_analyzed = [&](const char *script) {
-    auto filepath = fs.resolve("fixtures_path", script);
+    auto filepath = resolve("fixtures_path", script);
     auto query = "";
     auto analysis = analyzer.apply(&session, query, { filepath });
 

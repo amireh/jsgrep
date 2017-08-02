@@ -5,7 +5,6 @@
 
 namespace jsgrok {
   typedef std::string string_t;
-  typedef std::string path_t;
   typedef unsigned long uint64_t;
 }
 

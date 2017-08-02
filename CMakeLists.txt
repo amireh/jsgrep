@@ -15,11 +15,6 @@ ENDIF()
 INCLUDE(CheckIncludeFileCXX)
 INCLUDE(CMakeDependentOption)
 
-SET(CMAKE_PREFIX_PATH
-  ${CMAKE_PREFIX_PATH}
-  ${CMAKE_SOURCE_DIR}/deps/cpplocate
-)
-
 SET(CMAKE_MODULE_PATH
   ${CMAKE_SOURCE_DIR}
   ${CMAKE_SOURCE_DIR}/cmake/modules
@@ -48,18 +43,12 @@ OPTION(JSGROK_BUILD_TESTS "Build the tests" ON)
 OPTION(JSGROK_LINT "Lint the sources" ON)
 
 FIND_PACKAGE(V8 REQUIRED)
-FIND_PACKAGE(cpplocate REQUIRED)
 
 SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
 INCLUDE_DIRECTORIES(
   ${V8_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/deps/args/include
-
-  # TODO: automate / create Findcpplocate.cmake
-  ${cpplocate_DIR}/source/cpplocate/include
-  ${cpplocate_DIR}/build/source/cpplocate/include
-
   ${CMAKE_SOURCE_DIR}/include
 )
 
@@ -85,7 +74,6 @@ SET(JSGROK_LIBRARIES
   ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
   ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
   -Wl,--end-group
-  ${cpplocate_DIR}/build/libcpplocate.a
   rt
   dl
   pthread

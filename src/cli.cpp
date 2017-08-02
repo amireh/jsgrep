@@ -1,6 +1,5 @@
 #include "jsgrok/cli.hpp"
 #include "jsgrok/functional/filter.hpp"
-#include "cpplocate/ModuleInfo.h"
 #include <glob.h>
 #include <iostream>
 #include "args/args.hxx"

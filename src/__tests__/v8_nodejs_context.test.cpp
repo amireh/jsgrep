@@ -1,15 +1,15 @@
 #include "catch.hpp"
+#include "test_utils.hpp"
 #include "jsgrok/v8_nodejs_context.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/types.hpp"
-#include "jsgrok/fs.hpp"
 
 TEST_CASE("jsgrok::v8_nodejs_context") {
   using jsgrok::string_t;
   using jsgrok::v8_nodejs_context;
+  using jsgrok::test_utils::resolve;
   using namespace v8;
 
-  jsgrok::fs fs("jsgrok-tests");
   jsgrok::v8_session session;
 
   Isolate         *isolate = session.get_isolate();
@@ -31,7 +31,7 @@ TEST_CASE("jsgrok::v8_nodejs_context") {
   };
 
   auto assert_script_returns_truthy = [&](const char *script) {
-    auto module = session.require(context, fs.resolve("fixtures_path", script));
+    auto module = session.require(context, resolve("fixtures_path", script));
 
     REQUIRE(module.status == jsgrok::v8_module::EC_OK);
 

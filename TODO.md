@@ -7,4 +7,4 @@
 - [ ] stream results from JS to reporter
 - [ ] embed v8 data blobs (natives_blob.bin, snapshot_blob.bin) into binary
 - [x] parse query only once per thread
-- [ ] remove cpplocate
+- [x] remove cpplocate

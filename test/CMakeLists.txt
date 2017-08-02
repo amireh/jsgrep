@@ -1,3 +1,10 @@
+SET(CMAKE_PREFIX_PATH
+  ${CMAKE_PREFIX_PATH}
+  ${CMAKE_SOURCE_DIR}/deps/cpplocate
+)
+
+FIND_PACKAGE(cpplocate REQUIRED)
+
 SET(TARGET ${PROJECT_NAME}-tests)
 
 INCLUDE_DIRECTORIES(.) # for test_utils.hpp
@@ -37,7 +44,11 @@ IF(APPLE)
   )
 ENDIF()
 
-TARGET_LINK_LIBRARIES(${TARGET} ${JSGROK_LIBRARIES})
+TARGET_LINK_LIBRARIES(${TARGET}
+  ${JSGROK_LIBRARIES}
+  ${cpplocate_DIR}/build/libcpplocate.a
+)
+
 generate_module_info(jsgrok-tests
   VALUES
   name          "jsgrok-tests"
