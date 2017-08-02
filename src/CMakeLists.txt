@@ -18,6 +18,7 @@ ENDIF()
 SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
 ADD_EXECUTABLE(${JSGROK_BIN} ${JSGROK_SOURCES} main.cpp)
+ADD_DEPENDENCIES(jsgrok jsgrok-ql)
 
 TARGET_LINK_LIBRARIES(${JSGROK_BIN} ${JSGROK_LIBRARIES})
 

@@ -44,8 +44,8 @@ IF(APPLE)
 ENDIF()
 
 # Options
-OPTION(JGROK_BUILD_TESTS    OFF "Build the tests")
-OPTION(JGROK_BUILD_EXAMPLES OFF "Build the examples")
+OPTION(JSGROK_BUILD_TESTS "Build the tests" ON)
+OPTION(JSGROK_LINT "Lint the sources" ON)
 
 FIND_PACKAGE(V8 REQUIRED)
 FIND_PACKAGE(cpplocate REQUIRED)
@@ -72,10 +72,10 @@ SET(JSGROK_SOURCES
   ${CMAKE_SOURCE_DIR}/src/v8_cluster.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_nodejs_context.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_session.cpp
-  ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
 )
 
 SET(JSGROK_LIBRARIES
+  jsgrok-ql
   -Wl,--start-group
   ${V8_BUILD_DIR}/obj/libv8_base.a
   ${V8_BUILD_DIR}/obj/libv8_external_snapshot.a
@@ -93,43 +93,33 @@ SET(JSGROK_LIBRARIES
 )
 
 # embed jsgrok-ql
-ADD_CUSTOM_COMMAND(
-  OUTPUT ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
-  # references:
-  # - https://stackoverflow.com/questions/13660850/is-it-possible-to-store-binary-files-inside-an-exe
-  # - https://stackoverflow.com/questions/4864866/c-c-with-gcc-statically-add-resource-files-to-executable-library
-  # - https://stackoverflow.com/questions/5316152/store-data-in-executable
-  COMMAND xxd -i -u jsgrok-ql.js ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/packages/jsgrok-ql/dist
-  DEPENDS ${CMAKE_SOURCE_DIR}/packages/jsgrok-ql/dist/jsgrok-ql.js
-  COMMENT "Generating jsgrok-ql.cpp"
-)
+ADD_SUBDIRECTORY(packages/jsgrok-ql)
 
-ADD_CUSTOM_TARGET(jsgrok-ql ALL DEPENDS ${CMAKE_BINARY_DIR}/jsgrok-ql.cpp)
-
-ADD_CUSTOM_TARGET(
-  cppcheck
-  ALL
-  COMMAND cppcheck
-    --std=c++11
-    --quiet
-    --force
-    --enable=all
-    --template="[{file}:{line}]: \({severity}\) [{id}] {message}"
-    --suppress=missingInclude
-    -I ${CMAKE_SOURCE_DIR}/deps
-    -I ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src
-  VERBATIM
-)
+IF(JSGROK_LINT)
+  ADD_CUSTOM_TARGET(
+    cppcheck
+    ALL
+    COMMAND cppcheck
+      --std=c++11
+      --quiet
+      --force
+      --enable=all
+      --template="[{file}:{line}]: \({severity}\) [{id}] {message}"
+      --suppress=missingInclude
+      -I ${CMAKE_SOURCE_DIR}/deps
+      -I ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/src
+    VERBATIM
+  )
+ENDIF()
 
 ADD_SUBDIRECTORY(src)
 
-IF (JGROK_BUILD_TESTS)
+IF (JSGROK_BUILD_TESTS)
   ADD_SUBDIRECTORY(test)
 ENDIF()
 
-IF (JGROK_BUILD_EXAMPLES)
+IF (JSGROK_BUILD_EXAMPLES)
   ADD_SUBDIRECTORY(examples)
 ENDIF()

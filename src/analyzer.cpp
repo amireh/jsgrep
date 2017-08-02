@@ -34,15 +34,7 @@ namespace jsgrok {
       return session->require(context, jsgrok_ql_js, jsgrok_ql_js_len);
     };
 
-    auto load_jsgrok_ql_from_disk = [&]() {
-      return session->require(context, fs.resolve("source_path", "packages/jsgrok-ql/dist/jsgrok-ql.js"));
-    };
-
-    #ifdef JSGROK_USE_PRECOMPILED_ASSETS
     auto jsgrok_ql_module = load_jsgrok_ql_from_memory();
-    #else
-    auto jsgrok_ql_module = load_jsgrok_ql_from_disk();
-    #endif
 
     if (!jsgrok_ql_module || !jsgrok_ql_module.exports->IsObject()) {
       printf("Unable to require 'jsgrok-ql'!\n");

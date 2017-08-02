@@ -26,6 +26,7 @@ ADD_EXECUTABLE(${TARGET}
   test_utils.cpp
   main.cpp
 )
+ADD_DEPENDENCIES(${TARGET} jsgrok-ql)
 
 ADD_DEFINITIONS(-std=c++11 -DJSGROK_USE_PRECOMPILED_ASSETS)
 
@@ -37,7 +38,6 @@ IF(APPLE)
 ENDIF()
 
 TARGET_LINK_LIBRARIES(${TARGET} ${JSGROK_LIBRARIES})
-
 generate_module_info(jsgrok-tests
   VALUES
   name          "jsgrok-tests"
