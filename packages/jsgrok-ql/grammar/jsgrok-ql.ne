@@ -17,7 +17,7 @@
 
   const FLAGS = {
     '?': 'F_OPT',
-    '^': 'F_NOT'
+    '^': 'F_NOT',
   }
 
   const createValueFlagPair = (flag, value) => {

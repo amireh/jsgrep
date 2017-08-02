@@ -9,6 +9,13 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     libraryTarget: 'commonjs',
   },
+
+  resolve: {
+    modules: [
+      path.resolve(__dirname, './node_modules'),
+    ]
+  },
+
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),
   ]

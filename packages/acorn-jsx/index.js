@@ -1,6 +1,6 @@
 'use strict';
 
-var XHTMLEntities = require('acorn-jsx/xhtml.js');
+var XHTMLEntities = require('./xhtml.js');
 
 var hexNumber = /^[\da-fA-F]+$/;
 var decimalNumber = /^\d+$/;
