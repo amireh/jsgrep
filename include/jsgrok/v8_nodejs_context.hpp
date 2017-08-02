@@ -27,11 +27,9 @@ namespace jsgrok {
     static void morph(v8_session const*, Local<Context>&);
 
   protected:
-    static void provide_require(v8_session const*, Local<Context>&);
     static void provide_module(v8_session const*, Local<Context>&);
     static void provide_console(v8_session const*, Local<Context>&);
 
-    static void require(const FunctionCallbackInfo<Value>&);
     static void log(const FunctionCallbackInfo<Value>&);
   };
 }

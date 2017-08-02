@@ -44,10 +44,6 @@ TEST_CASE("jsgrok::v8_nodejs_context") {
 
   v8_nodejs_context::morph(&session, context);
 
-  SECTION("It exposes a global 'require' method") {
-    assert_script_returns_truthy("requireIsDefined.js");
-  }
-
   SECTION("It provides a global 'exports' object") {
     assert_script_returns_truthy("exportsIsDefined.js");
   }
@@ -58,9 +54,5 @@ TEST_CASE("jsgrok::v8_nodejs_context") {
 
   SECTION("It points 'module.exports' to 'exports' by default") {
     assert_script_returns_truthy("moduleExportsIsDefined.js");
-  }
-
-  SECTION("It lets scripts require other scripts") {
-    assert_script_returns_truthy("require.js");
   }
 }
