@@ -2,62 +2,197 @@ const { createTokenTests } = require('./utils')
 
 createTokenTests('FunctionCallExpression', {
   ok: [
-    [ 'foo()', ["function-call", { arguments: [], id: 'foo', receiver: null }] ],
-
-    // `x` as a receiver
-    [ 'x.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'x' }] ],
-
-    // `this` as a receiver
-    [ 'this.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'L_THIS' }] ],
-
-    // any receiver
-    [ '*.foo()', ["function-call", { arguments: [], id: 'foo', receiver: 'L_ANY' }] ],
+    [ 'foo()', {
+      expressions: [{
+        name: 'function-call',
+        props: {
+          arguments: [],
+          id: 'foo'
+        }
+      }]
+    }],
 
     // <ARGUMENTS>
 
     // VoidLiteral argument
-    [ 'foo(void)', ["function-call", { arguments: ['L_VOID'], id: 'foo', receiver: null }] ],
+    [ 'foo(void)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_VOID'], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::AnyLiteral argument
-    [ 'foo(*)', ["function-call", { arguments: ['L_ANY'], id: 'foo', receiver: null }] ],
+    [ 'foo(*)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_ANY'], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::NumberLiteral argument
-    [ 'foo(1)', ["function-call", { arguments: [1], id: 'foo', receiver: null }] ],
+    [ 'foo(1)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: [1], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::StringLiteral argument
-    [ 'foo(\'Hello\')', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
-    [ 'foo("Hello")', ["function-call", { arguments: ['Hello'], id: 'foo', receiver: null }] ],
+    [ 'foo(\'Hello\')', {
+      expressions: [
+        {
+          name: "function-call",
+          props: {
+            arguments: ['Hello'],
+            id: 'foo',
+          }
+        }
+      ]
+    }],
 
-    [ 'foo(bar)', ["function-call", { arguments: ['bar'], id: 'foo', receiver: null }] ],
+    [ 'foo("Hello")', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['Hello'], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(bar)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['bar'], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::ObjectLiteral argument
-    [ 'foo({})', ["function-call", { arguments: ['L_EMPTY_OBJECT'], id: 'foo', receiver: null }] ],
+    [ 'foo({})', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_EMPTY_OBJECT'], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::BuiltInClassLiteral argument
-    [ 'foo(String())', ["function-call", { arguments: ['L_CLASS_STRING'], id: 'foo', receiver: null }] ],
-    [ 'foo(Number())', ["function-call", { arguments: ['L_CLASS_NUMBER'], id: 'foo', receiver: null }] ],
-    [ 'foo(RegExp())', ["function-call", { arguments: ['L_CLASS_REGEXP'], id: 'foo', receiver: null }] ],
-    [ 'foo(Object())', ["function-call", { arguments: ['L_CLASS_OBJECT'], id: 'foo', receiver: null }] ],
+    [ 'foo(String())', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_CLASS_STRING'], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(Number())', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_CLASS_NUMBER'], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(RegExp())', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_CLASS_REGEXP'], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(Object())', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_CLASS_OBJECT'], id: 'foo' }
+        }
+      ]
+    }],
 
     // </ARGUMENTS>
 
     // <MULTIPLE ARGUMENTS>
 
     // TypeExpression::AnyLiteral argument
-    [ 'foo(*, *)', ["function-call", { arguments: ['L_ANY', 'L_ANY'], id: 'foo', receiver: null }] ],
+    [ 'foo(*, *)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_ANY', 'L_ANY'], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::NumberLiteral argument
-    [ 'foo(-0.5, 42)', ["function-call", { arguments: [-0.5, 42], id: 'foo', receiver: null }] ],
+    [ 'foo(-0.5, 42)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: [-0.5, 42], id: 'foo' }
+        }
+      ]
+    }],
 
     // TypeExpression::Identifier argument
-    [ 'foo(bar, baz)', ["function-call", { arguments: ['bar', 'baz'], id: 'foo', receiver: null }] ],
-    [ 'foo(bar, bar)', ["function-call", { arguments: ['bar', 'bar'], id: 'foo', receiver: null }] ],
+    [ 'foo(bar, baz)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['bar', 'baz'], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(bar, bar)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['bar', 'bar'], id: 'foo' }
+        }
+      ]
+    }],
 
     // Mixed
 
-    [ 'foo(*, bar, 10)', ["function-call", { arguments: ['L_ANY', 'bar', 10], id: 'foo', receiver: null }] ],
-    [ 'foo(bar, *, 10)', ["function-call", { arguments: ['bar', 'L_ANY', 10], id: 'foo', receiver: null }] ],
-    [ 'foo(10, bar, *)', ["function-call", { arguments: [10, 'bar', 'L_ANY'], id: 'foo', receiver: null }] ],
+    [ 'foo(*, bar, 10)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['L_ANY', 'bar', 10], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(bar, *, 10)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: ['bar', 'L_ANY', 10], id: 'foo' }
+        }
+      ]
+    }],
+
+    [ 'foo(10, bar, *)', {
+      expressions: [
+        {
+          name: "function-call",
+          props: { arguments: [10, 'bar', 'L_ANY'], id: 'foo' }
+        }
+      ]
+    }],
 
     // </MULTIPLE ARGUMENTS>
   ],

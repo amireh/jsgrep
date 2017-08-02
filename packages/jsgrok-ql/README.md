@@ -26,6 +26,11 @@ How to read the synopsis of functions in the following sections:
 
 Otherwise, all other characters must be regarded as literals.
 
+EXAMPLES
+
+    foo()
+    foo().then()
+
 Expression matchers
 ===================
 

@@ -17,7 +17,5 @@ module.exports = input => {
     }
   }
 
-  return {
-    expressions: parser.results[0] ? parser.results[0][0] : []
-  };
+  return parser.results;
 };

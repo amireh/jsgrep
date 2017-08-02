@@ -44,7 +44,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
     }]
   }
 
-  if (query === InvalidQuery) {
+  if (query === InvalidQuery || !query.length) {
     return [];
   }
 
@@ -61,7 +61,7 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
       message: e.message
     }];
   }
-//
+
   try {
     return evalQuery(walkSourceCode, query, ast, sourceCode);
   }

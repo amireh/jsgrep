@@ -16,6 +16,7 @@
     "url": "git+https://github.com/amireh/jsgrok.git"
   },
   "dependencies": {
+    "invariant": "^2.2.2",
     "nearley": "2.10.2",
     "ramda": "0.24.1"
   },
@@ -24,6 +25,7 @@
     "glob": "^7.1.2",
     "mocha": "3.4.2",
     "nodemon": "1.11.0",
+    "sinon": "^2.4.1",
     "webpack": "^3.4.1"
   }
 }

@@ -28,13 +28,30 @@
       return [ value ]
     }
   }
+
+  const evalExpr = x => ({ op: 'O_EVAL', expr: x })
 %}
 
-Query -> Expression
-Expression -> FunctionCallExpression
+Query -> PolynomialQuery {% id %} | MonomialQuery {% id %}
+
+MonomialQuery ->
+  Expression {% d => ({ op: 'O_EVAL_MONOMIAL', expr: d[0] }) %}
+
+PolynomialQuery ->
+    PolynomialQuery _ "." _ Expression {% d => ({
+        op: 'O_PRODUCT',
+        lhs: d[0],
+        rhs: evalExpr(d[4])
+      })
+    %}
+  | Expression {% d => evalExpr(d[0]) %}
+
+Expression ->
+    Receiver {% d => ([ 'identifier', d[0] ]) %}
+  | FunctionCallExpression {% id %}
 
 FunctionCallExpression ->
-  MemberExpression:? Identifier
+  Identifier
   "(" _
     (
       FunctionTypeExpression {% id %} |
@@ -43,11 +60,10 @@ FunctionCallExpression ->
   _ ")"
 
   {%
-    ([ receiver, id,,, arguments = [] ]) => (
+    ([ id,,, arguments = [] ]) => (
       ['function-call', {
         id,
-        arguments: [].concat(arguments || []),
-        receiver
+        arguments: [].concat(arguments || [])
       }]
     )
   %}

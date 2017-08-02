@@ -6,12 +6,15 @@ module.exports = grammar => input => {
   const state = parser.feed(input);
   const { results } = state;
 
+  // console.log(`${input} =>\n${util.inspect(results[0][0], {
+  //   depth: null,
+  //   colors: true
+  // })}`)
+
   if (results && results.length === 1 && results[0].length === 1) {
-    // console.log('results?', results, util.inspect(state, { depth: 5 }))
     return results[0][0]
   }
   else {
-    // console.log('results?', results, util.inspect(state, { depth: 5 }))
     return results;
   }
 }

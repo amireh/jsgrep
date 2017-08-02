@@ -18,7 +18,7 @@ const createSpecimenTests = f => {
   })
 }
 
-describe('jsgrok-ql::search', function() {
+describe('jsgrok-ql::eval', function() {
   createSpecimenTests(specs => {
     specs.forEach(function({
       spec = null,

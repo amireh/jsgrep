@@ -3,7 +3,6 @@ const {
   F_OPT,
   F_NOT,
   L_ANY,
-  L_THIS,
   L_VOID,
   L_CLASS_NUMBER,
   L_CLASS_OBJECT,
@@ -44,23 +43,6 @@ const collectMatchingMemberFunctionCalls = (query, nodes) => {
     }
     else {
       return query.id === node.callee.property.name;
-    }
-  })
-}
-
-const collectMatchingReceiverCalls = (query, nodes) => {
-  return nodes.filter(node => {
-    if (query.receiver === L_ANY) {
-      return true;
-    }
-    else if (query.receiver === L_THIS) {
-      return t.thisExpression(node.callee.object);
-    }
-    else if (t.identifier(node.callee.object)) {
-      return query.receiver === node.callee.object.name;
-    }
-    else {
-      return false;
     }
   })
 }
@@ -251,7 +233,7 @@ const extractPropertyValue = node => {
 }
 
 // we'll avoid pipe / compose for the overhead
-const collectStaticCalls = (query, nodes) => (
+const collectCalls = (query, nodes) => (
   collectMatchingArgumentValueCalls
   (
     query,
@@ -263,21 +245,9 @@ const collectStaticCalls = (query, nodes) => (
         query,
         nodes
       )
-    )
-  )
-)
-
-const collectMemberCalls = (query, nodes) => (
-  collectMatchingMemberFunctionCalls
-  (
-    query,
-    collectMatchingReceiverCalls
-    (
-      query,
-      collectMatchingArgumentCalls
+      .concat
       (
-        query,
-        collectMatchingArgumentValueCalls
+        collectMatchingMemberFunctionCalls
         (
           query,
           nodes
@@ -287,15 +257,11 @@ const collectMemberCalls = (query, nodes) => (
   )
 )
 
+
 exports.evaluate = expr => {
-  if (expr[0] === 'function-call' && expr[1].receiver) {
+  if (expr[0] === 'function-call') {
     return [
-      [ 'CallExpression', node => collectMemberCalls(expr[1], [node]) ]
-    ]
-  }
-  else if (expr[0] === 'function-call') {
-    return [
-      ['CallExpression', node => collectStaticCalls(expr[1], [node]) ]
+      ['CallExpression', node => collectCalls(expr[1], [node]) ]
     ]
   }
 }

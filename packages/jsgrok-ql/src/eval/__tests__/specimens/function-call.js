@@ -109,6 +109,16 @@ module.exports = [
   },
 
   {
+    spec: 'with no receiver specified, it does not match member function calls',
+    query: 'foo()',
+    source: `
+      x.foo()
+    `,
+
+    matches: []
+  },
+
+  {
     spec: 'using a receiver, it does not match static function calls',
     query: '*.foo()',
     source: `

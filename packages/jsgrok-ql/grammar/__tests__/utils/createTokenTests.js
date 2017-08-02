@@ -2,6 +2,7 @@ const { assert } = require('chai');
 const createGrammarForToken = require('./createGrammarForToken')
 const parseWithGrammar = require('./parseWithGrammar')
 
+const Ignore = {};
 const id = x => x;
 const evaluate = f => x => {
   if (typeof f === 'function') {
@@ -10,6 +11,19 @@ const evaluate = f => x => {
   else {
     return f;
   }
+}
+
+const match = function(spec, output) {
+  const { name, props = {} } = spec;
+
+  assert.equal(output[0], name)
+
+  Object.keys(props).forEach(propKey => {
+    assert.deepEqual(
+      output[1][propKey], props[propKey],
+      `Property "${propKey}" mismatch`
+    )
+  })
 }
 
 module.exports = (token, { ok = [], notOk = [] }) => {
@@ -22,8 +36,18 @@ module.exports = (token, { ok = [], notOk = [] }) => {
 
       fn(input, function() {
         const outputFrd = evaluate(output)(input)
-
-        assert.deepEqual(subject(input), outputFrd)
+        const result = subject(input);
+        if (outputFrd && outputFrd.expressions) {
+          outputFrd.expressions.forEach((x,i) => {
+            match(x, result)
+          })
+        }
+        else if (outputFrd === Ignore) {
+          assert.ok(result)
+        }
+        else {
+          assert.deepEqual(subject(input), outputFrd)
+        }
       })
     })
 
@@ -36,3 +60,4 @@ module.exports = (token, { ok = [], notOk = [] }) => {
     })
   })
 }
+module.exports.Ignore = Ignore;
