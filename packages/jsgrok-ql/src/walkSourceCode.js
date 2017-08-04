@@ -5,4 +5,4 @@ require('../../acorn-object-spread/walk.js')(walk);
 require('../../acorn-static-class-property-initializer/walk.js')(walk);
 require('../../acorn-dynamic-import/walk.js')(walk);
 
-module.exports = walk.simple;
+module.exports = walk.ancestor;

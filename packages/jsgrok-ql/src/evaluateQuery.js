@@ -1,67 +1,100 @@
 const invariant = require('invariant')
-const { pipe } = require('./functional');
+const { partial, pipe } = require('./functional');
 const createMatchSerializer = require('./createMatchSerializer')
 const expressionEvaluators = require('./expressions')
 const resolveExpressionType = require('./resolveExpressionType')
 const products = require('./products')
-const { P_T } = require('./constants')
+const { O_EVAL, O_PRODUCT, O_TERMINATE } = require('./constants')
 
-const evaluateOperation = (state, expr) => {
+const toArray = x => Array.isArray(x) ? x : [].concat(x || [])
+const setNodes = (state, nodes) => Object.assign({}, state, { nodes })
+
+const evaluateExpression = ({ walk, nodes }, expr) => {
+  const nextNodes = []
+  const trackReturnedNodes = list => {
+    invariant(Array.isArray(list), `Expression evaluator must return an Array of nodes!`)
+
+    list.forEach(x => nextNodes.push(x))
+  }
+
+  const visitors = expressionEvaluators
+    .map(x => x.evaluate(nodes))
+    .reduce((map, evaluator) => {
+      toArray(evaluator(expr)).forEach(([ nodeType, f ]) => {
+        // TODO: compose visitors
+        invariant(!map[nodeType], `Don't know how to compose visitors yet! Node: ${nodeType}`)
+
+        map[nodeType] = pipe(f, trackReturnedNodes);
+      })
+
+      return map
+    }, {})
+  ;
+
+  nodes.forEach(node => walk(node, visitors));
+
+  return nextNodes;
+}
+
+const evaluateOperation = (state, scope, expr) => {
   switch (expr.op) {
-    case 'O_PRODUCT':
-      return applyProduct(state, expr.lhs, expr.rhs)
-
-    case 'O_EVAL_POLYNOMIAL':
+    case O_EVAL:
       return evaluateExpression(state, expr.expr);
 
-    case 'O_EVAL_MONOMIAL':
-      return applyProduct(state, P_T, expr)
+    case O_PRODUCT:
+      const rhsScope = expr.evaluateRHS(state);
+      const lhsScope = expr.evaluateLHS(setNodes(state, rhsScope));
+
+      invariant(typeof products[expr.production] === 'function',
+        `Unsupported production: [${expr.production}]`
+      )
+
+      return products[expr.production](state, lhsScope, rhsScope)
+
+    case O_TERMINATE:
+      invariant(typeof products[expr.production] === 'function',
+        `Unsupported production: [${expr.production}]`
+      )
+
+      return products[expr.production](state, null, expr.evaluate(state));
 
     case undefined:
-      throw new Error(`Malform OP construct: ${JSON.stringify(expr)}`);
+      throw new Error(`Malform OP construct. Dump=${JSON.stringify(expr)}`);
 
     default:
       throw new Error(`Unknown OP "${expr.op}"`)
   }
 }
 
-const evaluateExpression = (state, expr) => {
-  const nodes = []
-  const trackReturnedNodes = list => {
-    list.forEach(x => nodes.push(x))
+const createEvaluationPipeline = (expr, list = []) => {
+  switch (expr.op) {
+    case O_EVAL:
+      return list.concat(expr)
+
+    case O_PRODUCT:
+      return list.concat({
+        op: O_PRODUCT,
+        evaluateRHS: partial(evaluatePipeline, createEvaluationPipeline(expr.rhs)),
+        evaluateLHS: partial(evaluatePipeline, createEvaluationPipeline(expr.lhs)),
+        production: `${resolveExpressionType(expr.lhs)} . ${resolveExpressionType(expr.rhs)}`,
+      });
+
+    case O_TERMINATE:
+      return list.concat({
+        op: O_TERMINATE,
+        evaluate: partial(evaluatePipeline, createEvaluationPipeline(expr.expr)),
+        production: `T . ${resolveExpressionType(expr.expr)}`
+      });
+
+    default:
+      invariant(false, `Don't know how to operate ${JSON.stringify(expr)}`)
   }
-
-  const visitors = expressionEvaluators.map(x => x.evaluate).reduce((map, evaluator) => {
-    (evaluator(expr) || []).forEach(([ nodeType, f ]) => {
-      map[nodeType] = pipe(f, trackReturnedNodes);
-    })
-
-    return map
-  }, {})
-
-  state.nodes.forEach(node => state.walk(node, visitors));
-
-  return nodes;
 }
 
-const applyProduct = (state, lhsExpr, rhsExpr) => {
-  // console.log('lhs query?', lhsExpr)
-  // console.log('rhs query?', rhsExpr)
-  // console.log('lhs type?', resolveTypeOf(lhsExpr))
-  // console.log('rhs type?', resolveTypeOf(rhsExpr))
-
-  const productType = lhsExpr === products.T ?
-    `T . ${resolveExpressionType(rhsExpr)}` :
-    `${resolveExpressionType(lhsExpr)} . ${resolveExpressionType(rhsExpr)}`
-  ;
-
-  const production = products[productType]
-
-  invariant(typeof production === 'function',
-    `Unsupported production: [${productType}]`
-  )
-
-  return production(state, lhsExpr, rhsExpr)
+const evaluatePipeline = (operationPipe, initialState) => {
+  return operationPipe.reduce(function(scope, expr) {
+    return evaluateOperation(setNodes(initialState, scope), scope, expr);
+  }, initialState.nodes)
 }
 
 /**
@@ -75,14 +108,18 @@ const applyProduct = (state, lhsExpr, rhsExpr) => {
  * @property {Number} end
  */
 module.exports = function search(walk, [ query ], ast, sourceCode) {
-  const serializeMatch = createMatchSerializer({ sourceCode })
-
-  return evaluateOperation({
-    nodes: [ ast ],
-    // we need to expose this to expression evaluators
-    walk,
-    // we need to expose those to products
-    evaluateOperation,
-    evaluateExpression
-  }, query).map(serializeMatch)
+  return (
+    evaluatePipeline
+    (
+      createEvaluationPipeline(query),
+      {
+        walk, // we need to expose this to evaluate expressions
+        nodes: [ ast ]
+      }
+    )
+    .map
+    (
+      createMatchSerializer({ sourceCode })
+    )
+  )
 };

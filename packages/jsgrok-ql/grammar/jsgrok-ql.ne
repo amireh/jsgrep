@@ -7,9 +7,6 @@
     'null': true,
   }
   const always = x => () => x;
-  const reject = (d, loc, reject) => reject;
-  const asArray = f => x => Array(f(x));
-  const collectString = d => d[0].join('');
   const assoc = (x, k, v) => {
     x[k] = v;
     return x;
@@ -29,21 +26,23 @@
     }
   }
 
-  const O_EVAL_POLYNOMIAL = 'O_EVAL_POLYNOMIAL'
-  const O_EVAL_MONOMIAL = 'O_EVAL_MONOMIAL'
-
-  const evalMonoExpr = x => ({ op: O_EVAL_MONOMIAL, expr: x })
-  const evalPolyExpr = x => ({ op: O_EVAL_POLYNOMIAL, expr: x })
+  const O_EVAL = 'O_EVAL'
+  const O_PRODUCT = 'O_PRODUCT'
+  const O_TERMINATE = 'O_TERMINATE'
+  const evalExpr = x => ({ op: O_EVAL, expr: x })
 %}
 
 Query ->
     Query _ "." _ Expression {% d => ({
-        op: 'O_PRODUCT',
+        op: O_PRODUCT,
         lhs: d[0],
-        rhs: evalPolyExpr(d[4])
+        rhs: evalExpr(d[4])
       })
     %}
-  | Expression {% d => evalMonoExpr(d[0]) %}
+  | Expression {% d => ({
+    op: O_TERMINATE,
+    expr: evalExpr(d[0])
+  }) %}
 
 Expression ->
     Receiver {% d => ([ 'identifier', d[0] ]) %}

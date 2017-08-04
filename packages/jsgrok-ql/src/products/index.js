@@ -1,10 +1,6 @@
 const { t } = require('../utils')
-const { L_ANY, L_THIS } = require('../constants')
 
-exports['function-call . function-call'] = (state, lhsFunctionCall, rhsFunctionCall) => {
-  const lhsNodes = state.evaluateOperation(state, lhsFunctionCall)
-  const rhsNodes = state.evaluateOperation(state, rhsFunctionCall)
-
+exports['function-call . function-call'] = (state, lhsNodes, rhsNodes) => {
   return rhsNodes.filter(node => {
     return t.memberExpression(node.callee) && lhsNodes.some(otherNode => {
       return node.callee.object === otherNode
@@ -12,34 +8,33 @@ exports['function-call . function-call'] = (state, lhsFunctionCall, rhsFunctionC
   })
 }
 
-exports['identifier . function-call'] = (state, identifier, functionCall) => {
-  const receiver = identifier.expr[1]
-  const rhsNodes = state.evaluateOperation(state, functionCall)
-
-  const collectMatchingReceiverCalls = node => {
-    if (receiver === L_ANY) {
-      return t.memberExpression(node.callee);
-    }
-    else if (receiver === L_THIS) {
-      return t.thisExpression(node.callee.object);
-    }
-    else if (t.identifier(node.callee.object)) {
-      return receiver === node.callee.object.name;
-    }
-    else {
-      return false;
-    }
-  }
-
-  return rhsNodes.filter(collectMatchingReceiverCalls)
+exports['identifier . function-call'] = (state, identifierNodes, rhsNodes) => {
+  return rhsNodes.filter(node => {
+    return t.memberExpression(node.callee) && identifierNodes.some(idNode => {
+      return idNode === node.callee.object;
+    })
+  });
 }
 
-exports['T . function-call'] = (state, identifier, functionCall) => {
-  const rhsNodes = state.evaluateExpression(state, functionCall.expr)
+exports['function-call . identifier'] = (state, _, nodes) => {
+  return nodes;
+}
 
-  const collectMatchingReceiverCalls = node => {
+exports['T . function-call'] = (state, _, nodes) => {
+  return nodes.filter(node => {
     return !t.memberExpression(node.callee)
-  }
-
-  return rhsNodes.filter(collectMatchingReceiverCalls)
+  })
 }
+
+exports['T . identifier'] = (state, x, y) => {
+  return y
+}
+
+exports['identifier . identifier'] = (state, lhsNodes, rhsNodes) => {
+  return rhsNodes.filter(rhsNode => {
+    return t.memberExpression(rhsNode) && lhsNodes.some(lhsNode => {
+      return rhsNode.object === lhsNode;
+    })
+  })
+}
+

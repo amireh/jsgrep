@@ -1,22 +1,18 @@
 const {
-  O_EVAL_POLYNOMIAL,
-  O_EVAL_MONOMIAL,
+  O_EVAL,
   O_PRODUCT,
-  P_T,
 } = require('./constants')
 
-const resolveExpressionType = instruction => {
-  if (instruction === P_T) {
-    return 'T'
-  }
+const resolveExpressionType = expr => {
+  switch (expr.op) {
+    case 'O_TERMINATE':
+      return resolveExpressionType(expr.expr);
 
-  switch (instruction.op) {
-    case O_EVAL_MONOMIAL:
-    case O_EVAL_POLYNOMIAL:
-      return instruction.expr[0];
+    case O_EVAL:
+      return expr.expr[0];
 
     case O_PRODUCT:
-      return resolveExpressionType(instruction.rhs);
+      return resolveExpressionType(expr.rhs);
 
     default:
       return null;

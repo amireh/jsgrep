@@ -1,84 +1,88 @@
+const { matchify } = require('../utils')
+
 module.exports = [
-  {
-    only: false,
-
-    query: 'foo().bar()',
+  // function-call . function-call
+  matchify({
+    query: 'f().g()',
     source: `
-      foo().bar()
-      foo().bar().baz()
-      foo().baz()
-      foo()
-      other().bar()
-      bar()
-    `.trim(),
+      [+] f().g()
+      [+] f("Hello!").g()
+      [+] f().g().h()
+      [ ] f().h()
+      [ ] f()
+      [ ] g().g()
+      [ ] g()
+    `,
+  }),
 
-    matches: [
-      { line: 1 },
-      { line: 2 },
-    ]
-  },
-
-  {
-    only: false,
-
-    query: 'foo(String()).bar()',
-    source: `
-      foo("Hello!").bar()
-      foo().bar()
-    `.trim(),
-
-    matches: [
-      { line: 1 },
-    ]
-  },
-
-  {
-    only: false,
-
+  matchify({
     query: 'foo().bar(String())',
     source: `
-      foo().bar("Hello!")
-      foo().bar()
-    `.trim(),
+      [+] foo().bar("Hello!")
+      [ ] foo().bar()
+    `,
+  }),
 
-    matches: [
-      { line: 1 },
-    ]
-  },
-
-  {
-    only: false,
-
-    query: 'foo().bar().baz()',
+  // function-call . function-call . function-call
+  matchify({
+    query: 'f().g().h()',
     source: `
-      foo().bar().baz()
-      foo().bar().bax()
-      foo().bar()
-      foo()
-    `.trim(),
+      [+] f().g().h()
+      [ ] f().g().j()
+      [ ] f().g()
+      [ ] f()
+    `
+  }),
 
-    matches: [
-      { line: 1 },
-    ]
-  },
-
-  {
-    only: false,
-
-    query: 'this.bar().baz()',
+  // identifier . function-call
+  matchify({
+    query: 'x.f()',
     source: `
-      this.bar().baz()
-      this.bar(23).baz()
-      this.bar().baz(23)
-      foo().bar().bax()
-      foo().bar()
-      foo()
-    `.trim(),
+      [+] x.f()
+      [ ] x.f
+      [ ] x.g()
+      [ ] y.f()
+    `
+  }),
 
-    matches: [
-      { line: 1 },
-      { line: 2 },
-      { line: 3 },
-    ]
-  },
+  // identifier (L_THIS) . function-call
+  matchify({
+    query: 'this.f()',
+    source: `
+      [+] this.f()
+      [+] this.f(23)
+      [+] this.f().g()
+      [ ] x.f()
+      [ ] f().f()
+      [ ] f()
+    `,
+  }),
+
+  // identifier . identifier
+  matchify({
+    query: 'x.y',
+    source: `
+      [+] x.y
+      [ ] x.z
+      [ ] x.y()
+      [ ] x.z()
+      [ ] y.y
+      [ ] y.y()
+    `,
+  }),
+
+  // identifier . identifier . identifier
+  matchify({
+    query: 'a.b.c',
+    source: `
+      [+] a.b.c
+      [ ] a.b.c()
+      [ ] a.b().c
+      [ ] a().b.c
+      [ ] a().b().c()
+      [ ] a.b.d
+      [ ] a.c.c
+      [ ] b.b.c
+    `,
+  }),
 ];
