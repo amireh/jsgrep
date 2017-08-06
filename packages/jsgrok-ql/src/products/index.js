@@ -8,6 +8,21 @@ exports['function-call . function-call'] = (state, lhsNodes, rhsNodes) => {
   })
 }
 
+exports['this . function-call'] = (state, lhs, rhs) => rhs.filter(node => {
+  return t.memberExpression(node.callee) && t.thisExpression(node.callee.object)
+})
+
+exports['* . function-call'] = (state, lhs, rhs) => rhs.filter(node => {
+  return t.memberExpression(node.callee) && (
+    t.identifier(node.callee.object) ||
+    t.thisExpression(node.callee.object)
+  )
+})
+
+exports['** . function-call'] = (state, lhs, rhs) => rhs.filter(node => {
+  return t.memberExpression(node.callee)
+})
+
 exports['identifier . function-call'] = (state, identifierNodes, rhsNodes) => {
   return rhsNodes.filter(node => {
     return t.memberExpression(node.callee) && identifierNodes.some(idNode => {
@@ -27,13 +42,24 @@ exports['T . function-call'] = (state, _, nodes) => {
 }
 
 exports['T . identifier'] = (state, x, y) => {
-  return y
+  return y.filter(node => !t.memberExpression(node))
 }
+
+exports['* . identifier'] = (state, lhsNodes, rhsNodes) => rhsNodes.filter(node => (
+  t.memberExpression(node) && (
+    t.identifier(node.object) ||
+    t.thisExpression(node.object)
+  )
+))
+
+exports['this . identifier'] = (state, _, rhs) => rhs.filter(node => (
+  t.memberExpression(node) && t.thisExpression(node.object)
+))
 
 exports['identifier . identifier'] = (state, lhsNodes, rhsNodes) => {
   return rhsNodes.filter(rhsNode => {
     return t.memberExpression(rhsNode) && lhsNodes.some(lhsNode => {
-      return rhsNode.object === lhsNode;
+      return rhsNode.object === lhsNode
     })
   })
 }

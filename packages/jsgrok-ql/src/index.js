@@ -27,7 +27,9 @@ const memoize = f => x => {
 
 const loadOrParseQuery = memoize(parseQuery);
 
-exports.apply = function(sourceQuery, sourceCode, filePath) {
+exports.apply = function(sourceQuery, sourceCode, filePath, options = {}) {
+  const debug = options.debug === true;
+
   let query;
 
   try {
@@ -63,10 +65,13 @@ exports.apply = function(sourceQuery, sourceCode, filePath) {
   }
 
   try {
-    return evaluateQuery(walkSourceCode, query, ast, sourceCode);
+    return evaluateQuery(walkSourceCode, query, ast, sourceCode, { debug });
   }
   catch (e) {
-    console.log(e.stack)
+    if (debug) {
+      console.log(e.stack)
+    }
+
     return [{
       error: true,
       error_type: ERROR_TYPES.SearchError,

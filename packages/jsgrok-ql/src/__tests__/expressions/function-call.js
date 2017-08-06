@@ -71,60 +71,6 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'It should not match a function identifier...',
-    query: 'foo()',
-    source: `
-      foo
-    `,
-  }),
-
-  matchify({
-    spec: 'with no receiver specified, it does not match member function calls',
-    query: 'f()',
-    source: `
-      x.f()
-    `,
-  }),
-
-  matchify({
-    spec: 'using a receiver, it does not match static function calls',
-    query: '*.foo()',
-    source: `
-      foo()
-    `,
-  }),
-
-  matchify({
-    spec: 'with "this" for a receiver: it matches member function calls to "this"',
-    query: 'this.f()',
-    source: `
-      + this.f()
-        x.f()
-        f()
-    `,
-  }),
-
-  matchify({
-    spec: 'with "x" for a receiver: it matches member function calls to "x"',
-    query: 'x.f()',
-    source: `
-      + x.f()
-        this.f()
-        f()
-    `,
-  }),
-
-  matchify({
-    spec: 'with * for a receiver: it matches member function calls to all receivers',
-    query: '*.f()',
-    source: `
-      + this.f()
-      + x.f()
-        f()
-    `,
-  }),
-
-  matchify({
     spec: 'with String() for an argument: it matches StringLiteral arguments',
     query: 'f(String())',
     source: `

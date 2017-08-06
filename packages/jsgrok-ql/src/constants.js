@@ -1,4 +1,5 @@
 exports.L_ANY = 'L_ANY';
+exports.L_ANY_GREEDY = 'L_ANY_GREEDY';
 exports.L_VOID = 'L_VOID';
 exports.L_THIS = 'L_THIS';
 exports.L_CLASS_STRING = 'L_CLASS_STRING';

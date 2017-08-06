@@ -2,7 +2,7 @@ const stripMatchers = line => line.replace('[+]', '').replace('[ ]', '');
 const matchify = x => {
   const sourceLines = x.source.trim().split('\n')
   const matches = x.matches || sourceLines.reduce(function(list, line, index) {
-    if (line.match('[+]')) {
+    if (line.match('[+]') && line.trim().indexOf('//') !== 0) {
       return list.concat({ line: index+1 })
     }
     else {
