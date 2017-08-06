@@ -90,6 +90,7 @@ TypeExpression ->
 
 Receiver ->
     AnyLiteral {% id %}
+  | GreedyAnyLiteral {% id %}
   | ThisLiteral {% id %}
   | Identifier {% id %}
 
@@ -115,6 +116,7 @@ BuiltInClassLiteral ->
   | "Object()" {% always('L_CLASS_OBJECT') %}
 
 AnyLiteral -> "*" {% always('L_ANY') %}
+GreedyAnyLiteral -> "**" {% always('L_ANY_GREEDY') %}
 VoidLiteral -> "void" {% always('L_VOID') %}
 ThisLiteral -> "this" {% always('L_THIS') %}
 NullLiteral -> "null" {% always('L_NULL') %}

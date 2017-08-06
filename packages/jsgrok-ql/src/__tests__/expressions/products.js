@@ -82,19 +82,19 @@ module.exports = [
   }),
 
   // identifier(L_ANY_GREEDY) . function-call
-  // matchify({
-  //   query: '*.f()',
-  //   source: `
-  //     [+] a.f()
-  //     [+] a.b.f()
-  //     [+] a.b.c.f()
-  //     [+] this.f()
-  //     [+] this.f().g()
-  //     [+] this.a.f()
-  //     [+] this.a.b.f()
-  //     [ ] f()
-  //   `,
-  // }),
+  matchify({
+    query: '**.f()',
+    source: `
+      [+] a.f()
+      [+] a.b.f()
+      [+] a.b.c.f()
+      [+] this.f()
+      [+] this.f().g()
+      [+] this.a.f()
+      [+] this.a.b.f()
+      [ ] f()
+    `,
+  }),
 
   // identifier:+ . function-call
   matchify({
