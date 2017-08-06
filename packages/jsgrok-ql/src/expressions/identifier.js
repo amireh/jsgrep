@@ -1,6 +1,6 @@
 const { t } = require('../utils')
 
-exports.evaluate = () => expr => {
+exports.evaluate = expr => {
   if (expr[0] === 'identifier') {
     return [
       ['MemberExpression', (node, ancestry) => {

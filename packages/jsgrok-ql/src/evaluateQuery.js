@@ -134,7 +134,7 @@ const evaluateExpression = ({ walk, nodes }, expr) => {
   }
 
   const visitors = expressionEvaluators
-    .map(x => x.evaluate(nodes))
+    .map(x => x.evaluate)
     .reduce((map, evaluator) => {
       toArray(evaluator(expr)).forEach(([ nodeType, f ]) => {
         // TODO: compose visitors

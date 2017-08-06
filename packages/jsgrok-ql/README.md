@@ -95,7 +95,7 @@ MEMBER FUNCTION CALLS EXAMPLES:
 
     # Call to function "then" (e.g. Promise) with the second argument being
     # a function
-    .then(*, Function)
+    **.then(*, Function)
 
     # Call to function "then" where:
     # 1) the receiver is the return value of the call to function "ajax" 

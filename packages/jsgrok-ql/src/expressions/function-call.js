@@ -258,7 +258,7 @@ const collectCalls = (query, nodes) => (
 )
 
 
-exports.evaluate = () => expr => {
+exports.evaluate = expr => {
   if (expr[0] === 'function-call') {
     return [
       ['CallExpression', node => collectCalls(expr[1], [node]) ]

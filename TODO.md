@@ -8,3 +8,6 @@
 - [ ] embed v8 data blobs (natives_blob.bin, snapshot_blob.bin) into binary
 - [x] parse query only once per thread
 - [x] remove cpplocate
+- [ ] read defaults from ~/.jsgrokrc or /etc/jsgrokconfig
+- [ ] rename to jsq?
+- [ ] function return type matcher
