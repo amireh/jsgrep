@@ -18,3 +18,5 @@
 - [ ] JSX type matcher
 - [ ] terminal type matcher (e.g. `{ foo }`)
 - [x] FunctionCall(^Type)
+- [ ] interpret `null` literal in function call argument types
+- [ ] interpret `:void` in `:func` return type

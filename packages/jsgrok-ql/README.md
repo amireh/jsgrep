@@ -1,18 +1,14 @@
-% jsgrok-ql(1)
-% Ahmad Amireh
-% July 29, 2017
+# jsq-ql(1) -- jsq(1) query language interpretor
 
-Description
-===========
+## DESCRIPTION
 
-jsgrok-ql is the query language used by jsgrok(1) to search for JavaScript
+jsq-ql is the query language used by jsq(1) to search for JavaScript
 expressions.
 
 Queries are designed to be familiar to the JavaScript programmer by loosely
 following the JavaScript syntax.
 
-Using this guide
-----------------
+## HOW TO USE THIS GUIDE
 
 How to read the synopsis of functions in the following sections:
 
@@ -24,30 +20,37 @@ How to read the synopsis of functions in the following sections:
 - Tokens inside nested brackets (`[X[,...X]]`) indicates the token may be
   repeated.
 
-Otherwise, all other characters must be regarded as literals.
+Otherwise, all other characters must be regarded verbatim.
 
 EXAMPLES
 
     foo()
     foo().then()
 
-Expression matchers
-===================
+## EXPRESSIONS
 
-Function calls
---------------
+A jsq query is composed of either a single expression or multiple expressions
+joined by an expression production operator like `.`.
 
-SYNOPSIS:
+### Calls to static functions
 
-    [Receiver.]%identifier%([ void | [ Type[, ...Type] ] ])
+Query calls to static functions.
 
-EXAMPLES:
+SYNTAX
+
+    %identifier%([ :void | Type[, ...Type] ])
+
+WHERE
+
+- `Type` may be a type expression or the symbol `*` to match any type
+
+EXAMPLES
 
     # Call to static function "f" with any number of arguments
     f()
 
     # Call to static function "f" with 0 arguments
-    f(void)
+    f(:void)
 
     # Call to static function "f" with 2 arguments of any type
     f(*, *)
@@ -72,10 +75,23 @@ EXAMPLES:
     # of arity 2
     f(:func(2))
 
-MEMBER FUNCTION CALLS EXAMPLES:
+### Calls to member functions
+
+Query calls to functions defined on an object.
+
+SYNTAX
+
+    [Receiver.]%identifier%([ :void | [ Type[, ...Type] ] ])
+
+WHERE
+
+- `Receiver` may be an identifier or `*` to match any identifier or `**`
+  to match all preceding identifiers if any
+
+EXAMPLES
 
     # Call to function "f" on any receiver with any number of arguments
-    .f()
+    *.f()
 
     # Call to function "f" on the receiver "this"
     this.f()
@@ -83,19 +99,19 @@ MEMBER FUNCTION CALLS EXAMPLES:
     # Call to function "f" on either the receiver "this" or "store"
     (this | store).f()
 
-    # Call to function "f" on instances of class X
-    :of(X).f()
-
     # Call to function "f" on the default export of the "store.js" module
     :exportOf(store.js).f()
+
+    # Call to function "f" on instances of class X
+    :of(X).f()
 
     # Call to function "f" on an *instance* of the default export of the 
     # "store.js" module
     :of(:exportOf(store.js)).f()
 
     # Call to function "then" (e.g. Promise) with the second argument being
-    # a function
-    **.then(*, :func)
+    # a function that returns another Promise using the "new" keyword
+    **.then(*, :func(*, :of(Promise)))
 
     # Call to function "then" where:
     # 1) the receiver is the return value of the call to function "request" 
@@ -104,53 +120,109 @@ MEMBER FUNCTION CALLS EXAMPLES:
     # 3) the second argument is a function of any arity
     :exportOf(ajax.js).request().then(null, :func)
 
-JSX
----
+### Accesses to object properties
 
-SYNOPSIS:
+SYNTAX
 
-    <%name% [...Property] />
+    [Receiver.]%identifier%
 
-Where Property is defined as:
+WHERE
+
+- `Receiver` may be an identifier or `*` to match any identifier or `**`
+  to match all preceding identifiers if any
+
+EXAMPLES
+
+    # Access to the property "x" of the identifier "a"
+    a.x
+
+### Properties of JSX elements
+
+Query instantiated JSX elements with certain properties.
+
+SYNTAX
+
+    <%identifier% [...JSXProperty] />
+
+Where `JSXProperty` is defined as:
 
     %key%={Type}
 
-EXAMPLES:
+EXAMPLES
 
     # find Link components:
     <Link />
 
     # find Link components with an onClick property defined:
-    <Link onClick />
+    <Link onClick /
+
+    # find Link components without an onClick property defined:
+    <Link ^onClick />
 
     # find Link components with onClick having a boolean value
-    <Link onClick={:boolean} />
+    <Link onClick={:bool} />
 
     # find Link components with onClick being a function of arity 2:
     <Link onClick={:func(2)} />
 
     # find Link components with an href value of either an array of strings, 
     # or an object:
-    <Link href={(Array(String)|Object)} />
+    <Link href={(:array(:string) | :object)} />
 
-Type matchers
-=============
+## TYPE EXPRESSIONS
 
-Built-in class matchers
------------------------
+The constructs described in this section may be used anywhere `Type` is
+referenced in an expression syntax synopsis but can not be used as a query
+expression unless stated otherwise in the documentation.
 
-    :number
-    :bool
-    :string
-    :object
+Type expressions may be negated by prefixing them with the `^` symbol if the
+expression syntax defines it.
+
+The special `*` type expression will match any type.
+
+The special `:void` type expression will not match if anything in its position
+is defined.
+
+### Function values
+
+SYNTAX
+
+    :func[(Arity[, Type | :void])]
+
+WHERE
+
+- `Arity` is a number denoting the number of arguments the function has,
+- `Type` is the type of the return value of the function.
+
+EXAMPLES
+
+    # Any function
     :func
-    :regexp
 
-`Function` type matcher
------------------------
+    # A function that accepts 1 argument
+    :func(1)
 
-String type matcher
--------------------
+    # A function that accepts any number of argument and returns anything
+    :func(*)
+
+    # A function that accepts anything and returns a boolean value
+    :func(*, :bool)
+
+    # A function that accepts anything and returns nothing
+    :func(*, :void)
+
+    # A function that returns something other than a boolean (or nothing at
+    # all)
+    :func(*, ^:bool)
+
+    # Equivalent to :func
+    :func(*, *)
+
+### String values
+
+SYNTAX
+
+    :string | "%string%"
 
 EXAMPLES
 
@@ -165,45 +237,31 @@ EXAMPLES
 
 **Wildcards**
 
-The character sequence ".*" found in string matchers is treated as a wildcard.
+The character sequence `.*` found in string matchers is treated as a wildcard.
 
 EXAMPLES
 
-    # Match "Hello", "Hello World!", or "Hello anything"
+    # Match "Hello", "Hello World!", or `Hello ${'anything'}`
     "Hello.*"
 
-SYNOPSIS:
+### Object values
 
-    :func[(Type[,...Type])]
+SYNTAX
 
-`Object` class matcher
-----------------------
+    :object | { [ObjectProperty[,...ObjectProperty]] }
 
-SYNOPSIS:
+Where `ObjectProperty` is defined as:
 
-    :object
+    [^]%key%[: [^]Type]
 
-EXAMPLES:
+EXAMPLES
 
     # Object has 0 more properties
     :object
 
-`Object` structure matcher
----------------------
-
-SYNOPSIS:
-
-    { [ObjectProperty[,...ObjectProperty]] }
-
-Where ObjectProperty is defined as:
-
-    [^]%key%[: [^]TypeExpression]
-
-EXAMPLES:
-
     # Object has 0 properties (i.e. an empty object)
     {}
-    
+
     # Object has the "a" property
     { a }
 
@@ -228,19 +286,35 @@ EXAMPLES:
     # Object has the "a" property with a value of type other than a number
     { a: ^:number }
 
-Module exports matcher
-----------------------
+### Boolean values
 
-This matcher is available only for scripts that use either the ES6 Module
+SYNTAX
+
+    :bool | true | false
+
+EXAMPLES
+
+    # Any boolean value
+    :bool
+
+    # A true value
+    true
+
+    # A false value
+    false
+
+### ES6 module identifiers
+
+This type matcher is available only for scripts that use either the ES6 Module
 format or the CommonJS format.
 
-SYNOPSIS:
+SYNTAX
 
     :exportOf(%file%[, %symbol%])
 
 When `%export%` is omitted, the `default` export is assumed.
 
-EXAMPLES:
+EXAMPLES
 
     # All references to the identifier assigned to the default export of the 
     # "ajax.js" module
@@ -258,47 +332,25 @@ EXAMPLES:
     # Import of the "x" export of the ajax.js module
     :exportOf(ajax.js, x)
 
-Class instance matcher
-----------------------
+### Class instances
 
 Match objects instantiated using the `new` keyword.
 
-SYNOPSIS:
+SYNTAX
 
     :of(%identifier% | Type)
 
-EXAMPLES:
+EXAMPLES
 
     # An instance of a class or function named X
     :of(X)
 
-    # An instance of the return value of the call to factory()
-    :of(factory())
-
     # An instance of the default export of the module "class.js"
     :of(:exportOf(class.js))
 
-Union type matching
--------------------
+### Numerical values
 
-Group the type matchers with paranthesis (`()`) and separate them using `|`.
-
-SYNOPSIS:
-
-    (Type|Type[|...Type])
-
-EXAMPLES:
-
-    (:object | :string)
-
-    # Object does not have the "a" property or does but its type is not equal 
-    # to Type
-    ({ ^a } | { a: ^Type })
-
-Numerical value matchers
-------------------------
-
-SYNOPSIS
+SYNTAX
 
       :number
     | -? [0-9]+
@@ -314,8 +366,7 @@ EXAMPLES
     # The number literal -0.5
     -0.5
 
-Regular expression matchers
----------------------------
+### Regular expressions
 
 EXAMPLES
 
@@ -325,43 +376,12 @@ EXAMPLES
     # match a regexp by pattern:
     /foo/
 
-Function type matchers
-----------------------
-
-SYNOPSIS
-
-    :func[(Arity[, Type])]
-
-Where `Arity` is a number denoting the number of arguments the function has,
-and `Type` is the type of the return value of the function.
-
-EXAMPLES
-
-    # Any function
-    :func
-
-    # A function that accepts 1 argument
-    :func(1)
-
-    # A function that accepts any number of argument
-    :func(*)
-
-    # A function that returns a boolean value
-    :func(*, :bool)
-
-    # A function that returns something other than a boolean (or just nothing)
-    :func(*, ^:bool)
-
-    # Equivalent to :func
-    :func(*, *)
-
-Miscellaneous type matchers
----------------------------
+## TYPE EXPRESSION KEYWORDS
 
 This group of matchers may receive a special treatment depending on where
 they're used.
 
-- `*` - anything (including nothing)
+- `*` - denotes anything (including nothing)
 - `**` - greedy anything
 - `:void` - nothing
 - `^:void` - something
@@ -382,3 +402,19 @@ EXAMPLES
 
     # A callback that accepts any number of arguments and returns nothing
     f(:func(*, :void))
+
+## TYPE EXPRESSION UNIONS
+
+Group the type matchers with paranthesis (`()`) and separate them using `|`.
+
+SYNTAX
+
+    (Type | Type [|...Type])
+
+EXAMPLES
+
+    # An object or a string
+    (:object | :string)
+
+    # Object does not have the "a" property or does but it's not a number
+    ({ ^a } | { a: ^:number })
