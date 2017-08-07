@@ -1,7 +1,9 @@
 const invariant = require('invariant')
-const { identity, maybe, partial, pipe, trace } = require('./functional');
+const { head, partial, pipe, trace } = require('./functional');
 const createMatchSerializer = require('./createMatchSerializer')
 const expressionEvaluators = require('./expressions')
+const macroEvaluators = require('./macros')
+const expandMacros = require('./expandQueryMacros')
 const {
   resolveExpressionType,
   resolveOutputTerm
@@ -62,6 +64,8 @@ const createEvaluationPipeline = (expr, list = []) => {
     case O_PRODUCT:
       return list.concat({
         op: O_PRODUCT,
+        lhs: expr.lhs, // we need to keep these for logging
+        rhs: expr.rhs,
         evaluateRHS: partial(evaluatePipeline, createEvaluationPipeline(expr.rhs)),
         evaluateLHS: partial(evaluatePipeline, createEvaluationPipeline(expr.lhs)),
         production: resolveProductExpression(expr.lhs, expr.rhs),
@@ -104,9 +108,11 @@ const evaluateOperation = (state, expr) => {
       const rhsScope = expr.evaluateRHS(state);
       const lhsScope = expr.evaluateLHS(setNodes(state, rhsScope));
 
-      invariant(typeof products[expr.production] === 'function',
-        `Unsupported production: [${expr.production}]`
-      )
+      if (typeof products[expr.production] !== 'function') {
+        invariant(false,
+          `Unsupported production: [${head(resolveOutputTerm(expr.lhs))} . ${head(resolveOutputTerm(expr.rhs))}]`
+        )
+      }
 
       return products[expr.production](state, lhsScope, rhsScope)
 
@@ -167,6 +173,57 @@ const castExpressionToString = expr => {
       return expr.op
   }
 }
+
+const expandExpression = (walk, program, expr) => {
+  if (!expr) {
+    return null;
+  }
+
+  if (expr[0] === 'function-call') {
+    return expandFunctionCall(walk, program, expr)
+  }
+
+  const [ evaluator ] = macroEvaluators.filter(x => x.on === expr[0])
+
+  if (!evaluator) {
+    return expr;
+  }
+
+  let nextExpression = null
+
+  walk(program, evaluator.expand(expr, x => { nextExpression = x }));
+
+  return nextExpression || expr
+}
+
+const isMacroExpression = expr => {
+  return Array.isArray(expr) && [ 'imported-identifier' ].indexOf(expr[0]) > -1
+}
+
+const getExpandedMacroValue = (expr, value) => {
+  switch (expr[0]) {
+    case 'imported-identifier':
+      return value[1]
+
+    default:
+      invariant(false, `Unrecognized macro expression "${expr[0]}"`)
+  }
+}
+
+const expandFunctionCall = (walk, program, expr) => {
+  const nextData = Object.assign({}, expr[1])
+
+  if (isMacroExpression(expr[1].id)) {
+    const expandedId = expandExpression(walk, program, expr[1].id)
+
+    if (expandedId) {
+      nextData.id = getExpandedMacroValue(expr[1].id, expandedId)
+    }
+  }
+
+  return [ expr[0], nextData ]
+}
+
 /**
  * @return {Array.<SearchResult>}
  *
@@ -185,7 +242,21 @@ module.exports = function search(walk, [ query ], ast, sourceCode, options = {})
     (
       createEvaluationPipeline
       (
-        trace(debug, 'QUERY', 'json')(query)
+        trace
+        (
+          debug, 'EXPANDED_QUERY', 'json'
+        )
+        (
+          expandMacros
+          (
+            walk,
+            ast,
+            trace(debug, 'QUERY', 'json')
+            (
+              query
+            )
+          )
+        )
       ),
       {
         debug,
@@ -193,9 +264,9 @@ module.exports = function search(walk, [ query ], ast, sourceCode, options = {})
         nodes: [ ast ]
       }
     )
-    .map
-    (
-      createMatchSerializer({ sourceCode })
-    )
+  )
+  .map
+  (
+    createMatchSerializer({ sourceCode })
   )
 };

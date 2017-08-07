@@ -12,6 +12,8 @@
     return x;
   };
 
+  const trimString = x => x.trim()
+
   const FLAGS = {
     '?': 'F_OPT',
     '^': 'F_NOT',
@@ -46,10 +48,14 @@ Query ->
 
 Expression ->
     Receiver {% d => ([ 'identifier', d[0] ]) %}
+  | ExportOfMacro {% d => ([ 'imported-identifier', d[0] ]) %}
   | FunctionCallExpression {% id %}
 
 FunctionCallExpression ->
-  Identifier
+  (
+      Identifier {% id %}
+    | ExportOfMacro {% d => ([ 'imported-identifier', d[0] ]) %}
+  )
   "(" _
     (
       FunctionTypeExpression {% id %} |
@@ -66,8 +72,6 @@ FunctionCallExpression ->
     )
   %}
 
-MemberExpression -> Receiver "." {% id %}
-
 FunctionTypeExpression ->
     TypeExpression
   | FunctionTypeExpression _ "," _ TypeExpression
@@ -78,20 +82,19 @@ FunctionTypeExpression ->
     %}
 
 
-# - Identifiers: a, foo, bar
 TypeExpression ->
     BuiltInClassLiteral {% id %}
-  | AnyLiteral {% id %}
   | NumberLiteral {% id %}
   | StringLiteral {% id %}
   | RegExpLiteral {% id %}
   | ObjectLiteral {% id %}
+  | AnyLiteral {% id %}
   | Identifier {% id %}
 
 Receiver ->
-    AnyLiteral {% id %}
+    ThisLiteral {% id %}
+  | AnyLiteral {% id %}
   | GreedyAnyLiteral {% id %}
-  | ThisLiteral {% id %}
   | Identifier {% id %}
 
 Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
@@ -110,10 +113,10 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
   %}
 
 BuiltInClassLiteral ->
-    "String()" {% always('L_CLASS_STRING') %}
-  | "Number()" {% always('L_CLASS_NUMBER') %}
-  | "RegExp()" {% always('L_CLASS_REGEXP') %}
-  | "Object()" {% always('L_CLASS_OBJECT') %}
+    ":string" {% always('L_CLASS_STRING') %}
+  | ":number" {% always('L_CLASS_NUMBER') %}
+  | ":regexp" {% always('L_CLASS_REGEXP') %}
+  | ":object" {% always('L_CLASS_OBJECT') %}
 
 AnyLiteral -> "*" {% always('L_ANY') %}
 GreedyAnyLiteral -> "**" {% always('L_ANY_GREEDY') %}
@@ -121,6 +124,16 @@ VoidLiteral -> "void" {% always('L_VOID') %}
 ThisLiteral -> "this" {% always('L_THIS') %}
 NullLiteral -> "null" {% always('L_NULL') %}
 RegExpLiteral -> "/" [^\/]:+ "/" {% d => ({ regexp: d[1].join('') }) %}
+
+ExportOfMacro ->
+  ":exportOf(" _ ExportOfSpecifier _ ")" {% d => d[2] %}
+
+ExportOfSpecifier ->
+  [^)]:+ {% d => {
+    const [ source, symbol = "default" ] = d[0].join('').split(',').map(trimString)
+    return { source, symbol }
+  }
+%}
 
 # yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
 # they get
@@ -162,3 +175,4 @@ ObjectPropertyFlag -> [\?\^] {% id %}
 
 Quote -> [\"\'] {% always(null) %}
 NotAQuote -> [^\"\']
+NotAClosingParenthesis -> [^)]

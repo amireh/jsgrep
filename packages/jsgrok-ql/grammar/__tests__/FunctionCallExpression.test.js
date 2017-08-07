@@ -45,7 +45,7 @@ createTokenTests('FunctionCallExpression', {
     }],
 
     // TypeExpression::StringLiteral argument
-    [ 'foo(\'Hello\')', {
+    [ "foo('Hello')", {
       expressions: [
         {
           name: "function-call",
@@ -86,7 +86,7 @@ createTokenTests('FunctionCallExpression', {
     }],
 
     // TypeExpression::BuiltInClassLiteral argument
-    [ 'foo(String())', {
+    [ 'foo(:string)', {
       expressions: [
         {
           name: "function-call",
@@ -95,7 +95,7 @@ createTokenTests('FunctionCallExpression', {
       ]
     }],
 
-    [ 'foo(Number())', {
+    [ 'foo(:number)', {
       expressions: [
         {
           name: "function-call",
@@ -104,7 +104,7 @@ createTokenTests('FunctionCallExpression', {
       ]
     }],
 
-    [ 'foo(RegExp())', {
+    [ 'foo(:regexp)', {
       expressions: [
         {
           name: "function-call",
@@ -113,7 +113,7 @@ createTokenTests('FunctionCallExpression', {
       ]
     }],
 
-    [ 'foo(Object())', {
+    [ 'foo(:object)', {
       expressions: [
         {
           name: "function-call",

@@ -5,7 +5,15 @@ const t = {
     name === L_ANY ||
     name === x.name
   ),
+  importDefaultSpecifier: x => !!(x && x.type === 'ImportDefaultSpecifier'),
+  importSpecifierOf: name => node => !!(node && node.type === 'ImportSpecifier') && (
+    t.identifier(node.imported) &&
+    node.imported.name === name
+  ),
   literal: x => !!(x && x.type === 'Literal'),
+  literalOf: (name, x) => t.literal(x) && (
+    x.value === name
+  ),
   callExpression: x => !!(x && x.type === 'CallExpression'),
   memberExpression: x => !!(x && x.type === 'MemberExpression'),
   newExpression: x => !!(x && x.type === 'NewExpression'),

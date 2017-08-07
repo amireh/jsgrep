@@ -44,3 +44,5 @@ exports.trace = (p, message, format = 'inspect') => x => {
 
   return x;
 }
+
+exports.head = x => x && x[0] || null

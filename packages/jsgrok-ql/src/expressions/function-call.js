@@ -257,6 +257,11 @@ const collectCalls = (query, nodes) => (
   )
 )
 
+exports.walk = (expr, f) => {
+  if (expr[0] === 'function-call') {
+    f(expr[1].id)
+  }
+}
 
 exports.evaluate = expr => {
   if (expr[0] === 'function-call') {

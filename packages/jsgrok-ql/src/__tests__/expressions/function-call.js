@@ -71,8 +71,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with String() for an argument: it matches StringLiteral arguments',
-    query: 'f(String())',
+    spec: 'with :string for an argument: it matches StringLiteral arguments',
+    query: 'f(:string)',
     source: `
       + f('a')
       + f("b")
@@ -85,8 +85,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with Number() for an argument: it matches NumberLiteral arguments',
-    query: 'f(Number())',
+    spec: 'with :number for an argument: it matches NumberLiteral arguments',
+    query: 'f(:number)',
     source: `
       + f(1)
       + f(-0.5)
@@ -98,8 +98,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with RegExp() for an argument: it matches regexp literals',
-    query: 'f(RegExp())',
+    spec: 'with :regexp for an argument: it matches regexp literals',
+    query: 'f(:regexp)',
     source: `
       + f(/foo/)
       + f(new RegExp('bar'))
@@ -122,8 +122,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with Object() for an argument: it matches all object literals',
-    query: 'foo(Object())',
+    spec: 'with :object for an argument: it matches all object literals',
+    query: 'foo(:object)',
     source: `
       + foo({})
       + foo({ foo: '1' })
@@ -152,8 +152,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with { a: Object() } for an argument: it matches object literals that define the "a" property and have a value that is an object',
-    query: 'foo({ a: Object() })',
+    spec: 'with { a: :object } for an argument: it matches object literals that define the "a" property and have a value that is an object',
+    query: 'foo({ a: :object })',
     source: `
       + foo({ a: {} })
       + foo({ a: {}, b: 2 })
@@ -193,8 +193,8 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'with { a: ^Number() } it matches object literals that do have the "a" property but is not a number',
-    query: 'foo({ a: ^Number() })',
+    spec: 'with { a: ^:number } it matches object literals that do have the "a" property but is not a number',
+    query: 'foo({ a: ^:number })',
     source: `
       + foo({ a: '1' })
       + foo({ a })    // OK, don't know what it is

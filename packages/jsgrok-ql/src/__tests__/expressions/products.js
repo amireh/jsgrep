@@ -153,4 +153,101 @@ module.exports = [
       [ ] b.b.c
     `,
   }),
+
+  // T . imported-identifier
+  matchify({
+    query: ':exportOf(ajax)',
+    source: `
+      [ ] import x from 'ajax'
+      [ ] import { y } from 'ajax'
+      [+] x
+      [ ] y
+    `,
+  }),
+
+  // T . imported-identifier
+  matchify({
+    query: ':exportOf(ajax, x)',
+    source: `
+      [ ] import { x } from 'ajax'
+      [ ] import { y } from 'ajax'
+      [ ] import ajax from 'ajax'
+      [+] x
+      [ ] y
+      [ ] ajax
+    `,
+  }),
+
+  // imported-identifier . identifier
+  matchify({
+    query: ':exportOf(ajax).a',
+    source: `
+      [ ] import someModule from 'ajax'
+      [+] someModule.a
+    `,
+  }),
+
+  // imported-identifier . function-call
+  matchify({
+    // debug: true,
+    query: ':exportOf(ajax).f()',
+    source: `
+      [ ] import someModule from 'ajax'
+      [+] someModule.f()
+    `,
+  }),
+
+  // imported-identifier . function-call
+  matchify({
+    query: ':exportOf(ajax)()',
+    source: `
+      [ ] import ajax from 'ajax'
+      [+] ajax()
+      [ ] ajax.f()
+    `,
+  }),
+
+  // imported-identifier . imported-identifier
+  matchify({
+    query: ':exportOf(foo).:exportOf(bar)',
+    source: `
+      [ ] import a from 'foo'
+      [ ] import b from 'bar'
+      [+] a.b
+      [ ] foo.bar
+    `,
+  }),
+
+  // T . imported-identifier (NOT_FOUND)
+  matchify({
+    query: ':exportOf(foo)',
+    source: `
+    `,
+  }),
+
+  // imported-identifier . imported-identifier (NOT_FOUND)
+  matchify({
+    query: ':exportOf(foo).:exportOf(bar)',
+    source: `
+    `,
+  }),
+
+  // imported-identifier . function-call (NOT_FOUND)
+  matchify({
+    query: ':exportOf(foo).foo()',
+    source: ``,
+  }),
+
+  // imported-identifier . identifier (NOT_FOUND)
+  matchify({
+    query: ':exportOf(foo).foo',
+    source: ``,
+  }),
+
+  // * . imported-identifier (NOT_FOUND)
+  matchify({
+    query: '*.:exportOf(foo)',
+    source: ``,
+  }),
+
 ];

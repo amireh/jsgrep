@@ -35,18 +35,19 @@ module.exports = (token, { ok = [], notOk = [] }) => {
       const fn = options && options.focus ? it.only : it;
 
       fn(input, function() {
-        const outputFrd = evaluate(output)(input)
-        const result = subject(input);
-        if (outputFrd && outputFrd.expressions) {
-          outputFrd.expressions.forEach((x,i) => {
-            match(x, result)
+        const expected = evaluate(output)(input)
+        const actual = subject(input);
+
+        if (expected && expected.expressions) {
+          expected.expressions.forEach(x => {
+            match(x, actual)
           })
         }
-        else if (outputFrd === Ignore) {
-          assert.ok(result)
+        else if (expected === Ignore) {
+          assert.ok(actual)
         }
         else {
-          assert.deepEqual(subject(input), outputFrd)
+          assert.deepEqual(actual, expected, JSON.stringify(actual, null, 4))
         }
       })
     })

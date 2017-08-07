@@ -8,7 +8,7 @@ createTokenTests('ObjectLiteral', {
     [ '{ a: "b" }',       { object: { keys: ['a'],      properties: { 'a': [['b']] } } } ],
     [ '{ a: 42 }',        { object: { keys: ['a'],      properties: { 'a': [[42]] } } } ],
     [ '{ a: /foo/ }',     { object: { keys: ['a'],      properties: { 'a': [[{ regexp: 'foo' }]] } } } ],
-    [ '{ a: Object() }',  { object: { keys: ['a'],      properties: { 'a': [['L_CLASS_OBJECT']] } } } ],
+    [ '{ a: :object }',  { object: { keys: ['a'],      properties: { 'a': [['L_CLASS_OBJECT']] } } } ],
     [ '{ a: null }',      { object: { keys: ['a'],      properties: { 'a': [['L_NULL']] } } } ],
     [ '{ a, b }',         { object: { keys: ['a','b'],  properties: { 'a': [['L_ANY']], 'b': [['L_ANY']] } } } ],
     [ '{ a: "b", b: * }', { object: { keys: ['a','b'],  properties: { 'a': [['b']], 'b': [['L_ANY']] } } } ],

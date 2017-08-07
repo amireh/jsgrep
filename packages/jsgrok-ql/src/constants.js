@@ -15,3 +15,5 @@ exports.F_NOT = 'F_NOT'
 exports.O_EVAL = 'O_EVAL'
 exports.O_PRODUCT = 'O_PRODUCT'
 exports.O_TERMINATE = 'O_TERMINATE'
+
+exports.SYM_DEFAULT = 'default'

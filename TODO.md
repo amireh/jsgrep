@@ -1,6 +1,6 @@
 - [ ] optimize global contexts; nodejs context can be made into a template that
   is instantiated for each module
-- [ ] require acorn & friends once and expose them to the global context
+- [x] require acorn & friends once and expose them to the global context
 - [ ] look into https://github.com/chtefi/acorn-jsx-walk to see what kind of monkeying they're doing to get JSX traversal
 - [ ] license: args
 - [ ] look into minifying the JS to reduce binary size
@@ -9,5 +9,11 @@
 - [x] parse query only once per thread
 - [x] remove cpplocate
 - [ ] read defaults from ~/.jsgrokrc or /etc/jsgrokconfig
-- [ ] rename to jsq?
+- [ ] rename to jsq or jsgrep?
 - [ ] function return type matcher
+- [x] :exportOf type matcher
+- [ ] revisit macro expansions, perhaps generate a proper AST for the query
+- [ ] :function type matcher
+- [ ] :boolean type matcher
+- [ ] JSX type matcher
+- [ ] terminal type matcher (e.g. `{ foo }`)
