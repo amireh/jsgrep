@@ -123,6 +123,17 @@ const isMatchingArgument = (term, node) => {
         return false;
       }
 
+    case 'Boolean':
+      if (!isBooleanArgument(node)) {
+        return false;
+      }
+      else if (qt.anyLiteral(term.value)) {
+        return true;
+      }
+      else {
+        return isMatchingBoolean(term.value, node)
+      }
+
     default:
       invariant(false, `Unrecognized argument type expression "${term.type}"`)
 
@@ -179,13 +190,10 @@ const isStringArgument = node => (
     t.literal(node) && typeof node.value === 'string'
   ) ||
   (
-    t.callExpression(node) &&
-    t.identifier(node.callee) &&
-    node.callee.name === 'String'
+    t.callExpression(node) && node.callee.name === 'String'
   ) ||
   (
-    t.newExpression(node) &&
-    node.callee.name === 'String'
+    t.newExpression(node) && node.callee.name === 'String'
   ) ||
   (
     t.templateLiteral(node)
@@ -238,6 +246,52 @@ const isMatchingRegExp = (source, node) => {
   }
   else {
     return false;
+  }
+}
+
+const isBooleanArgument = node => (
+  (
+    t.literal(node) && (
+      node.value === true ||
+      node.value === false
+    )
+  ) ||
+  (
+    t.callExpression(node) && node.callee.name === 'Boolean'
+  ) ||
+  (
+    t.newExpression(node) && node.callee.name === 'Boolean'
+  )
+)
+
+const Maybe = false
+const isMatchingBoolean = (value, node) => {
+  // Boolean(true) | Boolean(false)
+  if (t.literal(node) && typeof node.value === 'boolean') {
+    return node.value === value;
+  }
+  // Boolean('foobar') -> true | Boolean('') -> false
+  else if (t.literal(node)) {
+    return (!!node.value) === value
+  }
+  // Boolean(something) -> Maybe? but we have no maybe right now so just say no
+  else if (t.identifier(node)) {
+    return Maybe
+  }
+  // Boolean(?) | new Boolean(?)
+  else if (t.callExpression(node) || t.newExpression(node)) {
+    // Boolean() | new Boolean()
+    if (!node.arguments[0]) {
+      return value === false;
+    }
+    else {
+      return node.arguments[0] && isMatchingBoolean(value, node.arguments[0])
+    }
+  }
+  else {
+    invariant(false, `Unsupported Boolean node type "${node.type}"`)
+
+    return false
   }
 }
 

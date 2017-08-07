@@ -76,6 +76,7 @@ TypeExpression ->
   | NumberLiteral {% id %}
   | StringLiteral {% id %}
   | RegExpLiteral {% id %}
+  | BooleanLiteral {% id %}
   | ObjectLiteral {% id %}
   | AnyLiteral {% id %}
   | Identifier {% id %}
@@ -103,6 +104,7 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
 
 BuiltInClassLiteral ->
     ":string" {% always({ type: 'String', value: L_ANY }) %}
+  | ":bool"   {% always({ type: 'Boolean', value: L_ANY }) %}
   | ":number" {% always({ type: 'Number', value: L_ANY }) %}
   | ":regexp" {% always({ type: 'RegExp', pattern: L_ANY }) %}
   | ":object" {% always({ type: 'Object', properties: null }) %}
@@ -131,6 +133,9 @@ ExportOfSpecifier ->
     return [ source, symbol ]
   }
 %}
+
+BooleanLiteral ->
+  ("true" | "false") {% d => ({ type: 'Boolean', value: d[0].join('') === 'true' }) %}
 
 # yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
 # they get

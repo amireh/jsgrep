@@ -186,6 +186,59 @@ module.exports = [
     `,
   }),
 
+  // BOOLEANS
+  matchify({
+    query: 'foo(:bool)',
+    source: `
+      [+] foo(true)
+      [+] foo(false)
+      [+] foo(Boolean(true))
+      [+] foo(Boolean(false))
+      [+] foo(Boolean(a))
+      [+] foo(Boolean())
+    `,
+  }),
+
+  matchify({
+    query: 'foo(true)',
+    source: `
+      [+] foo(true)
+      [+] foo(Boolean(true))
+      [+] foo(new Boolean(true))
+      [+] foo(Boolean('something'))
+      [+] foo(new Boolean('something'))
+      [ ] foo(Boolean(false))
+      [ ] foo(new Boolean(false))
+      [ ] foo(Boolean(a))
+      [ ] foo(new Boolean(a))
+      [ ] foo(Boolean())
+      [ ] foo(new Boolean())
+      [ ] foo(false)
+      [ ] foo(a)
+    `,
+  }),
+
+  matchify({
+    query: 'foo(false)',
+    source: `
+      [+] foo(false)
+      [+] foo(Boolean(false))
+      [+] foo(new Boolean(false))
+      [+] foo(Boolean(''))
+      [+] foo(new Boolean(''))
+      [ ] foo(Boolean('something'))
+      [ ] foo(new Boolean('something'))
+      [ ] foo(Boolean(true))
+      [ ] foo(new Boolean(true))
+      [ ] foo(Boolean(a))
+      [ ] foo(new Boolean(a))
+      [+] foo(Boolean())
+      [+] foo(new Boolean())
+      [ ] foo(true)
+      [ ] foo(a)
+    `,
+  }),
+
   // OBJECTS
   matchify({
     spec: 'with :object for an argument: it matches all object literals',
