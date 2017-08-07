@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
+#include "jsgrok/fs.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/types.hpp"
 
@@ -29,39 +30,19 @@ TEST_CASE("jsgrok::v8_session") {
       return object->Get(context, String::NewFromUtf8(isolate, key));
     };
 
+    auto require_from_file = [&](Local<Context> &ctx, const string_t &path) {
+      auto buffer = jsgrok::test_utils::load_fixture_file(path);
+      return subject.require(ctx, buffer.value, buffer.sz);
+    };
+
     WHEN("The isolate can not be used for some reason...") {
       auto module_path = resolve("exportGlobal.js");
 
       isolate->Exit();
 
       THEN("It returns EC_ISOLATE_NOT_ENTERED") {
-        auto module = subject.require(context, module_path);
+        auto module = require_from_file(context, module_path);
         REQUIRE(module.status == v8_module::EC_ISOLATE_NOT_ENTERED);
-      }
-    }
-
-    WHEN("The script file does not exist or can't be read...") {
-      auto script_path = resolve("adsfasdf.js");
-
-      THEN("It returns EC_FILE_ERROR") {
-        auto module = subject.require(context, script_path);
-        REQUIRE(module.status == v8_module::EC_FILE_ERROR);
-      }
-    }
-
-    WHEN("The script source code is passed in") {
-      unsigned char script[] = R"""(
-        module.exports = 42;
-      )""";
-
-      unsigned int script_len = sizeof(script);
-
-      THEN("It evaluates it") {
-        auto module = subject.require(context, script, script_len);
-
-        REQUIRE(module.status == v8_module::EC_OK);
-        REQUIRE(module.exports->IsNumber());
-        REQUIRE(module.exports->ToNumber()->Value() == 42);
       }
     }
 
@@ -69,13 +50,13 @@ TEST_CASE("jsgrok::v8_session") {
       auto script_path = resolve("exportGlobal.js");
 
       THEN("It returns EC_OK") {
-        auto module = subject.require(context, script_path);
+        auto module = require_from_file(context, script_path);
 
         REQUIRE(module.status == v8_module::EC_OK);
       }
 
       THEN("It yields the default `module.exports` object") {
-        auto module = subject.require(context, script_path);
+        auto module = require_from_file(context, script_path);
 
         REQUIRE(module.exports->IsObject());
       }
@@ -85,13 +66,13 @@ TEST_CASE("jsgrok::v8_session") {
       auto script_path = resolve("exportObject.js");
 
       THEN("It returns EC_OK") {
-        auto module = subject.require(context, script_path);
+        auto module = require_from_file(context, script_path);
 
         REQUIRE(module.status == v8_module::EC_OK);
       }
 
       THEN("It yields a handle to the export") {
-        auto module = subject.require(context, script_path);
+        auto module = require_from_file(context, script_path);
 
         REQUIRE(module.exports->IsObject());
       }
@@ -101,11 +82,11 @@ TEST_CASE("jsgrok::v8_session") {
       auto script = resolve("moduleExports.js");
 
       THEN("It returns EC_OK") {
-        REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
+        REQUIRE(require_from_file(context, script).status == v8_module::EC_OK);
       }
 
       THEN("It yields a handle to the export") {
-        auto module = subject.require(context, script);
+        auto module = require_from_file(context, script);
 
         REQUIRE(module.exports->IsNumber());
         REQUIRE(module.exports->ToNumber()->Value() == 1);
@@ -113,14 +94,14 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that sets property on `exports`...") {
-      auto script = resolve("exports.js");
+      auto script_path = resolve("exports.js");
 
       THEN("It returns EC_OK") {
-        REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
+        REQUIRE(require_from_file(context, script_path).status == v8_module::EC_OK);
       }
 
       THEN("It retains the exports object and the defined property") {
-        auto module = subject.require(context, script);
+        auto module = require_from_file(context, script_path);
 
         REQUIRE(module.exports->IsObject());
 

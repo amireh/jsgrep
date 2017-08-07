@@ -25,29 +25,17 @@ namespace jsgrok {
     Isolate* get_isolate() const;
 
     /**
-     * Load a script from disk in a new nodejs-like context.
-     */
-    v8_module require(string_t const&);
-
-    /**
-     * Load a script from disk into an existing context.
-     */
-    v8_module require(Local<Context>&, string_t const&);
-
-    /**
      * Load a script from memory buffer into an existing context.
      */
-    v8_module require(Local<Context>&, const unsigned char *, const unsigned int);
+    v8_module require(Local<Context>&, const unsigned char *, const unsigned int) const;
 
-    Handle<Value> get(Local<Context>&, Local<Object> const&, const char*);
+    Handle<Value> get(Local<Context>&, Local<Object> const&, const char*) const;
 
   protected:
     Isolate *isolate_;
     Isolate::CreateParams isolate_create_params_;
 
-    MaybeLocal<Value> eval_script(Local<Context> &context, string_t const& source);
-    MaybeLocal<Value> eval_script(Local<Context> &context, const unsigned char *, const unsigned int);
-    MaybeLocal<Value> eval_script(Local<Context> &context, Local<String> const&);
+    MaybeLocal<Value> eval_script(Local<Context> &, const unsigned char *, const unsigned int) const;
 
     void read_module_exports(Local<Context> const &context, v8_module &module, MaybeLocal<Value> const& script) const;
   };
