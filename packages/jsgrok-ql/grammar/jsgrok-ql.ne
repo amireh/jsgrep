@@ -12,6 +12,9 @@
     return x;
   };
 
+  const literalOf = value => ({ type: 'Literal', value })
+  const builtInClassOf = name => ({ type: 'BuiltInClass', name })
+
   const trimString = x => x.trim()
 
   const FLAGS = {
@@ -20,41 +23,46 @@
   }
 
   const createValueFlagPair = (flag, value) => {
-    if (flag) {
-      return [ value, FLAGS[flag] ]
+    if (flag === '?') {
+      return Object.assign({}, value, { optional: true })
+    }
+    else if (flag === '^') {
+      return Object.assign({}, value, { negated: true })
     }
     else {
-      return [ value ]
+      return value
     }
   }
 
   const O_EVAL = 'O_EVAL'
   const O_PRODUCT = 'O_PRODUCT'
   const O_TERMINATE = 'O_TERMINATE'
-  const evalExpr = x => ({ op: O_EVAL, expr: x })
+  const evalExpr = x => ({ type: O_EVAL, expr: x })
+
+  const L_ANY = { type: 'AnyLiteral' }
 %}
 
 Query ->
     Query _ "." _ Expression {% d => ({
-        op: O_PRODUCT,
+        type: O_PRODUCT,
         lhs: d[0],
         rhs: evalExpr(d[4])
       })
     %}
   | Expression {% d => ({
-    op: O_TERMINATE,
+    type: O_TERMINATE,
     expr: evalExpr(d[0])
   }) %}
 
 Expression ->
-    Receiver {% d => ([ 'identifier', d[0] ]) %}
-  | ExportOfMacro {% d => ([ 'imported-identifier', d[0] ]) %}
+    Receiver {% id %}
+  | ExportOfMacro {% id %}
   | FunctionCallExpression {% id %}
 
 FunctionCallExpression ->
   (
       Identifier {% id %}
-    | ExportOfMacro {% d => ([ 'imported-identifier', d[0] ]) %}
+    | ExportOfMacro {% id %}
   )
   "(" _
     (
@@ -107,52 +115,66 @@ Identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*
         return reject;
       }
       else {
-        return id;
+        return { type: 'Identifier', name: id }
       }
     }
   %}
 
 BuiltInClassLiteral ->
-    ":string" {% always('L_CLASS_STRING') %}
-  | ":number" {% always('L_CLASS_NUMBER') %}
-  | ":regexp" {% always('L_CLASS_REGEXP') %}
-  | ":object" {% always('L_CLASS_OBJECT') %}
+    ":string" {% always({ type: 'String', value: L_ANY }) %}
+  | ":number" {% always({ type: 'Number', value: L_ANY }) %}
+  | ":regexp" {% always({ type: 'RegExp', pattern: L_ANY }) %}
+  | ":object" {% always({ type: 'Object', keys: null, properties: null }) %}
 
-AnyLiteral -> "*" {% always('L_ANY') %}
-GreedyAnyLiteral -> "**" {% always('L_ANY_GREEDY') %}
-VoidLiteral -> "void" {% always('L_VOID') %}
-ThisLiteral -> "this" {% always('L_THIS') %}
-NullLiteral -> "null" {% always('L_NULL') %}
-RegExpLiteral -> "/" [^\/]:+ "/" {% d => ({ regexp: d[1].join('') }) %}
+AnyLiteral        -> "*"              {% always(L_ANY) %}
+GreedyAnyLiteral  -> "**"             {% always({ type: 'GreedyAnyLiteral' }) %}
+VoidLiteral       -> "void"           {% always({ type: 'VoidLiteral' }) %}
+ThisLiteral       -> "this"           {% always({ type: 'ThisLiteral' }) %}
+NullLiteral       -> "null"           {% always({ type: 'NullLiteral' }) %}
+RegExpLiteral     -> "/" [^\/]:+ "/"  {% d => ({
+  type: 'RegExp',
+  pattern: literalOf(d[1].join(''))
+}) %}
 
 ExportOfMacro ->
-  ":exportOf(" _ ExportOfSpecifier _ ")" {% d => d[2] %}
+  ":exportOf(" _ ExportOfSpecifier _ ")" {% d => ({
+    type: 'ExportOfMacroExpression',
+    source: d[2][0],
+    symbol: d[2][1]
+  }) %}
 
 ExportOfSpecifier ->
   [^)]:+ {% d => {
     const [ source, symbol = "default" ] = d[0].join('').split(',').map(trimString)
-    return { source, symbol }
+    return [ source, symbol ]
   }
 %}
 
 # yes this may produce garbage (e.g. 1.2.1) but whoever does that deserves what
 # they get
-NumberLiteral -> "-":? [\.0-9]:+ {% d => parseFloat((d[0] || '') + d[1].join('')) %}
+NumberLiteral -> "-":? [\.0-9]:+ {% d => ({
+  type: 'Number',
+  value: literalOf(parseFloat((d[0] || '') + d[1].join('')))
+}) %}
 
 StringLiteral ->
   StringQuoteLiteral _
     NotAQuote:*
   _ StringQuoteLiteral
-  {% d => d[2].join('') %}
+  {% d => ({ type: 'String', value: literalOf(d[2].join('')) }) %}
 
 StringQuoteLiteral -> Quote
 
 ObjectLiteral ->
-    EmptyObjectLiteral {% always('L_EMPTY_OBJECT') %}
-  | "{" _ ObjectPropertyList _ "}"
-    {% d => ({ object: { keys: Object.keys(d[2]), properties: d[2] } }) %}
+    EmptyObjectLiteral {%
+      always({ type: 'Object', keys: [], properties: [] })
+    %}
 
-EmptyObjectLiteral -> "{" _ "}" {% always('L_EMPTY_OBJECT') %}
+  | "{" _ ObjectPropertyList _ "}" {%
+    d => ({ type: 'Object', keys: Object.keys(d[2]), properties: d[2] })
+  %}
+
+EmptyObjectLiteral -> "{" _ "}"
 
 ObjectPropertyList ->
     ObjectProperty {% id %}
@@ -160,9 +182,9 @@ ObjectPropertyList ->
 
 ObjectProperty ->
     ObjectPropertyFlag:? ObjectKey _ ":" _ ObjectValue {% d => assoc({}, d[1], createValueFlagPair(d[0], d[5])) %}
-  | ObjectPropertyFlag:? ObjectKey                     {% d => assoc({}, d[1], createValueFlagPair(d[0], ['L_ANY'])) %}
+  | ObjectPropertyFlag:? ObjectKey                     {% d => assoc({}, d[1], createValueFlagPair(d[0], { type: 'AnyLiteral' })) %}
 
-ObjectKey -> Identifier {% id %}
+ObjectKey -> Identifier {% d => d[0].name %}
 ObjectValue ->
     ObjectPropertyFlag:? BuiltInClassLiteral  {% d => createValueFlagPair(d[0], d[1]) %}
   | ObjectPropertyFlag:? AnyLiteral           {% d => createValueFlagPair(d[0], d[1]) %}

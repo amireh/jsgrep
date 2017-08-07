@@ -1,7 +1,7 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('StringLiteral', {
   ok: [
-    [ '"Hello World!"', 'Hello World!' ]
+    [ '"Hello World!"', b.string(b.literal('Hello World!')) ]
   ]
 })

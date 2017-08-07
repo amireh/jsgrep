@@ -1,7 +1,7 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('RegExpLiteral', {
   ok: [
-    [ '/foo/', { regexp: 'foo' } ],
+    [ '/foo/', b.regexp({ pattern: b.literal('foo') }) ],
   ]
 })

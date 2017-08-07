@@ -1,10 +1,10 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('BuiltInClassLiteral', {
   ok: [
-    [ ':string', 'L_CLASS_STRING' ],
-    [ ':number', 'L_CLASS_NUMBER' ],
-    [ ':regexp', 'L_CLASS_REGEXP' ],
-    [ ':object', 'L_CLASS_OBJECT' ],
+    [ ':string', b.string(b.anyLiteral()) ],
+    [ ':number', b.number(b.anyLiteral()) ],
+    [ ':regexp', b.regexp({ pattern: b.anyLiteral() }) ],
+    [ ':object', b.object({ keys: null, properties: null }) ],
   ]
 })

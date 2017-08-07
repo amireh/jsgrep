@@ -1,21 +1,26 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('ObjectLiteral', {
   ok: [
-    [ '{}',               'L_EMPTY_OBJECT' ],
-
-    [ '{ a }',            { object: { keys: ['a'],      properties: { 'a': [['L_ANY']] } } } ],
-    [ '{ a: "b" }',       { object: { keys: ['a'],      properties: { 'a': [['b']] } } } ],
-    [ '{ a: 42 }',        { object: { keys: ['a'],      properties: { 'a': [[42]] } } } ],
-    [ '{ a: /foo/ }',     { object: { keys: ['a'],      properties: { 'a': [[{ regexp: 'foo' }]] } } } ],
-    [ '{ a: :object }',  { object: { keys: ['a'],      properties: { 'a': [['L_CLASS_OBJECT']] } } } ],
-    [ '{ a: null }',      { object: { keys: ['a'],      properties: { 'a': [['L_NULL']] } } } ],
-    [ '{ a, b }',         { object: { keys: ['a','b'],  properties: { 'a': [['L_ANY']], 'b': [['L_ANY']] } } } ],
-    [ '{ a: "b", b: * }', { object: { keys: ['a','b'],  properties: { 'a': [['b']], 'b': [['L_ANY']] } } } ],
-
-    // Flags
-    [ '{ ?a }',            { object: { keys: ['a'], properties: { 'a': [['L_ANY'], 'F_OPT'] } } } ],
-    [ '{ ^a }',            { object: { keys: ['a'], properties: { 'a': [['L_ANY'], 'F_NOT'] } } } ],
-    [ '{ ?a, ^b }',        { object: { keys: ['a','b'], properties: { 'a': [['L_ANY'], 'F_OPT'], 'b': [['L_ANY'], 'F_NOT'] } } } ],
+    [ '{}',               b.object({ keys: [],    properties: [] }) ],
+    [ '{ a }',            b.object({ keys: ['a'], properties: { 'a': b.anyLiteral() } }) ],
+    [ '{ a: "b" }',       b.object({ keys: ['a'], properties: { 'a': b.string(b.literal('b')) } }) ],
+    [ '{ a: 42 }',        b.object({ keys: ['a'], properties: { 'a': b.number(b.literal(42)) } }) ],
+    [ '{ a: /foo/ }',     b.object({ keys: ['a'], properties: { 'a': b.regexp({ pattern: b.literal('foo') }) } }) ],
+    [ '{ a: :object }',   b.object({ keys: ['a'], properties: { 'a': b.object({ keys: null, properties: null }) } }) ],
+    [ '{ a: null }',      b.object({ keys: ['a'], properties: { 'a': b.nullLiteral() } }) ],
+    [ '{ a, b }',         b.object({ keys: ['a','b'],  properties: { 'a': b.anyLiteral(), 'b': b.anyLiteral() } }) ],
+    [ '{ a: "b", b: * }', b.object({ keys: ['a','b'],  properties: { 'a': b.string(b.literal('b')), 'b': b.anyLiteral() } }) ],
+    [ '{ ?a }',           b.object({ keys: ['a'], properties: { 'a': b.flags({ optional: true })(b.anyLiteral()) } }) ],
+    [ '{ ^a }',           b.object({ keys: ['a'], properties: { 'a': b.flags({ negated: true })(b.anyLiteral()) } }) ],
+    [ '{ a: ^:number }',  b.object({ keys: ['a'], properties: { 'a': b.flags({ negated: true })(b.number(b.anyLiteral())) } }) ],
+    [ '{ a: ^42 }',       b.object({ keys: ['a'], properties: { 'a': b.flags({ negated: true })(b.number(b.literal(42))) } }) ],
+    [ '{ ?a, ^b }',       b.object({
+      keys: ['a','b'],
+      properties: {
+        'a': b.flags({ optional: true })(b.anyLiteral()),
+        'b': b.flags({ negated: true })(b.anyLiteral()),
+      }
+    }) ],
   ]
 })

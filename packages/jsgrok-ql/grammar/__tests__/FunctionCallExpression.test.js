@@ -1,4 +1,4 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('FunctionCallExpression', {
   ok: [
@@ -7,7 +7,7 @@ createTokenTests('FunctionCallExpression', {
         name: 'function-call',
         props: {
           arguments: [],
-          id: 'foo'
+          id: b.identifier('foo')
         }
       }]
     }],
@@ -19,7 +19,10 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_VOID'], id: 'foo' }
+          props: {
+            arguments: [ b.voidLiteral() ],
+            id: b.identifier('foo')
+          }
         }
       ]
     }],
@@ -29,7 +32,10 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_ANY'], id: 'foo' }
+          props: {
+            arguments: [b.anyLiteral()],
+            id: b.identifier('foo')
+          }
         }
       ]
     }],
@@ -39,7 +45,10 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: [1], id: 'foo' }
+          props: {
+            arguments: [b.number(b.literal(1))],
+            id: b.identifier('foo')
+          }
         }
       ]
     }],
@@ -50,8 +59,8 @@ createTokenTests('FunctionCallExpression', {
         {
           name: "function-call",
           props: {
-            arguments: ['Hello'],
-            id: 'foo',
+            arguments: [b.string(b.literal('Hello'))],
+            id: b.identifier('foo'),
           }
         }
       ]
@@ -61,7 +70,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['Hello'], id: 'foo' }
+          props: { arguments: [b.string(b.literal('Hello'))], id: b.identifier('foo') }
         }
       ]
     }],
@@ -70,7 +79,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['bar'], id: 'foo' }
+          props: { arguments: [b.identifier('bar')], id: b.identifier('foo') }
         }
       ]
     }],
@@ -80,7 +89,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_EMPTY_OBJECT'], id: 'foo' }
+          props: { arguments: [b.object({})], id: b.identifier('foo') }
         }
       ]
     }],
@@ -90,7 +99,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_CLASS_STRING'], id: 'foo' }
+          props: { arguments: [b.string(b.anyLiteral())], id: b.identifier('foo') }
         }
       ]
     }],
@@ -99,7 +108,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_CLASS_NUMBER'], id: 'foo' }
+          props: { arguments: [b.number(b.anyLiteral())], id: b.identifier('foo') }
         }
       ]
     }],
@@ -108,7 +117,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_CLASS_REGEXP'], id: 'foo' }
+          props: { arguments: [b.regexp({ pattern: b.anyLiteral() })], id: b.identifier('foo') }
         }
       ]
     }],
@@ -117,7 +126,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_CLASS_OBJECT'], id: 'foo' }
+          props: { arguments: [b.object({ keys: null, properties: null })], id: b.identifier('foo') }
         }
       ]
     }],
@@ -131,7 +140,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_ANY', 'L_ANY'], id: 'foo' }
+          props: { arguments: [b.anyLiteral(), b.anyLiteral()], id: b.identifier('foo') }
         }
       ]
     }],
@@ -141,7 +150,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: [-0.5, 42], id: 'foo' }
+          props: { arguments: [b.number(b.literal(-0.5)), b.number(b.literal(42))], id: b.identifier('foo') }
         }
       ]
     }],
@@ -151,7 +160,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['bar', 'baz'], id: 'foo' }
+          props: { arguments: [b.identifier('bar'), b.identifier('baz')], id: b.identifier('foo') }
         }
       ]
     }],
@@ -160,7 +169,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['bar', 'bar'], id: 'foo' }
+          props: { arguments: [b.identifier('bar'), b.identifier('bar')], id: b.identifier('foo') }
         }
       ]
     }],
@@ -171,7 +180,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['L_ANY', 'bar', 10], id: 'foo' }
+          props: { arguments: [b.anyLiteral(), b.identifier('bar'), b.number(b.literal(10))], id: b.identifier('foo') }
         }
       ]
     }],
@@ -180,7 +189,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: ['bar', 'L_ANY', 10], id: 'foo' }
+          props: { arguments: [b.identifier('bar'), b.anyLiteral(), b.number(b.literal(10))], id: b.identifier('foo') }
         }
       ]
     }],
@@ -189,7 +198,7 @@ createTokenTests('FunctionCallExpression', {
       expressions: [
         {
           name: "function-call",
-          props: { arguments: [10, 'bar', 'L_ANY'], id: 'foo' }
+          props: { arguments: [b.number(b.literal(10)), b.identifier('bar'), b.anyLiteral()], id: b.identifier('foo') }
         }
       ]
     }],

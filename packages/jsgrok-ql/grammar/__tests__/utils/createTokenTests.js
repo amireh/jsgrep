@@ -26,13 +26,14 @@ const match = function(spec, output) {
   })
 }
 
-module.exports = (token, { ok = [], notOk = [] }) => {
-  describe(`jsgrok-ql::grammar::${token}`, function() {
+module.exports = (token, { ok = [], notOk = [], only = false }) => {
+  const describeFn = only ? describe.only : describe
+  describeFn(`jsgrok-ql::grammar::${token}`, function() {
     const grammar = createGrammarForToken(token)
     const subject = parseWithGrammar(grammar);
 
     ok.forEach(function([ input, output = id, options = {} ]) {
-      const fn = options && options.focus ? it.only : it;
+      const fn = options && options.only ? it.only : it;
 
       fn(input, function() {
         const expected = evaluate(output)(input)
@@ -53,7 +54,7 @@ module.exports = (token, { ok = [], notOk = [] }) => {
     })
 
     notOk.forEach(function([ input,, options = {} ]) {
-      const fn = options && options.focus ? it.only : it;
+      const fn = options && options.only ? it.only : it;
 
       fn(input, function() {
         assert.throws(() => subject(input), "invalid syntax")

@@ -1,7 +1,7 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('AnyLiteral', {
   ok: [
-    [ '*', 'L_ANY' ]
+    [ '*', b.anyLiteral() ]
   ]
 })

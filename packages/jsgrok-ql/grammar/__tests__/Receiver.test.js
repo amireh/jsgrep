@@ -1,9 +1,9 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('Receiver', {
   ok: [
-    [ '*', 'L_ANY' ],
-    [ 'this', 'L_THIS' ],
-    [ 'foo', 'foo' ]
+    [ '*', b.anyLiteral() ],
+    [ 'this', b.thisLiteral() ],
+    [ 'foo', b.identifier('foo') ]
   ],
 })

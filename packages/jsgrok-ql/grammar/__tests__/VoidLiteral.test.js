@@ -1,7 +1,7 @@
-const { createTokenTests } = require('./utils')
+const { createTokenTests, builders: b } = require('./utils')
 
 createTokenTests('VoidLiteral', {
   ok: [
-    [ 'void', 'L_VOID' ]
+    [ 'void', b.voidLiteral() ]
   ]
 })
