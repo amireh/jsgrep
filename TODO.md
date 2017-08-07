@@ -14,7 +14,7 @@
 - [x] :exportOf type matcher
 - [ ] revisit macro expansions, perhaps generate a proper AST for the query
 - [ ] :function type matcher
-- [ ] :boolean type matcher
+- [x] :boolean type matcher
 - [ ] JSX type matcher
 - [ ] terminal type matcher (e.g. `{ foo }`)
 - [x] FunctionCall(^Type)

@@ -320,4 +320,86 @@ module.exports = [
         foo({ a: 4 })
     `,
   }),
+
+  // FUNCTIONS ANY ARITY + ANY RETURN VALUE
+  matchify({
+    query: 'f(:func(*, *))',
+    source: `
+      + f(function(x)   { return true })
+      + f(function(y)   { return 42 })
+      + f(function(x,y) { return false })
+    `,
+  }),
+
+  // FUNCTIONS ANY ARITY + ANY RETURN VALUE
+  matchify({
+    query: 'f(:func)',
+    source: `
+      + f(function(x)   { return true })
+      + f(function(y)   { return 42 })
+      + f(function(x,y) { return false })
+      + f(() => {})
+      + f(() => 'asdf')
+    `,
+  }),
+  // FUNCTIONS ANY ARITY + RETURN VALUE
+  matchify({
+    query: 'f(:func(*, :bool))',
+    source: `
+      + f(function() { return true })
+      + f(function() { return false })
+        f(function() { return 42 })
+    `,
+  }),
+
+  // FUNCTIONS ARITY + RETURN VALUE
+  matchify({
+    query: 'f(:func(1, :bool))',
+    source: `
+      + f(function(x)   { return true })
+        f(function(x,y) { return false })
+        f(function()    { return false })
+    `,
+  }),
+
+  // FUNCTIONS ARITY + ANY RETURN VALUE
+  matchify({
+    query: 'f(:func(1, *))',
+    source: `
+      + f(function(x)   { return true })
+      + f(function(y)   { return 42 })
+        f(function(x,y) { return false })
+    `,
+  }),
+
+  // FUNCTIONS ARITY
+  matchify({
+    query: 'f(:func(1))',
+    source: `
+      + f(function(x)   { return true })
+      + f(function(y)   { return 42 })
+        f(function(x,y) { return false })
+    `,
+  }),
+
+  // ARROW FUNCTIONS
+  matchify({
+    query: 'f(:func(*, :bool))',
+    source: `
+      + f(() => true)
+      + f(() => false)
+        f(() => 42)
+        f(null)
+    `,
+  }),
+
+  matchify({
+    query: 'f(:func(*, ^:bool))',
+    source: `
+      [ ] f(() => { return true })
+      [ ] f(() => { return false })
+      [+] f(() => { return 42 })
+    `,
+  }),
+
 ];

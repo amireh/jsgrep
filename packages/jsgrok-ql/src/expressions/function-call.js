@@ -47,15 +47,13 @@ const collectMatchingArityCalls = (query, nodes) => {
 const collectMatchingArgumentValueCalls = (query, nodes) => {
   return nodes.filter(node => {
     return query.arguments.every((term, index) => {
-      return xor(
-        isMatchingArgument(term, node.arguments[index]),
-        term.negated
-      )
+      return isMatchingArgument(term, node.arguments[index])
     })
   })
 }
 
-const isMatchingArgument = (term, node) => {
+const isMatchingArgument = (term, node) => xor(isMatchingArgumentFrd(term, node), term.negated)
+const isMatchingArgumentFrd = (term, node) => {
   switch (term.type) {
     case 'AnyLiteral':
     case 'VoidLiteral':
@@ -134,11 +132,61 @@ const isMatchingArgument = (term, node) => {
         return isMatchingBoolean(term.value, node)
       }
 
+    case 'Function':
+      if (!isFunctionArgument(node)) {
+        return false;
+      }
+      else {
+        return isMatchingFunction(term, node)
+      }
+
     default:
       invariant(false, `Unrecognized argument type expression "${term.type}"`)
 
       return false;
   }
+}
+
+const isFunctionArgument = node => (
+  (
+    t.arrowFunctionExpression(node)
+  ) ||
+  (
+    t.functionExpression(node)
+  )
+)
+
+const getFunctionData = node => {
+  const fn = { arity: null, value: null }
+
+  fn.arity = node.params.length;
+
+  if (t.literal(node.body)) {
+    fn.value = node.body
+  }
+  else if (t.blockStatement(node.body)) {
+    fn.value = node.body.body.filter(t.returnStatement).map(x => x.argument)[0]
+  }
+
+  return fn
+}
+
+const isMatchingFunction = (term, node) => {
+  const fn = getFunctionData(node)
+
+  if (term.arity !== 'L_ANY' && term.arity !== fn.arity) {
+    return false;
+  }
+
+  if (qt.anyLiteral(term.returnType)) {
+    return true;
+  }
+
+  if (!fn.value) {
+    return false;
+  }
+
+  return isMatchingArgument(term.returnType, fn.value)
 }
 
 const isNumberArgument = node => (
@@ -326,15 +374,10 @@ const isMatchingObject = (term, node) => {
       return false;
     }
     else {
-      const valueSpec = propTerm.value
-      const ok = isMatchingArgument(valueSpec, nodeProps[propTerm.key])
-
-      if (qt.negatedPropertyValue(propTerm)) {
-        return !ok
-      }
-      else {
-        return ok
-      }
+      return xor(
+        isMatchingArgumentFrd(propTerm.value, nodeProps[propTerm.key]),
+        qt.negatedPropertyValue(propTerm)
+      )
     }
   })
 }

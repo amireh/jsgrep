@@ -70,7 +70,7 @@ EXAMPLES:
 
     # Call to static function "f" with an argument that is a function 
     # of arity 2
-    f(:function(*,*))
+    f(:func(2))
 
 MEMBER FUNCTION CALLS EXAMPLES:
 
@@ -95,14 +95,14 @@ MEMBER FUNCTION CALLS EXAMPLES:
 
     # Call to function "then" (e.g. Promise) with the second argument being
     # a function
-    **.then(*, :function)
+    **.then(*, :func)
 
     # Call to function "then" where:
     # 1) the receiver is the return value of the call to function "request" 
     #    provided by the module "ajax.js"
     # 2) the first argument is null
     # 3) the second argument is a function of any arity
-    :exportOf(ajax.js).request().then(null, :function)
+    :exportOf(ajax.js).request().then(null, :func)
 
 JSX
 ---
@@ -127,7 +127,7 @@ EXAMPLES:
     <Link onClick={:boolean} />
 
     # find Link components with onClick being a function of arity 2:
-    <Link onClick={:function(*,*)} />
+    <Link onClick={:func(2)} />
 
     # find Link components with an href value of either an array of strings, 
     # or an object:
@@ -140,10 +140,10 @@ Built-in class matchers
 -----------------------
 
     :number
-    :boolean
+    :bool
     :string
     :object
-    :function
+    :func
     :regexp
 
 `Function` type matcher
@@ -174,7 +174,7 @@ EXAMPLES
 
 SYNOPSIS:
 
-    :function[(Type[,...Type])]
+    :func[(Type[,...Type])]
 
 `Object` class matcher
 ----------------------
@@ -324,3 +324,61 @@ EXAMPLES
 
     # match a regexp by pattern:
     /foo/
+
+Function type matchers
+----------------------
+
+SYNOPSIS
+
+    :func[(Arity[, Type])]
+
+Where `Arity` is a number denoting the number of arguments the function has,
+and `Type` is the type of the return value of the function.
+
+EXAMPLES
+
+    # Any function
+    :func
+
+    # A function that accepts 1 argument
+    :func(1)
+
+    # A function that accepts any number of argument
+    :func(*)
+
+    # A function that returns a boolean value
+    :func(*, :bool)
+
+    # A function that returns something other than a boolean (or just nothing)
+    :func(*, ^:bool)
+
+    # Equivalent to :func
+    :func(*, *)
+
+Miscellaneous type matchers
+---------------------------
+
+This group of matchers may receive a special treatment depending on where
+they're used.
+
+- `*` - anything (including nothing)
+- `**` - greedy anything
+- `:void` - nothing
+- `^:void` - something
+
+EXAMPLES
+
+    # A function call with no arguments
+    f(:void)
+
+    # A function call with the first argument being of any type
+    f(*)
+
+    # A function call to "f" on any receiver (*)
+    *.f()
+
+    # A function call to "f" on any receiver, no matter how deeply nested:
+    **.f()
+
+    # A callback that accepts any number of arguments and returns nothing
+    f(:func(*, :void))

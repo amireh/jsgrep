@@ -24,6 +24,11 @@ const t = {
   templateLiteral: node => !!(node && node.type === 'TemplateLiteral'),
   templateLiteralValueOf: node => node.quasis.map(x => x.value && x.value.cooked || '').join(''),
   templateLiteralOf: (value, node) => value === t.templateLiteralValueOf(node),
+
+  arrowFunctionExpression: node => !!(node && node.type === 'ArrowFunctionExpression'),
+  functionExpression: node => !!(node && node.type === 'FunctionExpression'),
+  blockStatement: node => !!(node && node.type === 'BlockStatement'),
+  returnStatement: node => !!(node && node.type === 'ReturnStatement'),
 }
 
 exports.t = t

@@ -22,7 +22,6 @@
   const trimString = x => x.trim()
   const constantizeFlag = d => FLAGS[d[0]]
   const evalExpr = x => ({ type: O_EVAL, expr: x })
-
 %}
 
 Query ->
@@ -61,7 +60,8 @@ FunctionCallExpression ->
 
 FunctionTypeExpression ->
     NegatableTypeExpression
-  | FunctionTypeExpression _ "," _ NegatableTypeExpression
+  | FunctionLiteral
+  | FunctionTypeExpression _ "," _ (NegatableTypeExpression | FunctionLiteral)
     {%
       (d, loc) => {
         return d[0].concat(d[4])
@@ -108,6 +108,7 @@ BuiltInClassLiteral ->
   | ":number" {% always({ type: 'Number', value: L_ANY }) %}
   | ":regexp" {% always({ type: 'RegExp', pattern: L_ANY }) %}
   | ":object" {% always({ type: 'Object', properties: null }) %}
+  | ":func"   {% always({ type: 'Function', arity: 'L_ANY', returnType: L_ANY }) %}
 
 AnyLiteral        -> "*"              {% always(L_ANY) %}
 GreedyAnyLiteral  -> "**"             {% always({ type: 'GreedyAnyLiteral' }) %}
@@ -195,6 +196,26 @@ ObjectValue ->
   | ObjectPropertyFlag:? NullLiteral          {% d => d %}
 
 ObjectPropertyFlag -> [\?\^] {% constantizeFlag %}
+
+FunctionLiteral ->
+    ":func(" _ FunctionLiteralArity _ ")"
+    {% d =>
+      ({
+        type: 'Function',
+        arity: d[2],
+        returnType: L_ANY
+      })
+    %}
+  | ":func(" _ FunctionLiteralArity _ "," _ NegatableTypeExpression _ ")"
+    {% d =>
+      ({
+        type: 'Function',
+        arity: d[2],
+        returnType: d[6]
+      })
+    %}
+
+FunctionLiteralArity -> ([\*] | [0-9]:+) {% d => d[0][0] === '*' ? 'L_ANY' : parseInt(d[0].join(''), 10) %}
 
 Quote -> [\"\'] {% always(null) %}
 NotAQuote -> [^\"\']
