@@ -5,7 +5,7 @@ const glob = require('glob')
 
 describe('jsgrok-ql::eval', function() {
   const createSpecimenTests = f => {
-    const groups = glob.sync(path.resolve(__dirname, `./expressions/*.js`)).map(function(filepath) {
+    const groups = glob.sync(path.resolve(__dirname, `./{grammar,expressions}/*.js`)).map(function(filepath) {
       return {
         name: path.basename(filepath).replace('.js', ''),
         specs: require(filepath)

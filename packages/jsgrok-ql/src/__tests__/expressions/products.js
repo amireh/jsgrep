@@ -189,21 +189,21 @@ module.exports = [
 
   // imported-identifier . function-call
   matchify({
-    // debug: true,
-    query: ':exportOf(ajax).f()',
-    source: `
-      [ ] import someModule from 'ajax'
-      [+] someModule.f()
-    `,
-  }),
-
-  // imported-identifier . function-call
-  matchify({
     query: ':exportOf(ajax)()',
     source: `
       [ ] import ajax from 'ajax'
       [+] ajax()
       [ ] ajax.f()
+    `,
+  }),
+
+  // imported-identifier . identifier . function-call
+  matchify({
+    // debug: true,
+    query: ':exportOf(ajax).f()',
+    source: `
+      [ ] import someModule from 'ajax'
+      [+] someModule.f()
     `,
   }),
 

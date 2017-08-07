@@ -1,26 +1,5 @@
-const { t } = require('../utils');
-const {
-  F_OPT,
-  F_NOT,
-  L_ANY,
-  L_VOID,
-  L_CLASS_NUMBER,
-  L_CLASS_OBJECT,
-  L_CLASS_REGEXP,
-  L_CLASS_STRING,
-  L_EMPTY_OBJECT,
-} = require('../constants');
-
-const notVoid = x => x !== L_VOID
-
-const wildcardMatch = (a, b) => {
-  if (a.indexOf('.*') > -1) {
-    return b.match(a)
-  }
-  else {
-    return a === b
-  }
-}
+const invariant = require('invariant')
+const { t, qt, wildcardMatch } = require('../utils');
 
 const collectMatchingStaticFunctionCalls = (query, nodes) => {
   return nodes.filter(node => {
@@ -28,7 +7,7 @@ const collectMatchingStaticFunctionCalls = (query, nodes) => {
       return false;
     }
     else {
-      return query.id === node.callee.name;
+      return query.id.name === node.callee.name;
     }
   })
 }
@@ -42,17 +21,17 @@ const collectMatchingMemberFunctionCalls = (query, nodes) => {
       return false;
     }
     else {
-      return query.id === node.callee.property.name;
+      return query.id.name === node.callee.property.name;
     }
   })
 }
 
-const collectMatchingArgumentCalls = (query, nodes) => {
+const collectMatchingArityCalls = (query, nodes) => {
   return nodes.filter(node => {
     if (!query.arguments.length) {
       return node;
     }
-    else if (query.arguments[0] === L_VOID) {
+    else if (qt.voidLiteral(query.arguments[0])) {
       return node.arguments.length === 0;
     }
     else if (query.arguments.length !== node.arguments.length) {
@@ -66,49 +45,52 @@ const collectMatchingArgumentCalls = (query, nodes) => {
 
 const collectMatchingArgumentValueCalls = (query, nodes) => {
   return nodes.filter(node => {
-    return query.arguments.filter(notVoid).every((argSpec, index) => {
+    return query.arguments.every((argSpec, index) => {
       const argNode = node.arguments[index]
       return isMatchingArgument(argSpec, argNode)
     })
   })
 }
 
-const isMatchingArgument = (valueSpec, node) => {
-  if (valueSpec === L_ANY) {
+const isMatchingArgument = (term, node) => {
+  if (qt.anyLiteral(term) || qt.voidLiteral(term)) {
     return true;
   }
-  else if (valueSpec === L_CLASS_STRING) {
-    return isStringArgument(node)
-  }
-  else if (valueSpec === L_CLASS_NUMBER) {
-    return isNumberArgument(node)
-  }
-  else if (valueSpec === L_CLASS_REGEXP) {
-    return isRegExpArgument(node)
-  }
-  else if (valueSpec === L_CLASS_OBJECT) {
+  else if (qt.object(term) && qt.anyObject(term)) {
     return isObjectArgument(node)
   }
-  else if (valueSpec === L_EMPTY_OBJECT) {
+  else if (qt.object(term) && qt.emptyObject(term)) {
     return isObjectArgument(node) && node.properties.length === 0;
   }
-  else if (valueSpec.object) {
-    return (
-      isObjectArgument(node) &&
-      isMatchingObject(valueSpec.object, node)
-    )
+  else if (qt.object(term)) {
+    return isObjectArgument(node) && isMatchingObject(term, node)
   }
-  else if (valueSpec.regexp) {
+  else if (qt.regexp(term) && qt.anyLiteral(term.pattern)) {
+    return isRegExpArgument(node)
+  }
+  else if (qt.regexp(term) && qt.literal(term.pattern)) {
     return (
       isRegExpArgument(node) &&
-      isMatchingRegExp(valueSpec.regexp, node)
+      isMatchingRegExp(term.pattern.value, node)
     )
   }
-  else if (typeof valueSpec === 'number') {
-    return t.literal(node) && node.value === valueSpec;
+  else if (qt.number(term) && qt.anyLiteral(term.value)) {
+    return isNumberArgument(node)
   }
-  else if (typeof valueSpec === 'string') {
-    return isStringArgument(node) && isMatchingString(valueSpec, node)
+  else if (qt.number(term) && qt.literal(term.value)) {
+    return t.literal(node) && node.value === term.value.value;
+  }
+  else if (qt.number(term)) {
+    invariant(false, `Unexpected Number value: ${term.value && term.value.type || JSON.stringify(term)}`)
+  }
+  else if (qt.string(term) && qt.anyLiteral(term.value)) {
+    return isStringArgument(node);
+  }
+  else if (qt.string(term) && qt.literal(term.value)) {
+    return isStringArgument(node) && isMatchingString(term.value.value, node)
+  }
+  else if (qt.string(term)) {
+    invariant(false, `Unexpected String value: ${term.value && term.value.type || JSON.stringify(term)}`)
   }
   else {
     return false;
@@ -130,7 +112,10 @@ const isNumberArgument = node => (
 )
 
 const isStringArgument = node => (
-  t.literal(node) && typeof node.value === 'string' ||
+  (
+    t.literal(node) &&
+    typeof node.value === 'string'
+  ) ||
   (
     t.callExpression(node) &&
     t.identifier(node.callee) &&
@@ -138,7 +123,10 @@ const isStringArgument = node => (
   ) ||
   (
     t.newExpression(node) &&
-    node.callee.name === 'RegExp'
+    node.callee.name === 'String'
+  ) ||
+  (
+    t.templateLiteral(node)
   )
 )
 
@@ -150,17 +138,20 @@ const isRegExpArgument = node => (
   )
 )
 
-const isMatchingString = (valueSpec, node) => {
+const isMatchingString = (needle, node) => {
   if (t.literal(node)) {
-    return wildcardMatch(valueSpec, node.value)
+    return wildcardMatch(needle, node.value)
   }
   // String('blah')
   else if (t.callExpression(node)) {
-    return isMatchingString(valueSpec, node.arguments[0])
+    return isMatchingString(needle, node.arguments[0])
   }
   // new String('blah')
   else if (t.newExpression(node)) {
-    return isMatchingString(valueSpec, node.arguments[0])
+    return isMatchingString(needle, node.arguments[0])
+  }
+  else if (t.templateLiteral(node)) {
+    return wildcardMatch(needle, node.quasis.map(x => x.value && x.value.cooked || '').join(''))
   }
 }
 
@@ -181,9 +172,9 @@ const isObjectArgument = node => (
   t.objectExpression(node)
 )
 
-const isMatchingObject = (object, node) => {
+const isMatchingObject = (term, node) => {
   // lack fo "properties" indicates that we're searching for an empty object
-  if (object.properties === null) {
+  if (term.properties === null) {
     return node.properties.length === 0;
   }
 
@@ -192,27 +183,26 @@ const isMatchingObject = (object, node) => {
     return map;
   }, {})
 
-  return object.keys.every(propKey => {
-    const [ propSpec, flag ] = extractValueAndFlag(object.properties[propKey]);
-    const isDefined = nodeProps.hasOwnProperty(propKey);
+  return term.properties.every(propTerm => {
+    const isDefined = nodeProps.hasOwnProperty(propTerm.key);
 
     // { ?a }
-    if (!isDefined && flag === F_OPT) {
+    if (!isDefined && qt.optionalProperty(propTerm)) {
       return true;
     }
     // { ^a }
-    else if (isDefined && flag === F_NOT) {
+    else if (isDefined && qt.negatedProperty(propTerm)) {
       return false;
     }
     // { a } but there is no a
-    else if (!isDefined && flag !== F_NOT) {
+    else if (!isDefined && !qt.negatedProperty(propTerm)) {
       return false;
     }
     else {
-      const [ valueSpec, valueFlag ] = extractValueAndFlag(propSpec)
-      const ok = isMatchingArgument(valueSpec, nodeProps[propKey])
+      const valueSpec = propTerm.value
+      const ok = isMatchingArgument(valueSpec, nodeProps[propTerm.key])
 
-      if (valueFlag === F_NOT) {
+      if (qt.negatedPropertyValue(propTerm)) {
         return !ok
       }
       else {
@@ -221,8 +211,6 @@ const isMatchingObject = (object, node) => {
     }
   })
 }
-
-const extractValueAndFlag = spec => Array.isArray(spec) ? spec : [ spec, null ];
 
 const extractPropertyKey = node => {
   return t.identifier(node.key) && node.key.name || null;
@@ -237,7 +225,7 @@ const collectCalls = (query, nodes) => (
   collectMatchingArgumentValueCalls
   (
     query,
-    collectMatchingArgumentCalls
+    collectMatchingArityCalls
     (
       query,
       collectMatchingStaticFunctionCalls
@@ -258,15 +246,15 @@ const collectCalls = (query, nodes) => (
 )
 
 exports.walk = (expr, f) => {
-  if (expr[0] === 'function-call') {
-    f(expr[1].id)
+  if (expr.type === 'FunctionCall') {
+    f(expr.id)
   }
 }
 
 exports.evaluate = expr => {
-  if (expr[0] === 'function-call') {
+  if (expr.type === 'FunctionCall') {
     return [
-      ['CallExpression', node => collectCalls(expr[1], [node]) ]
+      ['CallExpression', node => collectCalls(expr, [node]) ]
     ]
   }
 }

@@ -2,33 +2,28 @@ const macroEvaluators = require('./macros')
 const { walkQueryExpressions, transformQueryExpressions } = require('./walkQueryExpressions')
 const NotFound = {}
 const EmptyQuery = {
-  op: 'O_EVAL',
-  expr: []
+  type: 'O_EVAL',
+  expr: {
+  }
 }
 
 const expansions = {}
 
 const expandProperties = properties => (expr, get) => {
-  return [
-    expr[0],
-    properties.reduce(function(data, propName) {
-      const expandedValue = get(data[propName])
+  return Object.assign({}, expr, properties.reduce(function(data, propName) {
+    const propTerm = expr[propName]
+    const expandedValue = get(propTerm)
 
-      if (expandedValue !== NotFound) {
-        data[propName] = extractValuePointFromExpansion(data[propName], expandedValue)
-      }
+    if (expandedValue !== NotFound) {
+      data[propName] = expandedValue
+    }
 
-      return data
-    }, Object.assign({}, expr[1]))
-  ]
+    return data
+  }, {}))
 }
 
-expansions['function-call'] = expandProperties([ 'id' ])
-expansions['imported-identifier'] = (expr, get) => get(expr)
-
-const extractValuePointFromExpansion = (expr, value) => {
-  return macroEvaluators.filter(x => x.on === expr[0])[0].extractPoint(value)
-}
+expansions['FunctionCall'] = expandProperties([ 'id' ])
+expansions['ImportedIdentifier'] = (expr, get) => get(expr)
 
 const combineVisitors = (source, partial) => {
   return Object.keys(partial).reduce(function(map, nodeType) {
@@ -61,7 +56,7 @@ const buildMacroVisitors = query => {
   let tally = 0
 
   walkQueryExpressions(query, expr => {
-    macroEvaluators.filter(x => x.on === expr[0]).forEach(macro => {
+    macroEvaluators.filter(x => x.on === expr.type).forEach(macro => {
       tally += 1
       combineVisitors(visitors, macro.expand(expr))
     })
@@ -81,7 +76,7 @@ const injectExpansions = (expansionTerms, query) => {
   }
 
   return transformQueryExpressions(query, (expr, replace) => {
-    const expand = expansions[expr[0]];
+    const expand = expansions[expr.type];
 
     if (!expand) {
       return;

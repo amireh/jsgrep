@@ -40,6 +40,8 @@ module.exports = [
     source: `
       [+] foo('Hello World!')
       [+] foo(String("Hello World!"))
+      [+] foo(new String("Hello World!"))
+      [+] foo(\`Hello World!\`)
       [ ] foo()                       // different arity
       [ ] foo('Hello')                // different value
       [ ] foo('a', "Hello World!")    // different position
@@ -105,6 +107,7 @@ module.exports = [
       + f(new RegExp('bar'))
         f('asdf')
         f('/foo/')
+        f('foo')
     `,
   }),
 

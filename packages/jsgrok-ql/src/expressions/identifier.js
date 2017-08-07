@@ -1,13 +1,13 @@
-const { t } = require('../utils')
+const { t, qt } = require('../utils')
 
 exports.evaluate = expr => {
-  if (expr[0] === 'identifier') {
+  if (qt.identifier(expr)) {
     return [
       ['MemberExpression', (node, ancestry) => {
         const parent = ancestry[ancestry.length-2]
 
         // for more context about this, see https://github.com/ternjs/acorn/issues/46
-        if (!t.callExpression(parent) && t.identifierOf(expr[1], node.property)) {
+        if (!t.callExpression(parent) && t.identifierOf(expr.name, node.property)) {
           return [ node ];
         }
         else {
@@ -15,7 +15,7 @@ exports.evaluate = expr => {
         }
       }],
 
-      ['Identifier', node => node.name === expr[1] ? [node] : []]
+      ['Identifier', node => node.name === expr.name ? [node] : []]
     ]
   }
 }

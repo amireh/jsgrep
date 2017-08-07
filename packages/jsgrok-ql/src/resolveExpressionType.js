@@ -6,11 +6,11 @@ const {
 
 const resolveExpressionType = expr => {
   const term = resolveOutputTerm(expr);
-  return term ? term[0] : null
+  return term ? term.type : null
 }
 
 const resolveOutputTerm = expr => {
-  switch (expr.op) {
+  switch (expr.type) {
     case O_TERMINATE:
       return resolveOutputTerm(expr.expr);
 

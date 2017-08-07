@@ -2,13 +2,10 @@ const invariant = require('invariant')
 const { head, partial, pipe, trace } = require('./functional');
 const createMatchSerializer = require('./createMatchSerializer')
 const expressionEvaluators = require('./expressions')
-const macroEvaluators = require('./macros')
 const expandMacros = require('./expandQueryMacros')
-const {
-  resolveExpressionType,
-  resolveOutputTerm
-} = require('./resolveExpressionType')
+const { resolveExpressionType, resolveOutputTerm } = require('./resolveExpressionType')
 const products = require('./products')
+const { qt } = require('./utils')
 const {
   L_ANY,
   L_ANY_GREEDY,
@@ -25,20 +22,20 @@ const setNodes = (state, nodes) => Object.assign({}, state, { nodes })
 const resolveProductExpression = (lhsExpr, rhsExpr) => {
   const lhs = resolveOutputTerm(lhsExpr);
   const rhs = resolveOutputTerm(rhsExpr)
-  const candidates = [ `${lhs[0]} . ${rhs[0]}` ]
+  const candidates = [ `${lhs.type} . ${rhs.type}` ]
 
-  if (lhs[0] === 'identifier') {
-    switch (lhs[1]) {
+  if (qt.identifier(lhs)) {
+    switch (lhs.name) {
       case L_ANY:
-        candidates.unshift(`* . ${rhs[0]}`)
+        candidates.unshift(`* . ${rhs.type}`)
         break;
 
       case L_ANY_GREEDY:
-        candidates.unshift(`** . ${rhs[0]}`)
+        candidates.unshift(`** . ${rhs.type}`)
         break;
 
       case L_THIS:
-        candidates.unshift(`this . ${rhs[0]}`)
+        candidates.unshift(`This . ${rhs.type}`)
         break;
     }
   }
@@ -57,13 +54,13 @@ const resolveProductExpression = (lhsExpr, rhsExpr) => {
 }
 
 const createEvaluationPipeline = (expr, list = []) => {
-  switch (expr.op) {
+  switch (expr.type) {
     case O_EVAL:
       return list.concat(expr)
 
     case O_PRODUCT:
       return list.concat({
-        op: O_PRODUCT,
+        type: O_PRODUCT,
         lhs: expr.lhs, // we need to keep these for logging
         rhs: expr.rhs,
         evaluateRHS: partial(evaluatePipeline, createEvaluationPipeline(expr.rhs)),
@@ -73,7 +70,7 @@ const createEvaluationPipeline = (expr, list = []) => {
 
     case O_TERMINATE:
       return list.concat({
-        op: O_TERMINATE,
+        type: O_TERMINATE,
         evaluate: partial(evaluatePipeline, createEvaluationPipeline(expr.expr)),
         production: `T . ${resolveExpressionType(expr.expr)}`
       });
@@ -100,7 +97,7 @@ const evaluatePipeline = (operationPipe, initialState) => {
 }
 
 const evaluateOperation = (state, expr) => {
-  switch (expr.op) {
+  switch (expr.type) {
     case O_EVAL:
       return evaluateExpression(state, expr.expr);
 
@@ -127,7 +124,7 @@ const evaluateOperation = (state, expr) => {
       throw new Error(`Malform OP construct. Dump=${JSON.stringify(expr)}`);
 
     default:
-      throw new Error(`Unknown OP "${expr.op}"`)
+      throw new Error(`Unknown OP "${expr.type}"`)
   }
 }
 
@@ -159,69 +156,19 @@ const evaluateExpression = ({ walk, nodes }, expr) => {
 }
 
 const castExpressionToString = expr => {
-  switch (expr.op) {
+  switch (expr.type) {
     case O_PRODUCT:
       return `O_PRODUCT.<${expr.production}>`
 
     case O_EVAL:
-      return `O_EVAL.<${expr.expr[0]}>`
+      return `O_EVAL.<${expr.expr.type}>`
 
     case O_TERMINATE:
       return `O_TERMINATE.<${expr.production}>`
 
     default:
-      return expr.op
+      return expr.type
   }
-}
-
-const expandExpression = (walk, program, expr) => {
-  if (!expr) {
-    return null;
-  }
-
-  if (expr[0] === 'function-call') {
-    return expandFunctionCall(walk, program, expr)
-  }
-
-  const [ evaluator ] = macroEvaluators.filter(x => x.on === expr[0])
-
-  if (!evaluator) {
-    return expr;
-  }
-
-  let nextExpression = null
-
-  walk(program, evaluator.expand(expr, x => { nextExpression = x }));
-
-  return nextExpression || expr
-}
-
-const isMacroExpression = expr => {
-  return Array.isArray(expr) && [ 'imported-identifier' ].indexOf(expr[0]) > -1
-}
-
-const getExpandedMacroValue = (expr, value) => {
-  switch (expr[0]) {
-    case 'imported-identifier':
-      return value[1]
-
-    default:
-      invariant(false, `Unrecognized macro expression "${expr[0]}"`)
-  }
-}
-
-const expandFunctionCall = (walk, program, expr) => {
-  const nextData = Object.assign({}, expr[1])
-
-  if (isMacroExpression(expr[1].id)) {
-    const expandedId = expandExpression(walk, program, expr[1].id)
-
-    if (expandedId) {
-      nextData.id = getExpandedMacroValue(expr[1].id, expandedId)
-    }
-  }
-
-  return [ expr[0], nextData ]
 }
 
 /**

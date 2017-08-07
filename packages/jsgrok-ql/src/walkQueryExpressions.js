@@ -21,7 +21,7 @@ const walkTerm = (expr, f) => {
 }
 
 const walkQueryExpressions = (query, f) => {
-  switch (query.op) {
+  switch (query.type) {
     case O_PRODUCT:
       walkQueryExpressions(query.rhs, f)
       walkQueryExpressions(query.lhs, f)
@@ -47,7 +47,7 @@ const ContainerOf = defaultValue => {
 }
 
 const transformQueryExpressions = (query, f) => {
-  switch (query.op) {
+  switch (query.type) {
     case O_PRODUCT:
       const nextRhs = transformQueryExpressions(query.rhs, f)
       const nextLhs = transformQueryExpressions(query.lhs, f)
@@ -78,7 +78,7 @@ const transformQueryExpressions = (query, f) => {
       break;
 
     default:
-      invariant(false, `Don't know how to visit expression "${query.op}"`)
+      invariant(false, `Don't know how to visit expression "${query.type}"`)
   }
 }
 

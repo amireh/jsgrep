@@ -17,3 +17,4 @@
 - [ ] :boolean type matcher
 - [ ] JSX type matcher
 - [ ] terminal type matcher (e.g. `{ foo }`)
+- [ ] FunctionCall(^Type)

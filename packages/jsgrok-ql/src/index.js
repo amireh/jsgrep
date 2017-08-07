@@ -69,8 +69,8 @@ exports.apply = function(sourceQuery, sourceCode, filePath, options = {}) {
   }
   catch (e) {
     if (debug) {
-      console.log(e.stack)
     }
+    console.log(e.stack)
 
     return [{
       error: true,
