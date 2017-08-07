@@ -53,52 +53,84 @@ const collectMatchingArgumentValueCalls = (query, nodes) => {
 }
 
 const isMatchingArgument = (term, node) => {
-  if (qt.anyLiteral(term) || qt.voidLiteral(term)) {
-    return true;
-  }
-  else if (qt.object(term) && qt.anyObject(term)) {
-    return isObjectArgument(node)
-  }
-  else if (qt.object(term) && qt.emptyObject(term)) {
-    return isObjectArgument(node) && node.properties.length === 0;
-  }
-  else if (qt.object(term)) {
-    return isObjectArgument(node) && isMatchingObject(term, node)
-  }
-  else if (qt.regexp(term) && qt.anyLiteral(term.pattern)) {
-    return isRegExpArgument(node)
-  }
-  else if (qt.regexp(term) && qt.literal(term.pattern)) {
-    return (
-      isRegExpArgument(node) &&
-      isMatchingRegExp(term.pattern.value, node)
-    )
-  }
-  else if (qt.number(term) && qt.anyLiteral(term.value)) {
-    return isNumberArgument(node)
-  }
-  else if (qt.number(term) && qt.literal(term.value)) {
-    return t.literal(node) && node.value === term.value.value;
-  }
-  else if (qt.number(term)) {
-    invariant(false, `Unexpected Number value: ${term.value && term.value.type || JSON.stringify(term)}`)
-  }
-  else if (qt.string(term) && qt.anyLiteral(term.value)) {
-    return isStringArgument(node);
-  }
-  else if (qt.string(term) && qt.literal(term.value)) {
-    return isStringArgument(node) && isMatchingString(term.value.value, node)
-  }
-  else if (qt.string(term)) {
-    invariant(false, `Unexpected String value: ${term.value && term.value.type || JSON.stringify(term)}`)
-  }
-  else {
-    return false;
+  switch (term.type) {
+    case 'AnyLiteral':
+    case 'VoidLiteral':
+      return true
+
+    case 'Object':
+      if (!isObjectArgument(node)) {
+        return false;
+      }
+      else if (qt.anyObject(term)) {
+        return true
+      }
+      else if (qt.emptyObject(term)) {
+        return node.properties.length === 0;
+      }
+      else {
+        return isMatchingObject(term, node)
+      }
+
+    case 'RegExp':
+      if (!isRegExpArgument(node)) {
+        return false;
+      }
+      else if (qt.anyLiteral(term.pattern)) {
+        return true
+      }
+      else if (qt.literal(term.pattern)) {
+        return isMatchingRegExp(term.pattern.value, node)
+      }
+      else {
+        invariant(false, `Unrecognized RegExp pattern type "${term.pattern}"`)
+
+        return false;
+      }
+
+    case 'Number':
+      if (!isNumberArgument(node)) {
+        return false;
+      }
+      else if (qt.anyLiteral(term.value)) {
+        return true;
+      }
+      else if (qt.literal(term.value)) {
+        return isMatchingNumber(term.value.value, node)
+      }
+      else {
+        invariant(false, `Unexpected Number value: ${term.value && term.value.type || JSON.stringify(term)}`)
+
+        return false;
+      }
+
+    case 'String':
+      if (!isStringArgument(node)) {
+        return false;
+      }
+      else if (qt.anyLiteral(term.value)) {
+        return true;
+      }
+      else if (qt.literal(term.value)) {
+        return isMatchingString(term.value.value, node)
+      }
+      else {
+        invariant(false, `Unexpected String value: ${term.value && term.value.type || JSON.stringify(term)}`)
+
+        return false;
+      }
+
+    default:
+      invariant(false, `Unrecognized argument type expression "${term.type}"`)
+
+      return false;
   }
 }
 
 const isNumberArgument = node => (
-  t.literal(node) && typeof node.value === 'number' ||
+  (
+    t.literal(node) && typeof node.value === 'number'
+  ) ||
   (
     t.unaryExpression(node) &&
     t.literal(node.argument) &&
@@ -108,13 +140,40 @@ const isNumberArgument = node => (
     t.callExpression(node) &&
     t.identifier(node.callee) &&
     node.callee.name === 'Number'
+  ) ||
+  (
+    t.newExpression(node) &&
+    node.callee.name === 'Number'
   )
 )
 
+const isMatchingNumber = (value, node) => {
+  if (t.literal(node)) {
+    return value === node.value;
+  }
+  else if (t.newExpression(node) || t.callExpression(node)) {
+    return value === interpolateNumber(node.arguments[0])
+  }
+  else {
+    return false;
+  }
+}
+
+const interpolateNumber = node => {
+  if (t.literal(node)) {
+    return parseFloat(node.value)
+  }
+  else if (t.templateLiteral(node)) {
+    return parseFloat(t.templateLiteralValueOf(node))
+  }
+  else {
+    return NaN
+  }
+}
+
 const isStringArgument = node => (
   (
-    t.literal(node) &&
-    typeof node.value === 'string'
+    t.literal(node) && typeof node.value === 'string'
   ) ||
   (
     t.callExpression(node) &&
@@ -131,7 +190,7 @@ const isStringArgument = node => (
 )
 
 const isRegExpArgument = node => (
-  t.literal(node) && node.value instanceof RegExp ||
+  (t.literal(node) && node.value instanceof RegExp) ||
   (
     t.newExpression(node) &&
     node.callee.name === 'RegExp'
@@ -142,16 +201,17 @@ const isMatchingString = (needle, node) => {
   if (t.literal(node)) {
     return wildcardMatch(needle, node.value)
   }
-  // String('blah')
+  // `blah`
+  else if (t.templateLiteral(node)) {
+    return wildcardMatch(needle, t.templateLiteralValueOf(node))
+  }
+  // String('blah') | String(`blah`)
   else if (t.callExpression(node)) {
     return isMatchingString(needle, node.arguments[0])
   }
-  // new String('blah')
+  // new String('blah') | new String(`blah`)
   else if (t.newExpression(node)) {
     return isMatchingString(needle, node.arguments[0])
-  }
-  else if (t.templateLiteral(node)) {
-    return wildcardMatch(needle, node.quasis.map(x => x.value && x.value.cooked || '').join(''))
   }
 }
 
@@ -161,7 +221,17 @@ const isMatchingRegExp = (source, node) => {
     return node.regex && node.regex.pattern === source;
   }
   else if (t.newExpression(node)) {
-    return t.literal(node.arguments[0]) && node.arguments[0].value === source;
+    return t.literal(node.arguments[0]) &&
+    // new RegExp('foo')
+    (
+      t.literal(node.arguments[0]) &&
+      t.literalOf(source, node.arguments[0])
+    ) ||
+    // new RegExp(`foo`)
+    (
+      t.templateLiteral(node.arguments[0]) &&
+      t.templateLiteralOf(source, node.arguments[0])
+    );
   }
   else {
     return false;

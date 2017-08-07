@@ -23,44 +23,6 @@ module.exports = [
   }),
 
   matchify({
-    spec: 'function call with an argument of a NumberLiteral type and value',
-    query: 'foo(42)',
-    source: `
-      [+] foo(42)         // <-- matches
-      [ ] foo()           // no value at position
-      [ ] foo('a')        // different type
-      [ ] foo(Number(42)) // different type
-      [ ] foo('a', 42)    // different position
-    `,
-  }),
-
-  matchify({
-    spec: 'function call with an argument of a StringLiteral type and value',
-    query: 'foo("Hello World!")',
-    source: `
-      [+] foo('Hello World!')
-      [+] foo(String("Hello World!"))
-      [+] foo(new String("Hello World!"))
-      [+] foo(\`Hello World!\`)
-      [ ] foo()                       // different arity
-      [ ] foo('Hello')                // different value
-      [ ] foo('a', "Hello World!")    // different position
-    `,
-  }),
-
-  matchify({
-    spec: 'function call with a wildcard StringLiteral',
-    query: 'foo("Hello.*")',
-    source: `
-      + foo('Hello World!')
-      + foo('Hello')
-      + foo(String("Hello World!"))
-        foo()
-        foo('a', "Hello World!")    // different position
-    `,
-  }),
-
-  matchify({
     spec: 'function call with argument "void" does not match any function call with arity > 0',
     query: 'foo(void)',
     source: `
@@ -72,6 +34,7 @@ module.exports = [
     `,
   }),
 
+  // STRINGS
   matchify({
     spec: 'with :string for an argument: it matches StringLiteral arguments',
     query: 'f(:string)',
@@ -79,6 +42,9 @@ module.exports = [
       + f('a')
       + f("b")
       + f(String('c'))
+      + f(String(\`c\`))
+      + f(new String('c'))
+      + f(new String(\`c\`))
         f('a', 'b')
         f()
         f(42)
@@ -86,6 +52,40 @@ module.exports = [
     `,
   }),
 
+  // string literals
+  matchify({
+    query: 'foo("Hello World!")',
+    source: `
+      [+] foo('Hello World!')
+      [+] foo(String("Hello World!"))
+      [+] foo(String(\`Hello World!\`))
+      [+] foo(new String("Hello World!"))
+      [+] foo(new String(\`Hello World!\`))
+      [+] foo(\`Hello World!\`)
+      [ ] foo(\`Hello \$\{''\} World!\`)
+      [ ] foo()                       // different arity
+      [ ] foo('Hello')                // different value
+      [ ] foo('a', "Hello World!")    // different position
+    `,
+  }),
+
+  // string literals with wildcards
+  matchify({
+    query: 'foo("Hello.*")',
+    source: `
+      + foo('Hello World!')
+      + foo('Hello')
+      + foo(\`Hello \\$\\{something} World\`)
+      + foo(String("Hello World!"))
+      + foo(String(\`Hello World!\`))
+      + foo(new String("Hello World!"))
+      + foo(new String(\`Hello World!\`))
+        foo()
+        foo('a', "Hello World!")    // different position
+    `,
+  }),
+
+  // NUMBERS
   matchify({
     spec: 'with :number for an argument: it matches NumberLiteral arguments',
     query: 'f(:number)',
@@ -93,6 +93,7 @@ module.exports = [
       + f(1)
       + f(-0.5)
       + f(Number('42'))
+      + f(new Number('42'))
         f()
         f('a')
         f(2, 2)
@@ -100,11 +101,37 @@ module.exports = [
   }),
 
   matchify({
+    spec: 'function call with an argument of a NumberLiteral type and value',
+    query: 'foo(42)',
+    source: `
+      [+] foo(42)         // <-- matches
+      [+] foo(Number(42))
+      [+] foo(Number('42'))
+      [+] foo(Number(\`42\`))
+      [+] foo(new Number(42))
+      [+] foo(new Number('42'))
+      [+] foo(new Number(\`42\`))
+      [ ] foo(0)
+      [ ] foo(Number())
+      [ ] foo(Number(''))
+      [ ] foo(Number('1'))
+      [ ] foo(new Number())
+      [ ] foo(new Number(''))
+      [ ] foo(new Number('1'))
+      [ ] foo()
+      [ ] foo('a')
+      [ ] foo('a', 42)
+    `,
+  }),
+
+  // REGEXES
+  matchify({
     spec: 'with :regexp for an argument: it matches regexp literals',
     query: 'f(:regexp)',
     source: `
       + f(/foo/)
       + f(new RegExp('bar'))
+      + f(new RegExp(\`bar\`))
         f('asdf')
         f('/foo/')
         f('foo')
@@ -119,11 +146,13 @@ module.exports = [
       + f(/foo/i)
       + f(new RegExp('foo'))
       + f(new RegExp('foo', 'i'))
+      + f(new RegExp(\`foo\`))
         f(/bar/)
         f(new RegExp('bar'))
     `,
   }),
 
+  // OBJECTS
   matchify({
     spec: 'with :object for an argument: it matches all object literals',
     query: 'foo(:object)',

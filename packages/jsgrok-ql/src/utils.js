@@ -22,6 +22,8 @@ const t = {
   unaryExpression: x => !!(x && x.type === 'UnaryExpression'),
 
   templateLiteral: node => !!(node && node.type === 'TemplateLiteral'),
+  templateLiteralValueOf: node => node.quasis.map(x => x.value && x.value.cooked || '').join(''),
+  templateLiteralOf: (value, node) => value === t.templateLiteralValueOf(node),
 }
 
 exports.t = t
