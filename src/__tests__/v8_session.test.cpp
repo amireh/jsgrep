@@ -15,10 +15,6 @@ TEST_CASE("jsgrok::v8_session") {
     REQUIRE(subject.get_isolate() != nullptr);
   }
 
-  SECTION("It enters the isolate implicitly") {
-    REQUIRE(subject.get_isolate()->IsInUse());
-  }
-
   SECTION("It does not generate nor use a context") {
     REQUIRE(!subject.get_isolate()->InContext());
   }
@@ -34,7 +30,7 @@ TEST_CASE("jsgrok::v8_session") {
     };
 
     WHEN("The isolate can not be used for some reason...") {
-      auto module_path = resolve("fixtures_path", "exportGlobal.js");
+      auto module_path = resolve("exportGlobal.js");
 
       isolate->Exit();
 
@@ -45,7 +41,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     WHEN("The script file does not exist or can't be read...") {
-      auto script_path = resolve("fixtures_path", "adsfasdf.js");
+      auto script_path = resolve("adsfasdf.js");
 
       THEN("It returns EC_FILE_ERROR") {
         auto module = subject.require(context, script_path);
@@ -70,7 +66,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that exports to global...") {
-      auto script_path = resolve("fixtures_path", "exportGlobal.js");
+      auto script_path = resolve("exportGlobal.js");
 
       THEN("It returns EC_OK") {
         auto module = subject.require(context, script_path);
@@ -86,7 +82,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that exports an object...") {
-      auto script_path = resolve("fixtures_path", "exportObject.js");
+      auto script_path = resolve("exportObject.js");
 
       THEN("It returns EC_OK") {
         auto module = subject.require(context, script_path);
@@ -102,7 +98,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that sets `module.exports`...") {
-      auto script = resolve("fixtures_path", "moduleExports.js");
+      auto script = resolve("moduleExports.js");
 
       THEN("It returns EC_OK") {
         REQUIRE(subject.require(context, script).status == v8_module::EC_OK);
@@ -117,7 +113,7 @@ TEST_CASE("jsgrok::v8_session") {
     }
 
     GIVEN("A module that sets property on `exports`...") {
-      auto script = resolve("fixtures_path", "exports.js");
+      auto script = resolve("exports.js");
 
       THEN("It returns EC_OK") {
         REQUIRE(subject.require(context, script).status == v8_module::EC_OK);

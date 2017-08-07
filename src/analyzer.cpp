@@ -139,9 +139,9 @@ namespace jsgrok {
       }
       else if (result->IsObject()) {
         auto object = result->ToObject();
-        auto is_error = object->Has(context, String::NewFromUtf8(isolate, "error"));
+        auto is_error = object->Get(context, String::NewFromUtf8(isolate, "error"));
 
-        if (!is_error.IsNothing() && is_error.ToChecked()) {
+        if (!is_error.IsEmpty() && is_error.ToLocalChecked()->ToBoolean()->Value()) {
           auto error_type = prop(object, "error_type")->ToUint32()->Value();
 
           out.errors.push_back({

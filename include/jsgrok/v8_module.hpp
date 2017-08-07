@@ -1,7 +1,7 @@
 #ifndef H_JSGROK_V8_MODULE_H
 #define H_JSGROK_V8_MODULE_H
 
-#include "v8/v8.h"
+#include "v8.h"
 
 namespace jsgrok {
   struct v8_module {

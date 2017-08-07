@@ -2,7 +2,7 @@
 #define H_JSGROK_V8_SESSION_H
 
 #include <functional>
-#include "v8/v8.h"
+#include "v8.h"
 #include "jsgrok/types.hpp"
 #include "jsgrok/v8_module.hpp"
 

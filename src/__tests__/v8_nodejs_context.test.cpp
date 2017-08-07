@@ -31,7 +31,7 @@ TEST_CASE("jsgrok::v8_nodejs_context") {
   };
 
   auto assert_script_returns_truthy = [&](const char *script) {
-    auto module = session.require(context, resolve("fixtures_path", script));
+    auto module = session.require(context, resolve(script));
 
     REQUIRE(module.status == jsgrok::v8_module::EC_OK);
 

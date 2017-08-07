@@ -1,10 +1,3 @@
-SET(CMAKE_PREFIX_PATH
-  ${CMAKE_PREFIX_PATH}
-  ${CMAKE_SOURCE_DIR}/deps/cpplocate
-)
-
-FIND_PACKAGE(cpplocate REQUIRED)
-
 SET(TARGET ${PROJECT_NAME}-tests)
 
 INCLUDE_DIRECTORIES(.) # for test_utils.hpp
@@ -14,8 +7,6 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps/FakeIt-2.0.2/include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/deps)
 INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR}/exports)
-INCLUDE_DIRECTORIES(${cpplocate_DIR}/source/cpplocate/include)
-INCLUDE_DIRECTORIES(${cpplocate_DIR}/build/source/cpplocate/include)
 
 ADD_EXECUTABLE(${TARGET}
   ${JSGROK_SOURCES}
@@ -33,31 +24,16 @@ ADD_EXECUTABLE(${TARGET}
   test_utils.cpp
   main.cpp
 )
-ADD_DEPENDENCIES(${TARGET} jsgrok-ql)
 
-ADD_DEFINITIONS(-std=c++11 -DJSGROK_USE_PRECOMPILED_ASSETS)
+ADD_DEPENDENCIES(${TARGET} jsgrok-ql)
+ADD_DEFINITIONS(-std=c++11)
 
 IF(APPLE)
   ADD_DEFINITIONS(
     # FakeIt noise:
     -Wno-inconsistent-missing-override
+    -Wno-c++1z-extensions
   )
 ENDIF()
 
-TARGET_LINK_LIBRARIES(${TARGET}
-  ${JSGROK_LIBRARIES}
-  ${cpplocate_DIR}/build/libcpplocate.a
-)
-
-generate_module_info(jsgrok-tests
-  VALUES
-  name          "jsgrok-tests"
-  version       "1.0.0"
-  description   "Syntactic JavaScript grep."
-  author        "Instructure, INC."
-
-  BUILD_VALUES
-  fixtures_path "${PROJECT_SOURCE_DIR}/test/fixtures"
-)
-
-export_module_info(jsgrok-tests TARGET ${TARGET})
+TARGET_LINK_LIBRARIES(${TARGET} ${JSGROK_LIBRARIES})

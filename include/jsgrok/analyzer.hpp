@@ -2,7 +2,7 @@
 #define H_JSGROK_ANALYZER_H
 
 #include <vector>
-#include "v8/v8.h"
+#include "v8.h"
 #include "jsgrok/types.hpp"
 
 namespace jsgrok {

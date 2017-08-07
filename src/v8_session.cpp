@@ -1,7 +1,9 @@
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/v8_nodejs_context.hpp"
+#include "jsgrok/v8_compat.hpp"
 #include "jsgrok/fs.hpp"
 #include <assert.h>
+#include <iostream>
 
 namespace jsgrok {
   using v8::Context;
@@ -11,17 +13,17 @@ namespace jsgrok {
   using v8::Value;
 
   v8_session::v8_session() {
-    isolate_create_params_.array_buffer_allocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+    isolate_create_params_.array_buffer_allocator = jsgrok::v8_compat::create_array_buffer_alloc();
     isolate_ = Isolate::New(isolate_create_params_);
     isolate_->Enter();
   };
 
   v8_session::~v8_session() {
-    if (isolate_->IsInUse()) {
+    if (v8_compat::isolate_is_in_use(isolate_)) {
       isolate_->Exit();
+      isolate_->Dispose();
     }
 
-    isolate_->Dispose();
     delete isolate_create_params_.array_buffer_allocator;
 
     isolate_ = nullptr;
@@ -38,7 +40,7 @@ namespace jsgrok {
   v8_module v8_session::require(Local<Context> &parent_context, const unsigned char *buf, const unsigned int bufsz) {
     v8_module module;
 
-    if (!isolate_->IsInUse()) {
+    if (!v8_compat::isolate_is_in_use(isolate_)) {
       module.status = v8_module::EC_ISOLATE_NOT_ENTERED;
       return module;
     }
@@ -58,7 +60,7 @@ namespace jsgrok {
     jsgrok::fs fs;
     string_t source_code;
 
-    if (!isolate_->IsInUse()) {
+    if (!v8_compat::isolate_is_in_use(isolate_)) {
       module.status = v8_module::EC_ISOLATE_NOT_ENTERED;
       return module;
     }

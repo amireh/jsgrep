@@ -30,17 +30,9 @@ IF(WIN32)
   ADD_DEFINITIONS("-D_CRT_SECURE_NO_WARNINGS")
 ENDIF()
 
-IF(UNIX)
-  ADD_DEFINITIONS("-DENABLE_BINRELOC")
-ENDIF()
-
-IF(APPLE)
-  SET(CMAKE_MACOSX_RPATH 1)
-ENDIF()
-
 # Options
-OPTION(JSGROK_BUILD_TESTS "Build the tests" ON)
-OPTION(JSGROK_LINT "Lint the sources" ON)
+OPTION(JSGROK_BUILD_TESTS "Build the tests" OFF)
+OPTION(JSGROK_LINT "Lint the sources" OFF)
 
 FIND_PACKAGE(V8 REQUIRED)
 
@@ -57,27 +49,40 @@ SET(JSGROK_SOURCES
   ${CMAKE_SOURCE_DIR}/src/cli.cpp
   ${CMAKE_SOURCE_DIR}/src/fs.cpp
   ${CMAKE_SOURCE_DIR}/src/reporter.cpp
+  ${CMAKE_SOURCE_DIR}/src/v8_compat.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_cluster.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_nodejs_context.cpp
   ${CMAKE_SOURCE_DIR}/src/v8_session.cpp
 )
 
-SET(JSGROK_LIBRARIES
-  jsgrok-ql
-  -Wl,--start-group
-  ${V8_BUILD_DIR}/obj/libv8_base.a
-  ${V8_BUILD_DIR}/obj/libv8_external_snapshot.a
-  ${V8_BUILD_DIR}/obj/libv8_libbase.a
-  ${V8_BUILD_DIR}/obj/libv8_libplatform.a
-  ${V8_BUILD_DIR}/obj/libv8_libsampler.a
-  ${V8_BUILD_DIR}/obj/third_party/icu/libicuuc.a
-  ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
-  ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
-  -Wl,--end-group
-  rt
-  dl
-  pthread
-)
+IF(APPLE)
+  SET(JSGROK_LIBRARIES
+    jsgrok-ql
+    libv8_base.a
+    # ${V8_BASE_LIBRARY}
+    ${V8_LIBBASE_LIBRARY}
+    ${V8_LIBPLATFORM_LIBRARY}
+    ${V8_SNAPSHOT_LIBRARY}
+    dl
+    pthread
+  )
+ELSE()
+  SET(JSGROK_LIBRARIES
+    jsgrok-ql
+    -Wl,--start-group
+    ${V8_BASE_LIBRARY}
+    ${V8_EXTERNAL_SNAPSHOT_LIBRARY}
+    ${V8_LIBBASE_LIBRARY}
+    ${V8_LIBPLATFORM_LIBRARY}
+    # ${V8_BUILD_DIR}/obj/third_party/icu/libicuuc.a
+    # ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
+    # ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
+    -Wl,--end-group
+    rt
+    dl
+    pthread
+  )
+ENDIF()
 
 # embed jsgrok-ql
 ADD_SUBDIRECTORY(packages/jsgrok-ql)
@@ -105,8 +110,4 @@ ADD_SUBDIRECTORY(src)
 
 IF (JSGROK_BUILD_TESTS)
   ADD_SUBDIRECTORY(test)
-ENDIF()
-
-IF (JSGROK_BUILD_EXAMPLES)
-  ADD_SUBDIRECTORY(examples)
 ENDIF()

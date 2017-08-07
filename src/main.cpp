@@ -13,11 +13,12 @@
 #include <vector>
 #include <iostream>
 
-#include "v8/libplatform/libplatform.h"
-#include "v8/v8.h"
+#include "libplatform/libplatform.h"
+#include "v8.h"
 #include "jsgrok/types.hpp"
 #include "jsgrok/cli.hpp"
 #include "jsgrok/fs.hpp"
+#include "jsgrok/v8_compat.hpp"
 #include "jsgrok/v8_cluster.hpp"
 #include "jsgrok/v8_session.hpp"
 #include "jsgrok/analyzer.hpp"
@@ -54,7 +55,7 @@ static void grok_files(v8_session *session, void *data) {
   );
 
   if (options->verbosity == options_t::VERBOSITY_DEBUG) {
-    printf("[D] Scanning %d files...\n", filtered_files.size());
+    printf("[D] Scanning %d files...\n", (int)filtered_files.size());
   }
 
   session->get_isolate()->Enter();
@@ -95,11 +96,7 @@ int main(int argc, char* argv[]) {
   vector<job_t*> jobs(partitions.size());
 
   // Initialize V8.
-  V8::InitializeICUDefaultLocation(argv[0]);
-  V8::InitializeExternalStartupData(argv[0]);
-  Platform* platform = platform::CreateDefaultPlatform();
-  V8::InitializePlatform(platform);
-  V8::Initialize();
+  jsgrok::v8_compat::initialize(argc, argv);
 
   {
     jsgrok::v8_cluster cluster;
@@ -120,10 +117,7 @@ int main(int argc, char* argv[]) {
 
   jobs.clear();
 
-  // Dispose the isolate and tear down V8.
-  V8::Dispose();
-  V8::ShutdownPlatform();
-  delete platform;
+  jsgrok::v8_compat::teardown();
 
   pthread_exit(NULL);
 

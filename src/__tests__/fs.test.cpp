@@ -16,7 +16,7 @@ TEST_CASE("jsgrok::fs") {
     WHEN("It is given a path") {
       THEN("It rejects") {
         subject.glob({
-          resolve("fixtures_path", "")
+          resolve("")
         });
       }
     }
@@ -24,7 +24,7 @@ TEST_CASE("jsgrok::fs") {
     WHEN("It is given a glob pattern") {
       THEN("It searches for files matching that pattern") {
         auto files = subject.glob({
-          resolve("fixtures_path", "**/*")
+          resolve("**/*")
         });
 
         REQUIRE(files.size() > 0);
@@ -35,7 +35,7 @@ TEST_CASE("jsgrok::fs") {
   SECTION("#glob [GLOB_RECURSIVE]") {
     THEN("It searches for all files under that directory") {
       auto files = subject.glob(
-        { resolve("fixtures_path", "") },
+        { resolve("") },
         jsgrok::fs::GLOB_RECURSIVE
       );
 

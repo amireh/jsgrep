@@ -4,7 +4,7 @@
 #include "jsgrok/types.hpp"
 #include <vector>
 #include <functional>
-#include "v8/v8.h"
+#include "v8.h"
 
 namespace jsgrok {
   using v8::Isolate;

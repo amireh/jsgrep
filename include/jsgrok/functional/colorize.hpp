@@ -27,6 +27,9 @@ namespace jsgrok {
       else if (color == Magenta) {
         return "\033[35m" + string + "\033[0m";
       }
+      else {
+        return string;
+      }
     }
   } // end of namespace functional
 } // end of namespace jsgrok

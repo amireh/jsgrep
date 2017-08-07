@@ -12,7 +12,7 @@ TEST_CASE("jsgrok") {
   jsgrok::v8_session session;
 
   auto assert_script_is_analyzed = [&](const char *script) {
-    auto filepath = resolve("fixtures_path", script);
+    auto filepath = resolve(script);
     auto query = "";
     auto analysis = analyzer.apply(&session, query, { filepath });
 
