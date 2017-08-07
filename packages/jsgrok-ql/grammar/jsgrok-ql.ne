@@ -60,14 +60,16 @@ FunctionCallExpression ->
   }) %}
 
 FunctionTypeExpression ->
-    TypeExpression
-  | FunctionTypeExpression _ "," _ TypeExpression
+    NegatableTypeExpression
+  | FunctionTypeExpression _ "," _ NegatableTypeExpression
     {%
       (d, loc) => {
         return d[0].concat(d[4])
       }
     %}
 
+NegatableTypeExpression ->
+  [\^]:? TypeExpression {% d => Object.assign(d[1], { negated: d[0] === '^' }) %}
 
 TypeExpression ->
     BuiltInClassLiteral {% id %}

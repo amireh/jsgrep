@@ -1,5 +1,6 @@
 const invariant = require('invariant')
 const { t, qt, wildcardMatch } = require('../utils');
+const xor = (a, b) => (!!a ^ !!b) === 1
 
 const collectMatchingStaticFunctionCalls = (query, nodes) => {
   return nodes.filter(node => {
@@ -45,9 +46,11 @@ const collectMatchingArityCalls = (query, nodes) => {
 
 const collectMatchingArgumentValueCalls = (query, nodes) => {
   return nodes.filter(node => {
-    return query.arguments.every((argSpec, index) => {
-      const argNode = node.arguments[index]
-      return isMatchingArgument(argSpec, argNode)
+    return query.arguments.every((term, index) => {
+      return xor(
+        isMatchingArgument(term, node.arguments[index]),
+        term.negated
+      )
     })
   })
 }

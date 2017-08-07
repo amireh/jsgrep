@@ -34,6 +34,40 @@ module.exports = [
     `,
   }),
 
+  matchify({
+    query: 'foo(^:number)',
+    source: `
+      [+] foo(null)
+      [+] foo('a')
+      [+] foo(undefined)
+      [ ] foo(1)
+      [ ] foo(1, a)
+      [ ] foo()
+    `,
+  }),
+
+  matchify({
+    query: 'foo(^42)',
+    source: `
+      [+] foo(null)
+      [+] foo('a')
+      [+] foo(undefined)
+      [+] foo(43)
+      [ ] foo(42)
+      [ ] foo(43, a)
+      [ ] foo()
+    `,
+  }),
+
+  matchify({
+    query: 'foo(^{})',
+    source: `
+      [+] foo({ a: '1' })
+      [+] foo('lol')
+      [ ] foo({})
+    `,
+  }),
+
   // STRINGS
   matchify({
     spec: 'with :string for an argument: it matches StringLiteral arguments',
