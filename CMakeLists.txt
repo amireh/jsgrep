@@ -26,17 +26,11 @@ SET(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 ADD_DEFINITIONS("-Wno-unused-result")
 
-IF(WIN32)
-  ADD_DEFINITIONS("-D_CRT_SECURE_NO_WARNINGS")
-ENDIF()
-
 # Options
 OPTION(JSGROK_BUILD_TESTS "Build the tests" OFF)
 OPTION(JSGROK_LINT "Lint the sources" OFF)
 
 FIND_PACKAGE(V8 REQUIRED)
-
-SET(V8_BUILD_DIR "/home/kandie/Downloads/AUR/v8/src/v8/out.gn/x64.release")
 
 INCLUDE_DIRECTORIES(
   ${V8_INCLUDE_DIR}
@@ -58,12 +52,10 @@ SET(JSGROK_SOURCES
 IF(APPLE)
   SET(JSGROK_LIBRARIES
     jsgrok-ql
-    libv8_base.a
-    # ${V8_BASE_LIBRARY}
+    ${V8_BASE_LIBRARY}
     ${V8_LIBBASE_LIBRARY}
     ${V8_LIBPLATFORM_LIBRARY}
     ${V8_SNAPSHOT_LIBRARY}
-    dl
     pthread
   )
 ELSE()
@@ -71,15 +63,11 @@ ELSE()
     jsgrok-ql
     -Wl,--start-group
     ${V8_BASE_LIBRARY}
-    ${V8_EXTERNAL_SNAPSHOT_LIBRARY}
     ${V8_LIBBASE_LIBRARY}
     ${V8_LIBPLATFORM_LIBRARY}
-    # ${V8_BUILD_DIR}/obj/third_party/icu/libicuuc.a
-    # ${V8_BUILD_DIR}/obj/third_party/icu/libicui18n.a
-    # ${V8_BUILD_DIR}/obj/src/inspector/libinspector.a
+    ${V8_SNAPSHOT_LIBRARY}
+    ${V8_LIBSAMPLER_LIBRARY}
     -Wl,--end-group
-    rt
-    dl
     pthread
   )
 ENDIF()

@@ -18,13 +18,6 @@ namespace jsgrok {
     #endif
 
     void initialize(int argc, char** argv) {
-      #if V8_MAJOR_VERSION == 5 && V8_MINOR_VERSION < 9
-      #else
-        V8::InitializeICUDefaultLocation(argv[0]);
-      #endif
-
-      V8::InitializeExternalStartupData(argv[0]);
-
       platform = platform::CreateDefaultPlatform();
 
       V8::InitializePlatform(platform);

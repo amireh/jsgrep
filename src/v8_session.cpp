@@ -24,7 +24,7 @@ namespace jsgrok {
       isolate_->Dispose();
     }
 
-    delete isolate_create_params_.array_buffer_allocator;
+    jsgrok::v8_compat::free_array_buffer_alloc(isolate_create_params_.array_buffer_allocator);
 
     isolate_ = nullptr;
   };
