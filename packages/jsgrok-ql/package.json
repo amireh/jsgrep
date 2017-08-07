@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint src",
+    "build-man": "marked-man README.md > jsq-ql.man.1",
     "build": "npm run build-grammar && npm run build-bundle",
     "build-grammar": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js",
     "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrok-ql.ne -o src/grammar.js\"",

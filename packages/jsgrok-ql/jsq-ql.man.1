@@ -9,31 +9,20 @@ expressions\.
 Queries are designed to be familiar to the JavaScript programmer by loosely
 following the JavaScript syntax\.
 .SH HOW TO USE THIS GUIDE
-.P
-How to read the synopsis of functions in the following sections:
 .RS 0
 .IP \(bu 2
-Placeholders for arguments that you should substitute are denoted by
-surrounding the placeholder with the \fB%\fP symbol\. For example, the
-\fB%identifier%\fP argument for a function call expression should be substituted
-by the function name that is being searched for\.
+Placeholder tokens that should be substituted are denoted by surrounding the
+token with the \fB%\fP symbol\. For example, the \fB%identifier%\fP token in a
+function call expression must be substituted by the function name that is
+being searched for\.
 .IP \(bu 2
 Tokens inside brackets (\fB[]\fP) are optional\.
 .IP \(bu 2
 Tokens inside nested brackets (\fB[X[,\.\.\.X]]\fP) indicates the token may be
 repeated\.
+.IP \(bu 2
+All other characters must be regarded verbatim\.
 
-.RE
-.P
-Otherwise, all other characters must be regarded verbatim\.
-.P
-EXAMPLES
-.P
-.RS 2
-.nf
-foo()
-foo()\.then()
-.fi
 .RE
 .SH EXPRESSIONS
 .P
@@ -147,7 +136,7 @@ this\.f()
 :exportOf(ajax\.js)\.request()\.then(null, :func)
 .fi
 .RE
-.SS Accesses to object properties
+.SS Access of object properties
 .P
 SYNTAX
 .P
@@ -189,7 +178,7 @@ Where \fBJSXProperty\fP is defined as:
 .P
 .RS 2
 .nf
-%key%={Type}
+%key%[={Type}]
 .fi
 .RE
 .P
@@ -215,6 +204,42 @@ EXAMPLES
 # find Link components with an href value of either an array of strings, 
 # or an object:
 <Link href={(:array(:string) | :object)} />
+.fi
+.RE
+.SS Use of exported symbols from modules
+.P
+This type matcher is available only for scripts that use either the ES6 Module
+format or the CommonJS format\.
+.P
+SYNTAX
+.P
+.RS 2
+.nf
+:exportOf(%file%[, %symbol%])
+.fi
+.RE
+.P
+When \fB%export%\fP is omitted, the \fBdefault\fP export is assumed\.
+.P
+EXAMPLES
+.P
+.RS 2
+.nf
+# All references to the identifier assigned to the default export of the 
+# "ajax\.js" module
+:exportOf(ajax\.js)
+
+# Call to the default export of the ajax\.js module
+:exportOf(ajax\.js)()
+
+# Access to the "x" member of the default export of the ajax\.js module
+:exportOf(ajax\.js)\.x
+
+# Call to the "toJSON" member of the default export of the ajax\.js module
+:exportOf(ajax\.js)\.toJSON()
+
+# Import of the "x" export of the ajax\.js module
+:exportOf(ajax\.js, x)
 .fi
 .RE
 .SH TYPE EXPRESSIONS
@@ -390,42 +415,6 @@ true
 false
 .fi
 .RE
-.SS ES6 module identifiers
-.P
-This type matcher is available only for scripts that use either the ES6 Module
-format or the CommonJS format\.
-.P
-SYNTAX
-.P
-.RS 2
-.nf
-:exportOf(%file%[, %symbol%])
-.fi
-.RE
-.P
-When \fB%export%\fP is omitted, the \fBdefault\fP export is assumed\.
-.P
-EXAMPLES
-.P
-.RS 2
-.nf
-# All references to the identifier assigned to the default export of the 
-# "ajax\.js" module
-:exportOf(ajax\.js)
-
-# Call to the default export of the ajax\.js module
-:exportOf(ajax\.js)()
-
-# Access to the "x" member of the default export of the ajax\.js module
-:exportOf(ajax\.js)\.x
-
-# Call to the "toJSON" member of the default export of the ajax\.js module
-:exportOf(ajax\.js)\.toJSON()
-
-# Import of the "x" export of the ajax\.js module
-:exportOf(ajax\.js, x)
-.fi
-.RE
 .SS Class instances
 .P
 Match objects instantiated using the \fBnew\fP keyword\.
@@ -455,8 +444,7 @@ SYNTAX
 .P
 .RS 2
 .nf
-  :number
-| \-? [0\-9]+
+:number | [\-]%number%
 .fi
 .RE
 .P
@@ -467,14 +455,22 @@ EXAMPLES
 # Any number
 :number
 
-# The number literal 42
+# The number 42
 42
 
-# The number literal \-0\.5
+# The number \-0\.5
 \-0\.5
 .fi
 .RE
 .SS Regular expressions
+.P
+SYNTAX
+.P
+.RS 2
+.nf
+:regexp | /%pattern%/
+.fi
+.RE
 .P
 EXAMPLES
 .P
@@ -483,7 +479,7 @@ EXAMPLES
 # match any kind of regex; literal or constructed using new RegExp()
 :regexp
 
-# match a regexp by pattern:
+# match a regexp that has "foo" for a pattern:
 /foo/
 .fi
 .RE
@@ -525,7 +521,8 @@ f(:func(*, :void))
 .RE
 .SH TYPE EXPRESSION UNIONS
 .P
-Group the type matchers with paranthesis (\fB()\fP) and separate them using \fB|\fP\|\.
+A type expression union makes it possible to match multiple types at any
+certain position\.
 .P
 SYNTAX
 .P

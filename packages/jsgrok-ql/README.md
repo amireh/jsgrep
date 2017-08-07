@@ -10,22 +10,14 @@ following the JavaScript syntax.
 
 ## HOW TO USE THIS GUIDE
 
-How to read the synopsis of functions in the following sections:
-
-- Placeholders for arguments that you should substitute are denoted by
-  surrounding the placeholder with the `%` symbol. For example, the
-  `%identifier%` argument for a function call expression should be substituted
-  by the function name that is being searched for.
+- Placeholder tokens that should be substituted are denoted by surrounding the
+  token with the `%` symbol. For example, the `%identifier%` token in a
+  function call expression must be substituted by the function name that is
+  being searched for.
 - Tokens inside brackets (`[]`) are optional.
 - Tokens inside nested brackets (`[X[,...X]]`) indicates the token may be
   repeated.
-
-Otherwise, all other characters must be regarded verbatim.
-
-EXAMPLES
-
-    foo()
-    foo().then()
+- All other characters must be regarded verbatim.
 
 ## EXPRESSIONS
 
@@ -120,7 +112,7 @@ EXAMPLES
     # 3) the second argument is a function of any arity
     :exportOf(ajax.js).request().then(null, :func)
 
-### Accesses to object properties
+### Access of object properties
 
 SYNTAX
 
@@ -146,7 +138,7 @@ SYNTAX
 
 Where `JSXProperty` is defined as:
 
-    %key%={Type}
+    %key%[={Type}]
 
 EXAMPLES
 
@@ -168,6 +160,35 @@ EXAMPLES
     # find Link components with an href value of either an array of strings, 
     # or an object:
     <Link href={(:array(:string) | :object)} />
+
+### Use of exported symbols from modules
+
+This type matcher is available only for scripts that use either the ES6 Module
+format or the CommonJS format.
+
+SYNTAX
+
+    :exportOf(%file%[, %symbol%])
+
+When `%export%` is omitted, the `default` export is assumed.
+
+EXAMPLES
+
+    # All references to the identifier assigned to the default export of the 
+    # "ajax.js" module
+    :exportOf(ajax.js)
+
+    # Call to the default export of the ajax.js module
+    :exportOf(ajax.js)()
+
+    # Access to the "x" member of the default export of the ajax.js module
+    :exportOf(ajax.js).x
+
+    # Call to the "toJSON" member of the default export of the ajax.js module
+    :exportOf(ajax.js).toJSON()
+
+    # Import of the "x" export of the ajax.js module
+    :exportOf(ajax.js, x)
 
 ## TYPE EXPRESSIONS
 
@@ -303,35 +324,6 @@ EXAMPLES
     # A false value
     false
 
-### ES6 module identifiers
-
-This type matcher is available only for scripts that use either the ES6 Module
-format or the CommonJS format.
-
-SYNTAX
-
-    :exportOf(%file%[, %symbol%])
-
-When `%export%` is omitted, the `default` export is assumed.
-
-EXAMPLES
-
-    # All references to the identifier assigned to the default export of the 
-    # "ajax.js" module
-    :exportOf(ajax.js)
-
-    # Call to the default export of the ajax.js module
-    :exportOf(ajax.js)()
-
-    # Access to the "x" member of the default export of the ajax.js module
-    :exportOf(ajax.js).x
-
-    # Call to the "toJSON" member of the default export of the ajax.js module
-    :exportOf(ajax.js).toJSON()
-
-    # Import of the "x" export of the ajax.js module
-    :exportOf(ajax.js, x)
-
 ### Class instances
 
 Match objects instantiated using the `new` keyword.
@@ -352,28 +344,31 @@ EXAMPLES
 
 SYNTAX
 
-      :number
-    | -? [0-9]+
+    :number | [-]%number%
 
 EXAMPLES
 
     # Any number
     :number
 
-    # The number literal 42
+    # The number 42
     42
 
-    # The number literal -0.5
+    # The number -0.5
     -0.5
 
 ### Regular expressions
+
+SYNTAX
+
+    :regexp | /%pattern%/
 
 EXAMPLES
 
     # match any kind of regex; literal or constructed using new RegExp()
     :regexp
 
-    # match a regexp by pattern:
+    # match a regexp that has "foo" for a pattern:
     /foo/
 
 ## TYPE EXPRESSION KEYWORDS
@@ -405,7 +400,8 @@ EXAMPLES
 
 ## TYPE EXPRESSION UNIONS
 
-Group the type matchers with paranthesis (`()`) and separate them using `|`.
+A type expression union makes it possible to match multiple types at any
+certain position.
 
 SYNTAX
 
