@@ -1,5 +1,6 @@
 {
   "name": "jsgrep-ql",
+  "description": "jsgrep query evaluator.",
   "version": "1.0.0",
   "main": "src/index.js",
   "license": "MIT",
@@ -11,7 +12,8 @@
     "build-bundle": "webpack --display-modules",
     "build-bundle:watch": "webpack -w --progress --display-modules",
     "build-man": "marked-man README.md > jsgrep-ql.man.1",
-    "test": "mocha 'src/**/*.test.js'"
+    "test": "mocha 'src/**/*.test.js'",
+    "test:watch": "mocha 'src/**/*.test.js' -w --reporter dot"
   },
   "repository": {
     "type": "git",

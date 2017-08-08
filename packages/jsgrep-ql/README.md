@@ -1,12 +1,12 @@
-# jsgrep-ql(1) -- jsgrep(1) query language interpretor
+# jsgrep-ql(1) -- jsgrep(1) query evaluator
 
 ## DESCRIPTION
 
-jsgrep-ql is the query language used by jsgrep(1) to search for JavaScript
-expressions.
+jsgrep-ql defines and evaluates the query language used by jsgrep(1) to search
+for JavaScript expressions.
 
-Queries are designed to be familiar to the JavaScript programmer by loosely
-following the JavaScript syntax.
+jsgrep-ql queries are designed to be familiar to the JavaScript programmer by
+following the JavaScript syntax when possible.
 
 ## HOW TO USE THIS GUIDE
 
@@ -21,7 +21,7 @@ following the JavaScript syntax.
 
 ## EXPRESSIONS
 
-A jsgrep query is composed of either a single expression or multiple
+A jsgrep-ql query is composed of either a single expression or multiple
 expressions joined by an expression production operator like `.`.
 
 ### Calls to static functions

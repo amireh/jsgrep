@@ -1,33 +1,20 @@
 # jsgrep
 
-## Building
+## Installation
 
-You will need CMake, the v8 sources, and nodejs (v7+). On Linux, you will also
-need `xxd`.
+Currently, no binaries are available for use and `jsgrep` must be built from
+source.
 
-The environment variable `V8_DIR` must be set to the *source* directory of
-V8 which you built.
+## Building from source
 
-**Building the `jsgrep-ql` JavaScript package**
+Prerequisites:
 
-The JavaScript runtime package is needed by the `jsgrep` binary (the C++ part)
-in order to evaluate queries. The following script will pre-compile the
-JavaScript into a single .js file which is then converted to a binary object
-and will be embedded into the `jsgrep` binary by CMake.
+- CMake (2.8+)
+- V8 source
+- Node.js (v7+)
+- `xxd`
 
-    ./bin/build-jsgrep-ql.sh
-
-**Building `jsgrep`**
-
-    mkdir build
-    cd build
-    ccmake ..
-
-Configure the build paramaters; turn on tests if needed, then run make:
-
-    make -j5
-
-**Building V8**
+### Building V8
 
 Refer to https://github.com/v8/v8/wiki/Building-with-GN#build-instructions-raw-workflow
 
@@ -57,6 +44,32 @@ To compile, run ninja:
 
     ninja -C out.gn/x64.release v8
 
+### Building `jsgrep-ql`
+
+The JavaScript runtime package is needed by the `jsgrep` binary (the C++ part)
+in order to evaluate queries. The following snippet will pre-compile the
+JavaScript into a single .js file which is then converted to a binary object
+and will be embedded into the `jsgrep` binary by CMake.
+
+```shell
+(cd packages/jsgrep-ql; npm install && npm run build)
+```
+
+### Building `jsgrep`
+
+The environment variable `V8_DIR` must be set to the *source* directory of
+V8 which you built.
+
+You'll need to run cmake to generate the makefile then run make.
+
+```shell
+mkdir build
+(cd build; cmake .. && make -j5)
+```
+
+If you want to customize the build parameters, run `ccmake ..` instead of
+`cmake..`.
+
 ## Tests
 
 ### `jsgrep` C++ tests
@@ -75,32 +88,68 @@ supplying `-w` and it's likely you'll want to use the `dot` reporter:
 
     (cd packages/jsgrep-ql && npm test -- -w --reporter dot)
 
-The JavaScript tests are separated into two groups: tests for the grammar,
-found under `packages/jsgrep-ql/grammar/__tests__` and tests for the evaluation
-engine, found under `packages/jsgrep-ql/src/__tests__`.
-
 ## Hacking
 
 You'll need a bunch of terminal sessions for this:
 
-1. `jsgrep-ql` bundle build watcher:
+1. `jsgrep-ql` grammar build watcher:
 
-    (cd packages/jsgrep-ql && npm run build-bundle:watch)
+The following will watch any changes you make to `jsgrep-ql/grammar/jsgrep-
+ql.ne` and run `nearleyc` to generate the compiled grammar.
 
-2. `jsgrep-ql` grammar build watcher:
+```shell
+(cd packages/jsgrep-ql && npm run build-grammar:watch)
+```
 
-    (cd packages/jsgrep-ql && npm run build-grammar:watch)
+The output will be found at `jsgrep-ql/src/grammar.js` and it is required in
+order to build the JS bundle.
+
+2. `jsgrep-ql` bundle build watcher:
+
+The following command will watch any changes to the evaluation source files
+`jsgrep-ql/src/**/*.js` and re-compile the bundle that will be used by the C++
+backend.
+
+```shell
+(cd packages/jsgrep-ql && npm run build-bundle:watch)
+```
+
+The output will be found under `jsgrep-ql/dist/jsgrep-ql.js`.
 
 3. `jsgrep` build:
 
-    (cd build && cmake -DJSGREP_BUILD_TESTS=true .. && make -j10)
+Now that you have the JS bundle ready (grammar embedded), you can compile the
+C++ backend:
 
-Optionally:
+```shell
+(cd build && cmake .. && make -j10)
+```
 
-4.1. `jsgrep` tests
+The output will be found at `build/jsgrep`.
 
-    build/jsgrep-tests
+4. [OPTIONAL] `jsgrep` tests
 
-4.2. `jsgrep-ql` tests:
+If you want to run the C++ tests too, tell cmake to generate that target:
 
-    (cd packages/jsgrep-ql; npm run test -- -w --reporter dot)
+```shell
+(cd build && cmake -DJSGREP_BUILD_TESTS=true .. && make -j10)
+```
+
+The binary will be found at `build/jsgrep-tests`.
+
+5. [OPTIONAL] `jsgrep-ql` tests:
+
+If you want to run the JavaScript engine tests, the following snippet will re-
+run the tests anytime the source files change:
+
+```shell
+(cd packages/jsgrep-ql; npm run test:watch)
+```
+
+## License
+
+The MIT license. Copyright 2017 Ahmad Amireh <ahmad@amireh.net>. See COPYING.
+
+Libraries linked to by `jsgrep` and their respective licenses:
+
+- [args](https://github.com/Taywee/args) - MIT
