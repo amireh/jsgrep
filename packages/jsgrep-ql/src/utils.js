@@ -1,4 +1,4 @@
-const { L_ANY } = require('./constants')
+const { L_ANY, F_OPT, F_NOT } = require('./constants')
 const t = {
   identifier: x => !!(x && x.type === 'Identifier'),
   identifierOf: (name, node) => t.identifier(node) && (
@@ -52,10 +52,10 @@ exports.qt = {
 
   literal: term => term.type === 'Literal',
 
-  optionalProperty: term => term.keyFlag === 'F_OPT',
-  optionalPropertyValue: term => term.valueFlag === 'F_OPT',
-  negatedProperty: term => term.keyFlag === 'F_NOT',
-  negatedPropertyValue: term => term.valueFlag === 'F_NOT',
+  optionalProperty: term => term.keyFlag === F_OPT,
+  optionalPropertyValue: term => term.valueFlag === F_OPT,
+  negatedProperty: term => term.keyFlag === F_NOT,
+  negatedPropertyValue: term => term.valueFlag === F_NOT,
 }
 
 exports.wildcardMatch = (a, b) => {
