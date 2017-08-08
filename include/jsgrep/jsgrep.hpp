@@ -1,12 +1,12 @@
-#ifndef H_JSGROK_H
-#define H_JSGROK_H
+#ifndef H_JSGREP_H
+#define H_JSGREP_H
 
 #include <string>
 #include "libplatform/libplatform.h"
 #include "v8.h"
-#include "jsgrok/v8_compat.hpp"
+#include "jsgrep/v8_compat.hpp"
 
-namespace jsgrok {
+namespace jsgrep {
   typedef std::string string_t;
   typedef std::string path_t;
   typedef unsigned long uint64_t;

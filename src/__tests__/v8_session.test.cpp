@@ -1,16 +1,16 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/fs.hpp"
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/types.hpp"
+#include "jsgrep/fs.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/types.hpp"
 
-TEST_CASE("jsgrok::v8_session") {
-  using jsgrok::string_t;
-  using jsgrok::v8_module;
-  using jsgrok::test_utils::resolve;
+TEST_CASE("jsgrep::v8_session") {
+  using jsgrep::string_t;
+  using jsgrep::v8_module;
+  using jsgrep::test_utils::resolve;
   using namespace v8;
 
-  jsgrok::v8_session subject;
+  jsgrep::v8_session subject;
 
   SECTION("It generates an isolate implicitly") {
     REQUIRE(subject.get_isolate() != nullptr);
@@ -31,7 +31,7 @@ TEST_CASE("jsgrok::v8_session") {
     };
 
     auto require_from_file = [&](Local<Context> &ctx, const string_t &path) {
-      auto buffer = jsgrok::test_utils::load_fixture_file(path);
+      auto buffer = jsgrep::test_utils::load_fixture_file(path);
       return subject.require(ctx, buffer.value, buffer.sz);
     };
 

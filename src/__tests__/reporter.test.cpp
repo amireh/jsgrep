@@ -1,22 +1,22 @@
 #include <ostream>
 #include <iostream>
 #include "catch.hpp"
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/reporter.hpp"
-#include "jsgrok/cli.hpp"
-#include "jsgrok/types.hpp"
-#include "jsgrok/functional/colorize.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/reporter.hpp"
+#include "jsgrep/cli.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/functional/colorize.hpp"
 
-TEST_CASE("jsgrok::reporter") {
-  using jsgrok::string_t;
-  using analyzer = jsgrok::analyzer;
-  using options_t = jsgrok::cli::options_t;
-  using jsgrok::functional::colorize;
-  using Color = jsgrok::functional::Color;
+TEST_CASE("jsgrep::reporter") {
+  using jsgrep::string_t;
+  using analyzer = jsgrep::analyzer;
+  using options_t = jsgrep::cli::options_t;
+  using jsgrep::functional::colorize;
+  using Color = jsgrep::functional::Color;
 
-  jsgrok::cli cli;
+  jsgrep::cli cli;
   options_t options(cli.parse(std::vector<string_t>({})));
-  jsgrok::reporter subject(options);
+  jsgrep::reporter subject(options);
 
   WHEN("There are errors") {
     std::ostringstream out;

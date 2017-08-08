@@ -1,13 +1,13 @@
 #include "catch.hpp"
-#include "jsgrok/v8_cluster.hpp"
-#include "jsgrok/types.hpp"
+#include "jsgrep/v8_cluster.hpp"
+#include "jsgrep/types.hpp"
 
-TEST_CASE("jsgrok::v8_cluster") {
+TEST_CASE("jsgrep::v8_cluster") {
   using Catch::EndsWith;
-  using jsgrok::string_t;
-  using jsgrok::v8_session;
+  using jsgrep::string_t;
+  using jsgrep::v8_session;
 
-  jsgrok::v8_cluster subject;
+  jsgrep::v8_cluster subject;
 
   SECTION("It spawns and despawns v8 sessions") {
     auto do_work = [&](v8_session *, void*) {};

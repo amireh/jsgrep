@@ -1,10 +1,10 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/types.hpp"
-#include "jsgrok/functional/partition.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/functional/partition.hpp"
 
-TEST_CASE("jsgrok::functional::partition") {
-  using jsgrok::functional::partition;
+TEST_CASE("jsgrep::functional::partition") {
+  using jsgrep::functional::partition;
 
   SECTION("it works with an empty set") {
     auto partitions = partition({}, 2);

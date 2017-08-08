@@ -1,12 +1,12 @@
-#ifndef H_JSGROK_V8_CLUSTER_H
-#define H_JSGROK_V8_CLUSTER_H
+#ifndef H_JSGREP_V8_CLUSTER_H
+#define H_JSGREP_V8_CLUSTER_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 #include <vector>
 #include <functional>
 #include <pthread.h>
 
-namespace jsgrok {
+namespace jsgrep {
   using std::vector;
 
   class v8_session;

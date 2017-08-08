@@ -1,9 +1,9 @@
-#ifndef H_JSGROK_TYPES_H
-#define H_JSGROK_TYPES_H
+#ifndef H_JSGREP_TYPES_H
+#define H_JSGREP_TYPES_H
 
 #include <string>
 
-namespace jsgrok {
+namespace jsgrep {
   typedef std::string string_t;
   typedef unsigned long uint64_t;
 }

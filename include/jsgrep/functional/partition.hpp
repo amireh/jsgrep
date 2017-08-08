@@ -1,11 +1,11 @@
-#ifndef H_JSGROK_FUNCTIONAL_PARTITION_H
-#define H_JSGROK_FUNCTIONAL_PARTITION_H
+#ifndef H_JSGREP_FUNCTIONAL_PARTITION_H
+#define H_JSGREP_FUNCTIONAL_PARTITION_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 #include <vector>
 #include <math.h>
 
-namespace jsgrok {
+namespace jsgrep {
   namespace functional {
     using std::vector;
 
@@ -23,6 +23,6 @@ namespace jsgrok {
       return out;
     }
   } // end of namespace functional
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

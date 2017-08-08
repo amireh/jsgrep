@@ -1,4 +1,4 @@
-# jsgrok
+# jsgrep
 
 ## Building
 
@@ -8,16 +8,16 @@ need `xxd`.
 The environment variable `V8_DIR` must be set to the *source* directory of
 V8 which you built.
 
-**Building the `jsgrok-ql` JavaScript package**
+**Building the `jsgrep-ql` JavaScript package**
 
-The JavaScript runtime package is needed by the `jsgrok` binary (the C++ part)
+The JavaScript runtime package is needed by the `jsgrep` binary (the C++ part)
 in order to evaluate queries. The following script will pre-compile the
 JavaScript into a single .js file which is then converted to a binary object
-and will be embedded into the `jsgrok` binary by CMake.
+and will be embedded into the `jsgrep` binary by CMake.
 
-    ./bin/build-jsgrok-ql.sh
+    ./bin/build-jsgrep-ql.sh
 
-**Building `jsgrok`**
+**Building `jsgrep`**
 
     mkdir build
     cd build
@@ -59,48 +59,48 @@ To compile, run ninja:
 
 ## Tests
 
-### `jsgrok` C++ tests
+### `jsgrep` C++ tests
 
-`jsgrok` tests can be run with the binary found at `build/jsgrok-tests`.
-You must turn on `JSGROK_BUILD_TESTS` in cmake in order to generate the target.
+`jsgrep` tests can be run with the binary found at `build/jsgrep-tests`.
+You must turn on `JSGREP_BUILD_TESTS` in cmake in order to generate the target.
 
-### `jsgrok-ql` JavaScript tests
+### `jsgrep-ql` JavaScript tests
 
-`jsgrok-ql` tests can be run with `npm`:
+`jsgrep-ql` tests can be run with `npm`:
 
-    (cd packages/jsgrok-ql && npm test)
+    (cd packages/jsgrep-ql && npm test)
 
 During development, you can run the tests interactively in watch mode by
 supplying `-w` and it's likely you'll want to use the `dot` reporter:
 
-    (cd packages/jsgrok-ql && npm test -- -w --reporter dot)
+    (cd packages/jsgrep-ql && npm test -- -w --reporter dot)
 
 The JavaScript tests are separated into two groups: tests for the grammar,
-found under `packages/jsgrok-ql/grammar/__tests__` and tests for the evaluation
-engine, found under `packages/jsgrok-ql/src/__tests__`.
+found under `packages/jsgrep-ql/grammar/__tests__` and tests for the evaluation
+engine, found under `packages/jsgrep-ql/src/__tests__`.
 
 ## Hacking
 
 You'll need a bunch of terminal sessions for this:
 
-1. `jsgrok-ql` bundle build watcher:
+1. `jsgrep-ql` bundle build watcher:
 
-    (cd packages/jsgrok-ql && npm run build-bundle:watch)
+    (cd packages/jsgrep-ql && npm run build-bundle:watch)
 
-2. `jsgrok-ql` grammar build watcher:
+2. `jsgrep-ql` grammar build watcher:
 
-    (cd packages/jsgrok-ql && npm run build-grammar:watch)
+    (cd packages/jsgrep-ql && npm run build-grammar:watch)
 
-3. `jsgrok` build:
+3. `jsgrep` build:
 
-    (cd build && cmake -DJGROK_BUILD_TESTS=true .. && make -j10)
+    (cd build && cmake -DJSGREP_BUILD_TESTS=true .. && make -j10)
 
 Optionally:
 
-4.1. `jsgrok` tests
+4.1. `jsgrep` tests
 
-    build/jsgrok-tests
+    build/jsgrep-tests
 
-4.2. `jsgrok-ql` tests:
+4.2. `jsgrep-ql` tests:
 
-    (cd packages/jsgrok-ql; npm run test -- -w --reporter dot)
+    (cd packages/jsgrep-ql; npm run test -- -w --reporter dot)

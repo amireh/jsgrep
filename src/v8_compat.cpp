@@ -1,8 +1,8 @@
-#include "jsgrok/v8_compat.hpp"
+#include "jsgrep/v8_compat.hpp"
 #include "libplatform/libplatform.h"
 #include <cstdlib>
 
-namespace jsgrok {
+namespace jsgrep {
   namespace v8_compat {
     static v8::Platform *platform;
     using namespace v8;

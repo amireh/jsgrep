@@ -1,11 +1,11 @@
-#ifndef H_JSGROK_ANALYZER_H
-#define H_JSGROK_ANALYZER_H
+#ifndef H_JSGREP_ANALYZER_H
+#define H_JSGREP_ANALYZER_H
 
 #include <vector>
 #include "v8.h"
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 
-namespace jsgrok {
+namespace jsgrep {
   using v8::Context;
   using v8::Local;
   using v8::Value;
@@ -57,6 +57,6 @@ namespace jsgrok {
     analysis_t    cast_down(v8_session*, Local<Context>&, js_analysis_t const&) const;
   };
 
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

@@ -1,17 +1,17 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/fs.hpp"
-#include "jsgrok/types.hpp"
+#include "jsgrep/fs.hpp"
+#include "jsgrep/types.hpp"
 
-TEST_CASE("jsgrok::fs") {
+TEST_CASE("jsgrep::fs") {
   using Catch::EndsWith;
-  using jsgrok::string_t;
-  using jsgrok::test_utils::resolve;
+  using jsgrep::string_t;
+  using jsgrep::test_utils::resolve;
 
-  jsgrok::fs subject;
+  jsgrep::fs subject;
 
   SECTION("#glob") {
-    jsgrok::fs subject;
+    jsgrep::fs subject;
 
     WHEN("It is given a path") {
       THEN("It rejects") {
@@ -36,7 +36,7 @@ TEST_CASE("jsgrok::fs") {
     THEN("It searches for all files under that directory") {
       auto files = subject.glob(
         { resolve("") },
-        jsgrok::fs::GLOB_RECURSIVE
+        jsgrep::fs::GLOB_RECURSIVE
       );
 
       REQUIRE(files.size() > 0);

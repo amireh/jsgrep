@@ -1,15 +1,15 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/types.hpp"
-#include "jsgrok/v8_session.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/v8_session.hpp"
 
-TEST_CASE("jsgrok") {
-  using jsgrok::string_t;
-  using jsgrok::test_utils::resolve;
+TEST_CASE("jsgrep") {
+  using jsgrep::string_t;
+  using jsgrep::test_utils::resolve;
 
-  jsgrok::analyzer analyzer;
-  jsgrok::v8_session session;
+  jsgrep::analyzer analyzer;
+  jsgrep::v8_session session;
 
   auto assert_script_is_analyzed = [&](const char *script) {
     auto filepath = resolve(script);

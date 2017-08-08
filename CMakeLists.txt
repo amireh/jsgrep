@@ -6,10 +6,10 @@ ELSE()
   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build, options are: None(CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.")
 ENDIF()
 
-PROJECT(jsgrok)
+PROJECT(jsgrep)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  SET(CMAKE_INSTALL_PREFIX ${EXECUTABLE_OUTPUT_PATH} CACHE PATH "jgrok install prefix" FORCE)
+  SET(CMAKE_INSTALL_PREFIX ${EXECUTABLE_OUTPUT_PATH} CACHE PATH "jsgrep install prefix" FORCE)
 ENDIF()
 
 INCLUDE(CheckIncludeFileCXX)
@@ -27,8 +27,8 @@ SET(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 ADD_DEFINITIONS("-Wno-unused-result")
 
 # Options
-OPTION(JSGROK_BUILD_TESTS "Build the tests" OFF)
-OPTION(JSGROK_LINT "Lint the sources" OFF)
+OPTION(JSGREP_BUILD_TESTS "Build the tests" OFF)
+OPTION(JSGREP_LINT "Lint the sources" OFF)
 
 FIND_PACKAGE(V8 REQUIRED)
 
@@ -38,7 +38,7 @@ INCLUDE_DIRECTORIES(
   ${CMAKE_SOURCE_DIR}/include
 )
 
-SET(JSGROK_SOURCES
+SET(JSGREP_SOURCES
   ${CMAKE_SOURCE_DIR}/src/analyzer.cpp
   ${CMAKE_SOURCE_DIR}/src/cli.cpp
   ${CMAKE_SOURCE_DIR}/src/fs.cpp
@@ -50,8 +50,8 @@ SET(JSGROK_SOURCES
 )
 
 IF(APPLE)
-  SET(JSGROK_LIBRARIES
-    jsgrok-ql
+  SET(JSGREP_LIBRARIES
+    jsgrep-ql
     ${V8_BASE_LIBRARY}
     ${V8_LIBBASE_LIBRARY}
     ${V8_LIBPLATFORM_LIBRARY}
@@ -59,8 +59,8 @@ IF(APPLE)
     pthread
   )
 ELSE()
-  SET(JSGROK_LIBRARIES
-    jsgrok-ql
+  SET(JSGREP_LIBRARIES
+    jsgrep-ql
     -Wl,--start-group
     ${V8_BASE_LIBRARY}
     ${V8_LIBBASE_LIBRARY}
@@ -72,10 +72,10 @@ ELSE()
   )
 ENDIF()
 
-# embed jsgrok-ql
-ADD_SUBDIRECTORY(packages/jsgrok-ql)
+# embed jsgrep-ql
+ADD_SUBDIRECTORY(packages/jsgrep-ql)
 
-IF(JSGROK_LINT)
+IF(JSGREP_LINT)
   ADD_CUSTOM_TARGET(
     cppcheck
     ALL
@@ -96,6 +96,6 @@ ENDIF()
 
 ADD_SUBDIRECTORY(src)
 
-IF (JSGROK_BUILD_TESTS)
+IF (JSGREP_BUILD_TESTS)
   ADD_SUBDIRECTORY(test)
 ENDIF()

@@ -15,25 +15,25 @@
 
 #include "libplatform/libplatform.h"
 #include "v8.h"
-#include "jsgrok/types.hpp"
-#include "jsgrok/cli.hpp"
-#include "jsgrok/fs.hpp"
-#include "jsgrok/v8_compat.hpp"
-#include "jsgrok/v8_cluster.hpp"
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/reporter.hpp"
-#include "jsgrok/functional/partition.hpp"
-#include "jsgrok/functional/filter.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/cli.hpp"
+#include "jsgrep/fs.hpp"
+#include "jsgrep/v8_compat.hpp"
+#include "jsgrep/v8_cluster.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/reporter.hpp"
+#include "jsgrep/functional/partition.hpp"
+#include "jsgrep/functional/filter.hpp"
 
 using namespace v8;
 using std::any_of;
 using std::vector;
-using jsgrok::string_t;
-using jsgrok::cli;
-using jsgrok::v8_session;
-using jsgrok::functional::partition_t;
-using options_t = jsgrok::cli::options_t;
+using jsgrep::string_t;
+using jsgrep::cli;
+using jsgrep::v8_session;
+using jsgrep::functional::partition_t;
+using options_t = jsgrep::cli::options_t;
 
 typedef struct {
   partition_t     *partition;
@@ -46,7 +46,7 @@ static void grok_files(v8_session *session, void *data) {
   partition_t *files = job->partition;
   options_t *options = job->options;
   partition_t  filtered_files(
-    jsgrok::functional::filter(
+    jsgrep::functional::filter(
       *files,
       options->file_inclusion_patterns,
       options->file_exclusion_patterns,
@@ -60,10 +60,10 @@ static void grok_files(v8_session *session, void *data) {
 
   session->get_isolate()->Enter();
 
-  jsgrok::analyzer analyzer;
+  jsgrep::analyzer analyzer;
 
   auto analysis = analyzer.apply(session, options->query, filtered_files);
-  auto reporter = jsgrok::reporter(*options);
+  auto reporter = jsgrep::reporter(*options);
 
   reporter.report(analysis, std::cout);
 
@@ -71,17 +71,17 @@ static void grok_files(v8_session *session, void *data) {
 }
 
 int main(int argc, char* argv[]) {
-  auto cli = jsgrok::cli();
+  auto cli = jsgrep::cli();
   auto options = cli.parse(argc, argv);
 
   if (
-    options.state == jsgrok::cli::options_t::CLI_REQUESTED_HELP ||
-    options.state == jsgrok::cli::options_t::CLI_PARSE_ERROR
+    options.state == jsgrep::cli::options_t::CLI_REQUESTED_HELP ||
+    options.state == jsgrep::cli::options_t::CLI_PARSE_ERROR
   ) {
     return 1;
   }
 
-  jsgrok::fs fs;
+  jsgrep::fs fs;
 
   if (options.verbosity == options_t::VERBOSITY_DEBUG) {
     printf("[D] Using %d V8 instances.\n", options.threads);
@@ -92,14 +92,14 @@ int main(int argc, char* argv[]) {
     fs.glob(options.file_patterns, 0)
   ;
 
-  auto partitions = jsgrok::functional::partition(files, options.threads);
+  auto partitions = jsgrep::functional::partition(files, options.threads);
   vector<job_t*> jobs(partitions.size());
 
   // Initialize V8.
-  jsgrok::v8_compat::initialize(argc, argv);
+  jsgrep::v8_compat::initialize(argc, argv);
 
   {
-    jsgrok::v8_cluster cluster;
+    jsgrep::v8_cluster cluster;
 
     for (partition_t &partition : partitions) {
       job_t *job = new job_t({ &partition, &options });
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 
   jobs.clear();
 
-  jsgrok::v8_compat::teardown();
+  jsgrep::v8_compat::teardown();
 
   pthread_exit(NULL);
 

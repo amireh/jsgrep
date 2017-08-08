@@ -1,10 +1,10 @@
-#ifndef H_JSGROK_FS_H
-#define H_JSGROK_FS_H
+#ifndef H_JSGREP_FS_H
+#define H_JSGREP_FS_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 #include <vector>
 
-namespace jsgrok {
+namespace jsgrep {
   using std::vector;
 
   class fs {
@@ -26,6 +26,6 @@ namespace jsgrok {
     vector<file_t> recursive_glob(vector<string_t> const&, int = 0);
   };
 
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

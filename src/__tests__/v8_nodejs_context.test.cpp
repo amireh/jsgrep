@@ -1,16 +1,16 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/v8_nodejs_context.hpp"
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/types.hpp"
+#include "jsgrep/v8_nodejs_context.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/types.hpp"
 
-TEST_CASE("jsgrok::v8_nodejs_context") {
-  using jsgrok::string_t;
-  using jsgrok::v8_nodejs_context;
-  using jsgrok::test_utils::resolve;
+TEST_CASE("jsgrep::v8_nodejs_context") {
+  using jsgrep::string_t;
+  using jsgrep::v8_nodejs_context;
+  using jsgrep::test_utils::resolve;
   using namespace v8;
 
-  jsgrok::v8_session session;
+  jsgrep::v8_session session;
 
   Isolate         *isolate = session.get_isolate();
   HandleScope     handle_scope(isolate);
@@ -31,10 +31,10 @@ TEST_CASE("jsgrok::v8_nodejs_context") {
   };
 
   auto assert_script_returns_truthy = [&](const char *script) {
-    auto buffer = jsgrok::test_utils::load_fixture_file(resolve(script));
+    auto buffer = jsgrep::test_utils::load_fixture_file(resolve(script));
     auto module = session.require(context, buffer.value, buffer.sz);
 
-    REQUIRE(module.status == jsgrok::v8_module::EC_OK);
+    REQUIRE(module.status == jsgrep::v8_module::EC_OK);
 
     auto exports = module.exports;
 

@@ -1,11 +1,11 @@
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/v8_nodejs_context.hpp"
-#include "jsgrok/v8_compat.hpp"
-#include "jsgrok/fs.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/v8_nodejs_context.hpp"
+#include "jsgrep/v8_compat.hpp"
+#include "jsgrep/fs.hpp"
 #include <assert.h>
 #include <iostream>
 
-namespace jsgrok {
+namespace jsgrep {
   using v8::Context;
   using v8::Script;
   using v8::String;
@@ -13,7 +13,7 @@ namespace jsgrok {
   using v8::Value;
 
   v8_session::v8_session() {
-    isolate_create_params_.array_buffer_allocator = jsgrok::v8_compat::create_array_buffer_alloc();
+    isolate_create_params_.array_buffer_allocator = jsgrep::v8_compat::create_array_buffer_alloc();
     isolate_ = Isolate::New(isolate_create_params_);
     isolate_->Enter();
   };
@@ -24,7 +24,7 @@ namespace jsgrok {
       isolate_->Dispose();
     }
 
-    jsgrok::v8_compat::free_array_buffer_alloc(isolate_create_params_.array_buffer_allocator);
+    jsgrep::v8_compat::free_array_buffer_alloc(isolate_create_params_.array_buffer_allocator);
 
     isolate_ = nullptr;
   };

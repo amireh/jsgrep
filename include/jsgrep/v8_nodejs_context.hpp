@@ -1,12 +1,12 @@
-#ifndef H_JSGROK_NODEJS_CONTEXT_H
-#define H_JSGROK_NODEJS_CONTEXT_H
+#ifndef H_JSGREP_NODEJS_CONTEXT_H
+#define H_JSGREP_NODEJS_CONTEXT_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 #include <vector>
 #include <functional>
 #include "v8.h"
 
-namespace jsgrok {
+namespace jsgrep {
   using v8::Isolate;
   using v8::Local;
   using v8::Context;

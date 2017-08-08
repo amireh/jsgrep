@@ -1,5 +1,5 @@
 {
-  "name": "jsgrok-ql",
+  "name": "jsgrep-ql",
   "version": "1.0.0",
   "main": "src/index.js",
   "license": "MIT",
@@ -7,15 +7,15 @@
     "lint": "eslint src",
     "build-man": "marked-man README.md > jsq-ql.man.1",
     "build": "npm run build-grammar && npm run build-bundle",
-    "build-grammar": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js",
-    "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrok-ql.ne -o src/grammar.js\"",
+    "build-grammar": "nearleyc grammar/jsgrep-ql.ne -o src/grammar.js",
+    "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrep-ql.ne -o src/grammar.js\"",
     "build-bundle": "webpack --display-modules",
     "build-bundle:watch": "webpack -w --progress --display-modules",
     "test": "mocha 'src/**/*.test.js'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/amireh/jsgrok.git"
+    "url": "git+https://github.com/amireh/jsgrep.git"
   },
   "dependencies": {
     "acorn": "5.1.1",

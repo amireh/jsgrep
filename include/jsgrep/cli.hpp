@@ -1,17 +1,17 @@
-#ifndef H_JSGROK_CLI_H
-#define H_JSGROK_CLI_H
+#ifndef H_JSGREP_CLI_H
+#define H_JSGREP_CLI_H
 
 #include <vector>
 #include <functional>
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 
 namespace args {
   class ArgumentParser;
 }
 
-namespace jsgrok {
+namespace jsgrep {
   using std::vector;
-  using jsgrok::string_t;
+  using jsgrep::string_t;
 
   class cli {
   public:
@@ -56,6 +56,6 @@ namespace jsgrok {
     options_t parse(applier_t) const;
   };
 
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

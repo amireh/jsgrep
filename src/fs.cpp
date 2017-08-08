@@ -1,9 +1,9 @@
 #include <fstream>
 #include <glob.h>
 #include <ftw.h>
-#include "jsgrok/fs.hpp"
+#include "jsgrep/fs.hpp"
 
-namespace jsgrok {
+namespace jsgrep {
   fs::fs()
   {
   }

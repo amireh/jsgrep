@@ -1,16 +1,16 @@
 #include <algorithm>
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/v8_nodejs_context.hpp"
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/fs.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/v8_nodejs_context.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/fs.hpp"
 
-extern unsigned char jsgrok_ql_js[];
-extern unsigned int jsgrok_ql_js_len;
+extern unsigned char jsgrep_ql_js[];
+extern unsigned int jsgrep_ql_js_len;
 
-namespace jsgrok {
+namespace jsgrep {
   using namespace v8;
   using std::any_of;
-  using jsgrok::v8_nodejs_context;
+  using jsgrep::v8_nodejs_context;
 
   analyzer::analyzer() {
   }
@@ -22,7 +22,7 @@ namespace jsgrok {
     Isolate *isolate = session->get_isolate();
     js_analysis_t js_results;
     analysis_t results;
-    jsgrok::fs fs;
+    jsgrep::fs fs;
 
     HandleScope handle_scope(isolate);
     Local<Context> context = Context::New(isolate);
@@ -30,21 +30,21 @@ namespace jsgrok {
 
     v8_nodejs_context::morph(session, context);
 
-    auto load_jsgrok_ql_from_memory = [&]() {
-      return session->require(context, jsgrok_ql_js, jsgrok_ql_js_len);
+    auto load_jsgrep_ql_from_memory = [&]() {
+      return session->require(context, jsgrep_ql_js, jsgrep_ql_js_len);
     };
 
-    auto jsgrok_ql_module = load_jsgrok_ql_from_memory();
+    auto jsgrep_ql_module = load_jsgrep_ql_from_memory();
 
-    if (!jsgrok_ql_module || !jsgrok_ql_module.exports->IsObject()) {
-      printf("Unable to require 'jsgrok-ql'!\n");
+    if (!jsgrep_ql_module || !jsgrep_ql_module.exports->IsObject()) {
+      printf("Unable to require 'jsgrep-ql'!\n");
       return results;
     }
 
-    auto apply_ref = session->get(context, jsgrok_ql_module.exports->ToObject(), "apply");
+    auto apply_ref = session->get(context, jsgrep_ql_module.exports->ToObject(), "apply");
 
     if (apply_ref->IsUndefined() || !apply_ref->IsFunction()) {
-      printf("Unable to find 'apply' exports in 'jsgrok-ql'!\n");
+      printf("Unable to find 'apply' exports in 'jsgrep-ql'!\n");
 
       return results;
     }

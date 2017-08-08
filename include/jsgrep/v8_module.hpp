@@ -1,9 +1,9 @@
-#ifndef H_JSGROK_V8_MODULE_H
-#define H_JSGROK_V8_MODULE_H
+#ifndef H_JSGREP_V8_MODULE_H
+#define H_JSGREP_V8_MODULE_H
 
 #include "v8.h"
 
-namespace jsgrok {
+namespace jsgrep {
   struct v8_module {
     v8::Handle<v8::Value> exports;
     v8::Exception *script_error;

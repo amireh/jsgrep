@@ -1,9 +1,9 @@
-#ifndef H_JSGROK_TEST_UTILS_H
-#define H_JSGROK_TEST_UTILS_H
+#ifndef H_JSGREP_TEST_UTILS_H
+#define H_JSGREP_TEST_UTILS_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 
-namespace jsgrok::test_utils {
+namespace jsgrep::test_utils {
   typedef struct {
     unsigned char *value;
     unsigned int  sz;

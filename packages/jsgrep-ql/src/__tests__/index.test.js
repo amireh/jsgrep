@@ -3,7 +3,7 @@ const { apply } = require('../../')
 const path = require('path');
 const glob = require('glob')
 
-describe('jsgrok-ql::eval', function() {
+describe('jsgrep-ql::eval', function() {
   const createSpecimenTests = f => {
     const groups = glob.sync(path.resolve(__dirname, `./{grammar,expressions}/*.js`)).map(function(filepath) {
       return {

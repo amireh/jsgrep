@@ -1,9 +1,9 @@
 #include "catch.hpp"
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/types.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/types.hpp"
 
-TEST_CASE("jsgrok::analyzer") {
-  using jsgrok::string_t;
+TEST_CASE("jsgrep::analyzer") {
+  using jsgrep::string_t;
 
-  jsgrok::analyzer subject;
+  jsgrep::analyzer subject;
 }

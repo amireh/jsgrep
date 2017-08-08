@@ -5,11 +5,11 @@
 - [ ] license: args
 - [ ] look into minifying the JS to reduce binary size
 - [ ] stream results from JS to reporter
-- [ ] embed v8 data blobs (natives_blob.bin, snapshot_blob.bin) into binary
+- [x] embed v8 data blobs (natives_blob.bin, snapshot_blob.bin) into binary
 - [x] parse query only once per thread
 - [x] remove cpplocate
-- [ ] read defaults from ~/.jsgrokrc or /etc/jsgrokconfig
-- [ ] rename to jsq or jsgrep?
+- [ ] read defaults from ~/.jsgreprc or /etc/jsgrepconfig
+- [x] rename to jsq or jsgrep?
 - [ ] function return type matcher
 - [x] :exportOf type matcher
 - [x] revisit macro expansions, perhaps generate a proper AST for the query
@@ -20,5 +20,6 @@
 - [x] FunctionCall(^Type)
 - [ ] interpret `null` literal in function call argument types
 - [ ] interpret `:void` in `:func` return type
-- [ ] consider freezing jsgrok-ql into a snapshot, see https://v8project.blogspot.com/2015/09/custom-startup-snapshots.html
+- [ ] evaluate object literals in object literal values (e.g. `{ a: { b: :number } }`)
+- [ ] consider freezing jsgrep-ql into a snapshot, see https://v8project.blogspot.com/2015/09/custom-startup-snapshots.html
 - [ ] look into creating a homebrew "keg" / bottle formulae

@@ -1,13 +1,13 @@
-#ifndef H_JSGROK_FUNCTIONAL_FILTER_H
-#define H_JSGROK_FUNCTIONAL_FILTER_H
+#ifndef H_JSGREP_FUNCTIONAL_FILTER_H
+#define H_JSGREP_FUNCTIONAL_FILTER_H
 
-#include "jsgrok/types.hpp"
+#include "jsgrep/types.hpp"
 #include <algorithm>
 #include <vector>
 #include <math.h>
 #include <fnmatch.h>
 
-namespace jsgrok {
+namespace jsgrep {
   namespace functional {
     using std::vector;
 
@@ -61,6 +61,6 @@ namespace jsgrok {
       return included_files;
     }
   } // end of namespace functional
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

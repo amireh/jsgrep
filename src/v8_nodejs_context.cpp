@@ -1,8 +1,8 @@
-#include "jsgrok/v8_nodejs_context.hpp"
-#include "jsgrok/v8_session.hpp"
-#include "jsgrok/fs.hpp"
+#include "jsgrep/v8_nodejs_context.hpp"
+#include "jsgrep/v8_session.hpp"
+#include "jsgrep/fs.hpp"
 
-namespace jsgrok {
+namespace jsgrep {
   using namespace v8;
 
   v8_nodejs_context::v8_nodejs_context() {

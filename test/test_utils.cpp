@@ -1,8 +1,8 @@
 #include "test_utils.hpp"
-#include "jsgrok/fs.hpp"
+#include "jsgrep/fs.hpp"
 #include <cstring>
 
-namespace jsgrok::test_utils {
+namespace jsgrep::test_utils {
   string_t resolve(string_t const& path) {
     return "test/fixtures/" + path;
   }
@@ -21,7 +21,7 @@ namespace jsgrok::test_utils {
   buffer_t load_fixture_file(string_t const& path) {
     string_t source;
 
-    jsgrok::fs().load_file(path, source);
+    jsgrep::fs().load_file(path, source);
 
     return copy_string(source);
   }

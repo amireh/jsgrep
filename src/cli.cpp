@@ -1,9 +1,9 @@
-#include "jsgrok/cli.hpp"
-#include "jsgrok/functional/filter.hpp"
+#include "jsgrep/cli.hpp"
+#include "jsgrep/functional/filter.hpp"
 #include <iostream>
 #include "args/args.hxx"
 
-namespace jsgrok {
+namespace jsgrep {
   cli::cli()
   {
   }
@@ -37,7 +37,7 @@ namespace jsgrok {
 
     // SCANNING
     args::Positional<std::string> query(parser,
-      "PATTERN", "jsgrok PATTERN to search for");
+      "PATTERN", "jsgrep PATTERN to search for");
     args::PositionalList<std::string> file_patterns(parser,
       "FILE", "files or directories to search");
 
@@ -117,7 +117,7 @@ namespace jsgrok {
     }
 
     if (options.file_inclusion_patterns.empty()) {
-      options.file_inclusion_patterns = jsgrok::functional::INCLUDE_JS_FILES;
+      options.file_inclusion_patterns = jsgrep::functional::INCLUDE_JS_FILES;
     }
 
     for (const auto pattern : args::get(file_exclusion_patterns)) {

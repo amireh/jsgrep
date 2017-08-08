@@ -1,10 +1,10 @@
-#ifndef H_JSGROK_V8_SESSION_H
-#define H_JSGROK_V8_SESSION_H
+#ifndef H_JSGREP_V8_SESSION_H
+#define H_JSGREP_V8_SESSION_H
 
 #include <functional>
 #include "v8.h"
-#include "jsgrok/types.hpp"
-#include "jsgrok/v8_module.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/v8_module.hpp"
 
 using v8::Context;
 using v8::Handle;
@@ -16,7 +16,7 @@ using v8::Object;
 using v8::String;
 using v8::Value;
 
-namespace jsgrok {
+namespace jsgrep {
   class v8_session {
   public:
     v8_session();

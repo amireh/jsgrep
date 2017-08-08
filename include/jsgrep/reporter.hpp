@@ -1,19 +1,19 @@
-#ifndef H_JSGROK_REPORTER_H
-#define H_JSGROK_REPORTER_H
+#ifndef H_JSGREP_REPORTER_H
+#define H_JSGREP_REPORTER_H
 
 #include <ostream>
-#include "jsgrok/types.hpp"
-#include "jsgrok/analyzer.hpp"
-#include "jsgrok/cli.hpp"
-#include "jsgrok/functional/colorize.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/analyzer.hpp"
+#include "jsgrep/cli.hpp"
+#include "jsgrep/functional/colorize.hpp"
 
-namespace jsgrok {
-  using jsgrok::functional::colorize;
+namespace jsgrep {
+  using jsgrep::functional::colorize;
 
   using analysis_t = analyzer::analysis_t;
   using analysis_match_t = analyzer::analysis_match_t;
   using options_t = cli::options_t;
-  using Color = jsgrok::functional::Color;
+  using Color = jsgrep::functional::Color;
 
   class reporter {
   public:
@@ -53,6 +53,6 @@ namespace jsgrok {
     string_t mebbe_colorize(const Color, const string_t &) const;
   };
 
-} // end of namespace jsgrok
+} // end of namespace jsgrep
 
 #endif

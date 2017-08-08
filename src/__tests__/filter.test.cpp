@@ -1,12 +1,12 @@
 #include "catch.hpp"
 #include "test_utils.hpp"
-#include "jsgrok/types.hpp"
-#include "jsgrok/functional/filter.hpp"
+#include "jsgrep/types.hpp"
+#include "jsgrep/functional/filter.hpp"
 
-TEST_CASE("jsgrok::functional::filter") {
-  using namespace jsgrok::functional;
-  using jsgrok::functional::filter;
-  using jsgrok::string_t;
+TEST_CASE("jsgrep::functional::filter") {
+  using namespace jsgrep::functional;
+  using jsgrep::functional::filter;
+  using jsgrep::string_t;
   using std::vector;
 
   vector<string_t> files({

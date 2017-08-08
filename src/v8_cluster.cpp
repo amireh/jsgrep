@@ -1,7 +1,7 @@
-#include "jsgrok/v8_cluster.hpp"
-#include "jsgrok/v8_session.hpp"
+#include "jsgrep/v8_cluster.hpp"
+#include "jsgrep/v8_session.hpp"
 
-namespace jsgrok {
+namespace jsgrep {
   v8_cluster::v8_cluster() : sessions_({}) {
     pthread_mutex_init(&sessions_lock_, NULL);
   };
@@ -58,7 +58,7 @@ namespace jsgrok {
 
     delete spawn_request;
 
-    jsgrok::v8_session *session = new jsgrok::v8_session();
+    jsgrep::v8_session *session = new jsgrep::v8_session();
 
     pthread_mutex_lock(&cluster->sessions_lock_);
     cluster->sessions_.push_back(session);
