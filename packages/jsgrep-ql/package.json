@@ -5,12 +5,12 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint src",
-    "build-man": "marked-man README.md > jsq-ql.man.1",
-    "build": "npm run build-grammar && npm run build-bundle",
+    "build": "npm run build-grammar && npm run build-bundle && npm run build-man",
     "build-grammar": "nearleyc grammar/jsgrep-ql.ne -o src/grammar.js",
     "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrep-ql.ne -o src/grammar.js\"",
     "build-bundle": "webpack --display-modules",
     "build-bundle:watch": "webpack -w --progress --display-modules",
+    "build-man": "marked-man README.md > jsgrep-ql.man.1",
     "test": "mocha 'src/**/*.test.js'"
   },
   "repository": {
