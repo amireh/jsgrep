@@ -9,8 +9,8 @@
     "build": "npm run build-grammar && npm run build-bundle",
     "build-grammar": "nearleyc grammar/jsgrok-ql.ne -o src/grammar.js",
     "build-grammar:watch": "nodemon -e ne --watch grammar --exec \"nearleyc grammar/jsgrok-ql.ne -o src/grammar.js\"",
-    "build-bundle": "webpack",
-    "build-bundle:watch": "webpack -w --progress",
+    "build-bundle": "webpack --display-modules",
+    "build-bundle:watch": "webpack -w --progress --display-modules",
     "test": "mocha 'src/**/*.test.js'"
   },
   "repository": {
@@ -18,9 +18,14 @@
     "url": "git+https://github.com/amireh/jsgrok.git"
   },
   "dependencies": {
+    "acorn": "5.1.1",
+    "acorn-dynamic-import": "2.0.2",
+    "acorn-es7-plugin": "1.1.7",
+    "acorn-jsx": "4.0.1",
+    "acorn-object-spread": "github:jbboehr/acorn-object-spread#f39f3108e9bacff63c90f7145b74413b73f77167",
+    "acorn-static-class-property-initializer": "1.0.0",
     "invariant": "^2.2.2",
-    "nearley": "2.10.2",
-    "ramda": "0.24.1"
+    "nearley": "2.10.2"
   },
   "devDependencies": {
     "chai": "4.1.0",

@@ -1,4 +1,4 @@
-const walk = require('../../acorn/walk.js');
+const walk = require('acorn/dist/walk.js');
 
 require('../../acorn-jsx/walk.js')(walk);
 require('../../acorn-object-spread/walk.js')(walk);

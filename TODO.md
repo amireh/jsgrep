@@ -12,11 +12,13 @@
 - [ ] rename to jsq or jsgrep?
 - [ ] function return type matcher
 - [x] :exportOf type matcher
-- [ ] revisit macro expansions, perhaps generate a proper AST for the query
-- [ ] :function type matcher
+- [x] revisit macro expansions, perhaps generate a proper AST for the query
+- [x] :function type matcher
 - [x] :boolean type matcher
 - [ ] JSX type matcher
 - [ ] terminal type matcher (e.g. `{ foo }`)
 - [x] FunctionCall(^Type)
 - [ ] interpret `null` literal in function call argument types
 - [ ] interpret `:void` in `:func` return type
+- [ ] consider freezing jsgrok-ql into a snapshot, see https://v8project.blogspot.com/2015/09/custom-startup-snapshots.html
+- [ ] look into creating a homebrew "keg" / bottle formulae

@@ -13,11 +13,15 @@ TEST_CASE("jsgrok") {
 
   auto assert_script_is_analyzed = [&](const char *script) {
     auto filepath = resolve(script);
-    auto query = "";
+    auto query = "abc";
     auto analysis = analyzer.apply(&session, query, { filepath });
 
     REQUIRE(analysis.errors.size() == 0);
   };
+
+  SECTION("JSX") {
+    assert_script_is_analyzed("plugins/jsx.js");
+  }
 
   SECTION("ES7 async/await") {
     assert_script_is_analyzed("plugins/asyncAwait.js");

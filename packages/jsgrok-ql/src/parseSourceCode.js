@@ -1,10 +1,10 @@
-const acorn = require('../../acorn/index.js');
+const acorn = require('acorn/dist/acorn.es.js');
+const interopRequire = module => module['__esModule'] && module['default'] && module['default'] || module;
 
-require('../../acorn-jsx/index.js')(acorn);
-require('../../acorn-asyncawait/index.js')(acorn);
-require('../../acorn-object-spread/index.js')(acorn);
-require('../../acorn-static-class-property-initializer/index.js')(acorn);
-require('../../acorn-dynamic-import/index.js')(acorn);
+interopRequire(require('acorn-jsx/inject.js'))(acorn);
+interopRequire(require('acorn-object-spread/inject.js'))(acorn);
+interopRequire(require('acorn-static-class-property-initializer/inject.js'))(acorn);
+interopRequire(require('acorn-dynamic-import/src/inject.js'))(acorn);
 
 module.exports = function parseSourceCode(sourceCode) {
   return acorn.parse(sourceCode, {
@@ -20,10 +20,6 @@ module.exports = function parseSourceCode(sourceCode) {
       staticClassPropertyInitializer: true,
       objectSpread: true,
       dynamicImport: true,
-      asyncawait: {
-        awaitAnywhere: true,
-        asyncExits: true,
-      }
     }
   });
 }
